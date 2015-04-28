@@ -1,2 +1,5 @@
 # WebStorm IDE
 .idea/
+
+# JavaScript files transpiled from TypeScript
+*.js
