@@ -16,10 +16,6 @@ module Styx {
     }
 
     function parseProgram(program: ESTree.Program): ControlFlowGraph {
-        if (!_.isArray(program.body)) {
-            throw new Error("Invalid program: 'body' property must be an array");
-        }
-
         return new ControlFlowGraph();
     }
 }

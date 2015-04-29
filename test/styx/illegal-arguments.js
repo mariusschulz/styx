@@ -29,21 +29,5 @@ describe("Styx", function() {
 
             expect(parse).to.throw(Error);
         });
-
-        it("throws for invalid nodes of type 'Program'", function() {
-            var invalidPrograms = [
-                { type: "Program" },
-                { type: "Program", body: null },
-                { type: "Program", body: {} }
-            ];
-
-            _.each(invalidPrograms, function(program) {
-                var parse = function() {
-                    Styx.parse(program);
-                };
-
-                expect(parse).to.throw(Error);
-            });
-        });
     });
 });
