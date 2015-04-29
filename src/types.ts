@@ -8,7 +8,7 @@ module Styx {
     }
 
     export class FlowNode {
-        outgoingEdges: FlowNode[];
+        outgoingEdges: FlowEdge[];
 
         constructor() {
             this.outgoingEdges = [];

@@ -8,7 +8,7 @@ module Styx {
             throw Error("Invalid node: 'type' property required");
         }
 
-        if (node.type === "Program") {
+        if (node.type === ESTree.NodeType.Program) {
             return parseProgram(<ESTree.Program>node);
         }
 
@@ -16,6 +16,18 @@ module Styx {
     }
 
     function parseProgram(program: ESTree.Program): ControlFlowGraph {
-        return new ControlFlowGraph();
+        var cfg = new ControlFlowGraph();
+        let currentFlowNode = cfg.entry;
+
+        for (let statement of program.body) {
+            if (statement.type === ESTree.NodeType.EmptyStatement) {
+                let flowNode = new FlowNode();
+                let edge = new FlowEdge(flowNode);
+                currentFlowNode.outgoingEdges.push(edge);
+                currentFlowNode = flowNode;
+            }
+        }
+
+        return cfg;
     }
 }

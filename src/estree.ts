@@ -1,4 +1,9 @@
 module ESTree {
+    export class NodeType {
+        static EmptyStatement = "EmptyStatement";
+        static Program = "Program";
+    }
+
     export interface Node {
         type: string;
         loc?: SourceLocation;
