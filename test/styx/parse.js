@@ -19,7 +19,7 @@ describe("Styx", function() {
     });
 
     describe("#parseProgram()", function() {
-        it("should return a control flow graph with a single node", function() {
+        it("should return a single node for an empty program", function() {
             var cfg = controlFlowGraphFor("");
 
             expect(cfg.entry.next).to.be.empty;
