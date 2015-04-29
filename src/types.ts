@@ -8,10 +8,18 @@ module Styx {
     }
 
     export class FlowNode {
-        next: FlowNode[];
+        outgoingEdges: FlowNode[];
 
         constructor() {
-            this.next = [];
+            this.outgoingEdges = [];
+        }
+    }
+
+    export class FlowEdge {
+        target: FlowNode;
+
+        constructor(target: FlowNode) {
+            this.target = target;
         }
     }
 }

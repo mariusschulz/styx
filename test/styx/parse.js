@@ -22,7 +22,7 @@ describe("Styx", function() {
         it("should return a single node for an empty program", function() {
             var cfg = controlFlowGraphFor("");
 
-            expect(cfg.entry.next).to.be.empty;
+            expect(cfg.entry.outgoingEdges).to.be.empty;
         });
     });
 });
