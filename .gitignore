@@ -1,5 +1,8 @@
-# WebStorm IDE
-.idea/
+# Generated output
+dist/
 
 # JavaScript files transpiled from TypeScript
-*.js
+src/*.js
+
+# WebStorm IDE
+.idea/
