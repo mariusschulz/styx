@@ -2,9 +2,8 @@ var expect = chai.expect;
 
 describe("Styx", function() {
     describe("#parse()", function() {
-
         it("should return a control flow graph", function() {
-            var ast = {type: "Program", body: []};
+            var ast = { type: "Program", body: [] };
 
             var cfg = Styx.parse(ast);
 
