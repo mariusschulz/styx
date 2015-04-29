@@ -1,9 +1,13 @@
 module Styx {
-    export interface ControlFlowGraph {
-        entry: {}
+    export class ControlFlowGraph {
+        entry: FlowNode;
+
+        constructor() {
+            this.entry = new FlowNode();
+        }
     }
 
-    export interface ESTree {
-
+    export class FlowNode {
+        next: FlowNode[];
     }
 }
