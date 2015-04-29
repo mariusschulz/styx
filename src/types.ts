@@ -9,5 +9,9 @@ module Styx {
 
     export class FlowNode {
         next: FlowNode[];
+
+        constructor() {
+            this.next = [];
+        }
     }
 }
