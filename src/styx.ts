@@ -23,7 +23,7 @@ module Styx {
             if (statement.type === ESTree.NodeType.EmptyStatement) {
                 let flowNode = new FlowNode();
                 let edge = new FlowEdge(flowNode);
-                currentFlowNode.outgoingEdges.push(edge);
+                currentFlowNode.addOutgoingEdge(edge);
                 currentFlowNode = flowNode;
             }
         }

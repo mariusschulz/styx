@@ -13,6 +13,10 @@ module Styx {
         constructor() {
             this.outgoingEdges = [];
         }
+
+        addOutgoingEdge(edge: FlowEdge) {
+            this.outgoingEdges.push(edge);
+        }
     }
 
     export class FlowEdge {
