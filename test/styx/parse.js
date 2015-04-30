@@ -34,5 +34,20 @@ describe("Styx", function() {
             var singleEdge = outgoingEdges[0];
             expect(singleEdge.outgoingEdges).to.be.empty;
         });
+
+        it("should return three nodes for two empty statements", function() {
+            var cfg = controlFlowGraphFor(";;");
+
+            var firstNodeEdges = cfg.entry.outgoingEdges;
+            expect(firstNodeEdges).to.have.length(1);
+
+            var secondNode = firstNodeEdges[0].target;
+            var secondNodeEdges = secondNode.outgoingEdges;
+            expect(secondNodeEdges).to.have.length(1);
+            
+            var thirdNode = secondNodeEdges[0].target;
+            var thirdNodeEdges = thirdNode.outgoingEdges;
+            expect(thirdNodeEdges).to.have.length(0);
+        });
     });
 });
