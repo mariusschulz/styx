@@ -2,6 +2,7 @@ module ESTree {
     export class NodeType {
         static EmptyStatement = "EmptyStatement";
         static Program = "Program";
+        static VariableDeclaration = "VariableDeclaration";
     }
 
     export interface Node {

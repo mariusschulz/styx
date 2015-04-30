@@ -25,6 +25,11 @@ module Styx {
                 let edge = new FlowEdge(flowNode);
                 currentFlowNode.addOutgoingEdge(edge);
                 currentFlowNode = flowNode;
+            } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
+                let flowNode = new FlowNode();
+                let edge = new FlowEdge(flowNode);
+                currentFlowNode.addOutgoingEdge(edge);
+                currentFlowNode = flowNode;
             } else {
                 throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
