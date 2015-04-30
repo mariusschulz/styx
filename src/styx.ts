@@ -25,6 +25,8 @@ module Styx {
                 let edge = new FlowEdge(flowNode);
                 currentFlowNode.addOutgoingEdge(edge);
                 currentFlowNode = flowNode;
+            } else {
+                throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
         }
 
