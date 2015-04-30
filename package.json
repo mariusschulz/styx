@@ -17,5 +17,9 @@
     "email": "marius.schulz@me.com",
     "url": "https://blog.mariusschulz.com/"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-shell": "^0.4.1"
+  }
 }

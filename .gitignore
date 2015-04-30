@@ -6,3 +6,6 @@ src/*.js
 
 # WebStorm IDE
 .idea/
+
+# Node modules
+node_modules/
