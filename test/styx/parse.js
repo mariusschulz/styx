@@ -29,7 +29,7 @@ describe("Styx", function() {
             var cfg = controlFlowGraphFor(";");
 
             var outgoingEdges = cfg.entry.outgoingEdges;
-            expect(cfg.entry.outgoingEdges).to.have.length(1);
+            expect(outgoingEdges).to.have.length(1);
 
             var singleEdge = outgoingEdges[0];
             expect(singleEdge.outgoingEdges).to.be.empty;
