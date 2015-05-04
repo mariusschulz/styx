@@ -31,28 +31,30 @@ module Styx {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            let flowNode = new FlowNode();
-            let edge = new FlowEdge(flowNode);
-            currentFlowNode.addOutgoingEdge(edge);
-            currentFlowNode = flowNode;
+            currentFlowNode = appendNewNodeTo(currentFlowNode);
         } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
             let declaration = <ESTree.VariableDeclaration>statement;
             currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
         } else {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
-        
+
         return currentFlowNode;
     }
 
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
         for (let declarator of declaration.declarations) {
-            let flowNode = new FlowNode();
-            let edge = new FlowEdge(flowNode);
-            currentFlowNode.addOutgoingEdge(edge);
-            currentFlowNode = flowNode;
+            currentFlowNode = appendNewNodeTo(currentFlowNode);
         }
 
         return currentFlowNode;
+    }
+
+    function appendNewNodeTo(node: FlowNode): FlowNode {
+        let newNode = new FlowNode();
+        let edge = new FlowEdge(newNode);
+        node.addOutgoingEdge(edge);
+        
+        return newNode;
     }
 }
