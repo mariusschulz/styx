@@ -67,8 +67,9 @@ module Styx {
         return finalNode;
     }
 
-    function createNodeAndConnectFrom(...nodes: FlowNode[]): FlowNode {
+    function createNodeAndConnectFrom(node: FlowNode, ...furtherNodes: FlowNode[]): FlowNode {
         let newNode = new FlowNode();
+        let nodes = [node, ...furtherNodes];
         
         for (let node of nodes) {
             let edge = new FlowEdge(newNode);
