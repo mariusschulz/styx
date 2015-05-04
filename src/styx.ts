@@ -31,7 +31,7 @@ module Styx {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            currentFlowNode = appendNewNodeTo(currentFlowNode);
+            currentFlowNode = createNodeAndConnectFrom(currentFlowNode);
         } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
             let declaration = <ESTree.VariableDeclaration>statement;
             currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
@@ -47,15 +47,15 @@ module Styx {
 
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
         for (let declarator of declaration.declarations) {
-            currentFlowNode = appendNewNodeTo(currentFlowNode);
+            currentFlowNode = createNodeAndConnectFrom(currentFlowNode);
         }
 
         return currentFlowNode;
     }
     
     function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
-        var ifNode = appendNewNodeTo(currentFlowNode);
-        var elseNode = appendNewNodeTo(currentFlowNode);
+        var ifNode = createNodeAndConnectFrom(currentFlowNode);
+        var elseNode = createNodeAndConnectFrom(currentFlowNode);
         
         let finalNode = new FlowNode();
         let ifEdge = new FlowEdge(finalNode);
@@ -67,10 +67,13 @@ module Styx {
         return finalNode;
     }
 
-    function appendNewNodeTo(node: FlowNode): FlowNode {
+    function createNodeAndConnectFrom(...nodes: FlowNode[]): FlowNode {
         let newNode = new FlowNode();
-        let edge = new FlowEdge(newNode);
-        node.addOutgoingEdge(edge);
+        
+        for (let node of nodes) {
+            let edge = new FlowEdge(newNode);
+            node.addOutgoingEdge(edge);
+        }
         
         return newNode;
     }
