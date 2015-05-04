@@ -31,7 +31,7 @@ module Styx {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            currentFlowNode = createNodeAndConnectFrom(currentFlowNode);
+            currentFlowNode = createNodeAndAppendTo(currentFlowNode);
         } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
             let declaration = <ESTree.VariableDeclaration>statement;
             currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
@@ -47,7 +47,7 @@ module Styx {
 
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
         for (let declarator of declaration.declarations) {
-            currentFlowNode = createNodeAndConnectFrom(currentFlowNode);
+            currentFlowNode = createNodeAndAppendTo(currentFlowNode);
         }
 
         return currentFlowNode;
@@ -55,24 +55,24 @@ module Styx {
     
     function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
         if (ifStatement.alternate === null) {
-            let ifNode = createNodeAndConnectFrom(currentFlowNode);
-            let finalNode = createNodeAndConnectFrom(ifNode);
+            let ifNode = createNodeAndAppendTo(currentFlowNode);
+            let finalNode = createNodeAndAppendTo(ifNode);
             
             let edgeToFinalNode = new FlowEdge(finalNode);
             currentFlowNode.addOutgoingEdge(edgeToFinalNode);
             
             return finalNode;
         } else {
-            let ifNode = createNodeAndConnectFrom(currentFlowNode);
-            let elseNode = createNodeAndConnectFrom(currentFlowNode);
+            let ifNode = createNodeAndAppendTo(currentFlowNode);
+            let elseNode = createNodeAndAppendTo(currentFlowNode);
             
-            return createNodeAndConnectFrom(ifNode, elseNode);
+            return createNodeAndAppendTo(ifNode, elseNode);
         }
     }
 
-    function createNodeAndConnectFrom(node: FlowNode, ...furtherNodes: FlowNode[]): FlowNode {
+    function createNodeAndAppendTo(node: FlowNode, ...otherNodes: FlowNode[]): FlowNode {
         let newNode = new FlowNode();
-        let nodes = [node, ...furtherNodes];
+        let nodes = [node, ...otherNodes];
         
         for (let node of nodes) {
             let edge = new FlowEdge(newNode);
