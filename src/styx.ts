@@ -54,10 +54,20 @@ module Styx {
     }
     
     function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
-        let ifNode = createNodeAndConnectFrom(currentFlowNode);
-        let elseNode = createNodeAndConnectFrom(currentFlowNode);
-        
-        return createNodeAndConnectFrom(ifNode, elseNode);
+        if (ifStatement.alternate === null) {
+            let ifNode = createNodeAndConnectFrom(currentFlowNode);
+            let finalNode = createNodeAndConnectFrom(ifNode);
+            
+            let edgeToFinalNode = new FlowEdge(finalNode);
+            currentFlowNode.addOutgoingEdge(edgeToFinalNode);
+            
+            return finalNode;
+        } else {
+            let ifNode = createNodeAndConnectFrom(currentFlowNode);
+            let elseNode = createNodeAndConnectFrom(currentFlowNode);
+            
+            return createNodeAndConnectFrom(ifNode, elseNode);
+        }
     }
 
     function createNodeAndConnectFrom(node: FlowNode, ...furtherNodes: FlowNode[]): FlowNode {

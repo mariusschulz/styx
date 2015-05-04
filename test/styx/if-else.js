@@ -8,7 +8,20 @@ describe("Styx", function() {
         return cfg;
     }
 
-    describe("#parse()", function() {
+    describe("#parseIfStatement()", function() {
+        it("should create three nodes for an if statement", function() {
+            var cfg = controlFlowGraphFor("if (true) { }");
+            
+            expect(cfg.entry.outgoingEdges).to.have.length(2);
+            
+            var ifNode = cfg.entry.outgoingEdges[0].target;
+            var finalNode = cfg.entry.outgoingEdges[1].target;
+            
+            expect(ifNode.outgoingEdges).to.have.length(1);
+            expect(ifNode.outgoingEdges[0].target).to.equal(finalNode);
+            expect(finalNode.outgoingEdges).to.be.empty;
+        });
+        
         it("should create four nodes for an if-else statement", function() {
             var cfg = controlFlowGraphFor("if (true) { } else { }");
             
