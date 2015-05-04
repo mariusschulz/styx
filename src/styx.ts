@@ -17,28 +17,34 @@ module Styx {
 
     function parseProgram(program: ESTree.Program): ControlFlowGraph {
         var cfg = new ControlFlowGraph();
-        
+
         parseStatements(program.body, cfg.entry);
 
         return cfg;
     }
-    
+
     function parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode) {
         for (let statement of statements) {
-            if (statement.type === ESTree.NodeType.EmptyStatement) {
-                let flowNode = new FlowNode();
-                let edge = new FlowEdge(flowNode);
-                currentFlowNode.addOutgoingEdge(edge);
-                currentFlowNode = flowNode;
-            } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
-                let declaration = <ESTree.VariableDeclaration>statement;
-                currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
-            } else {
-                throw Error(`Encountered unsupported statement type '${statement.type}'`);
-            }
+            currentFlowNode = parseStatement(statement, currentFlowNode);
         }
     }
-    
+
+    function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
+        if (statement.type === ESTree.NodeType.EmptyStatement) {
+            let flowNode = new FlowNode();
+            let edge = new FlowEdge(flowNode);
+            currentFlowNode.addOutgoingEdge(edge);
+            currentFlowNode = flowNode;
+        } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
+            let declaration = <ESTree.VariableDeclaration>statement;
+            currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
+        } else {
+            throw Error(`Encountered unsupported statement type '${statement.type}'`);
+        }
+        
+        return currentFlowNode;
+    }
+
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
         for (let declarator of declaration.declarations) {
             let flowNode = new FlowNode();
@@ -46,7 +52,7 @@ module Styx {
             currentFlowNode.addOutgoingEdge(edge);
             currentFlowNode = flowNode;
         }
-        
+
         return currentFlowNode;
     }
 }
