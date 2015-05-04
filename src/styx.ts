@@ -26,15 +26,24 @@ module Styx {
                 currentFlowNode.addOutgoingEdge(edge);
                 currentFlowNode = flowNode;
             } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
-                let flowNode = new FlowNode();
-                let edge = new FlowEdge(flowNode);
-                currentFlowNode.addOutgoingEdge(edge);
-                currentFlowNode = flowNode;
+                let declaration = <ESTree.VariableDeclaration>statement;
+                currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
             } else {
                 throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
         }
 
         return cfg;
+    }
+    
+    function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
+        for (let declarator of declaration.declarations) {
+            let flowNode = new FlowNode();
+            let edge = new FlowEdge(flowNode);
+            currentFlowNode.addOutgoingEdge(edge);
+            currentFlowNode = flowNode;
+        }
+        
+        return currentFlowNode;
     }
 }

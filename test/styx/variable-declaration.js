@@ -17,5 +17,17 @@ describe("Styx", function() {
             var secondNode = cfg.entry.outgoingEdges[0].target;
             expect(secondNode.outgoingEdges).to.have.length(0);
         });
+        
+        it("should return three nodes for a variable declaration with two declarators", function() {
+            var cfg = controlFlowGraphFor("var foo = 42, bar = 1337;");
+            
+            expect(cfg.entry.outgoingEdges).to.have.length(1);
+            
+            var secondNode = cfg.entry.outgoingEdges[0].target;
+            expect(secondNode.outgoingEdges).to.have.length(1);
+            
+            var thirdNode = secondNode.outgoingEdges[0].target;
+            expect(thirdNode.outgoingEdges).to.have.length(0);
+        });
     });
 });
