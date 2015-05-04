@@ -8,7 +8,7 @@ describe("Styx", function() {
         return cfg;
     }
 
-    describe("#parse()", function() {
+    describe("#parseVariableDeclaration()", function() {
         it("should return two nodes for a simple variable declaration", function() {
             var cfg = controlFlowGraphFor("var foo = 42;");
             
