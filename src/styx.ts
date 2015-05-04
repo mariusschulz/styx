@@ -35,6 +35,9 @@ module Styx {
         } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
             let declaration = <ESTree.VariableDeclaration>statement;
             currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode);
+        } else if (statement.type === ESTree.NodeType.IfStatement) {
+            let ifStatement = <ESTree.IfStatement>statement;
+            currentFlowNode = parseIfStatement(ifStatement, currentFlowNode);
         } else {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
@@ -48,6 +51,20 @@ module Styx {
         }
 
         return currentFlowNode;
+    }
+    
+    function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+        var ifNode = appendNewNodeTo(currentFlowNode);
+        var elseNode = appendNewNodeTo(currentFlowNode);
+        
+        let finalNode = new FlowNode();
+        let ifEdge = new FlowEdge(finalNode);
+        let elseEdge = new FlowEdge(finalNode);
+        
+        ifNode.addOutgoingEdge(ifEdge);
+        elseNode.addOutgoingEdge(elseEdge);
+        
+        return finalNode;
     }
 
     function appendNewNodeTo(node: FlowNode): FlowNode {

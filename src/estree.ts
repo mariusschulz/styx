@@ -1,6 +1,7 @@
 module ESTree {
     export class NodeType {
         static EmptyStatement = "EmptyStatement";
+        static IfStatement = "IfStatement";
         static Program = "Program";
         static VariableDeclaration = "VariableDeclaration";
     }
@@ -36,6 +37,12 @@ module ESTree {
 
     export interface Statement extends Node {
 
+    }
+    
+    export interface IfStatement extends Statement {
+        test: Expression;
+        consequent: Statement;
+        alternate?: Statement;
     }
     
     
