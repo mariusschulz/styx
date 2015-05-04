@@ -17,9 +17,14 @@ module Styx {
 
     function parseProgram(program: ESTree.Program): ControlFlowGraph {
         var cfg = new ControlFlowGraph();
-        let currentFlowNode = cfg.entry;
+        
+        parseStatements(program.body, cfg.entry);
 
-        for (let statement of program.body) {
+        return cfg;
+    }
+    
+    function parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode) {
+        for (let statement of statements) {
             if (statement.type === ESTree.NodeType.EmptyStatement) {
                 let flowNode = new FlowNode();
                 let edge = new FlowEdge(flowNode);
@@ -32,8 +37,6 @@ module Styx {
                 throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
         }
-
-        return cfg;
     }
     
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
