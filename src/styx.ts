@@ -52,33 +52,39 @@ module Styx {
 
         return currentFlowNode;
     }
-    
+
     function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
-        if (ifStatement.alternate === null) {
-            let ifNode = createNodeAndAppendTo(currentFlowNode);
-            let finalNode = createNodeAndAppendTo(ifNode);
-            
-            let edgeToFinalNode = new FlowEdge(finalNode);
-            currentFlowNode.addOutgoingEdge(edgeToFinalNode);
-            
-            return finalNode;
-        } else {
-            let ifNode = createNodeAndAppendTo(currentFlowNode);
-            let elseNode = createNodeAndAppendTo(currentFlowNode);
-            
-            return createNodeAndAppendTo(ifNode, elseNode);
-        }
+        return ifStatement.alternate === null
+            ? parseSimpleIfStatement(ifStatement, currentFlowNode)
+            : parseIfElseStatement(ifStatement, currentFlowNode);
+    }
+
+    function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+        let ifNode = createNodeAndAppendTo(currentFlowNode);
+        let finalNode = createNodeAndAppendTo(ifNode);
+
+        let edgeToFinalNode = new FlowEdge(finalNode);
+        currentFlowNode.addOutgoingEdge(edgeToFinalNode);
+
+        return finalNode;
+    }
+
+    function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+        let ifNode = createNodeAndAppendTo(currentFlowNode);
+        let elseNode = createNodeAndAppendTo(currentFlowNode);
+
+        return createNodeAndAppendTo(ifNode, elseNode);
     }
 
     function createNodeAndAppendTo(node: FlowNode, ...otherNodes: FlowNode[]): FlowNode {
         let newNode = new FlowNode();
         let nodes = [node, ...otherNodes];
-        
+
         for (let node of nodes) {
             let edge = new FlowEdge(newNode);
             node.addOutgoingEdge(edge);
         }
-        
+
         return newNode;
     }
 }
