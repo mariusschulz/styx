@@ -1,5 +1,6 @@
 /// <reference path="../estree.ts"/>
 /// <reference path="../types.ts"/>
+/// <reference path="../util/idGenerator.ts"/>
 
 module Styx.ControlFlowGraphBuilder {
     interface ConstructionContext {
@@ -7,13 +8,9 @@ module Styx.ControlFlowGraphBuilder {
     }
     
     export function constructGraphFor(program: ESTree.Program): ControlFlowGraph {
-        let makeNewId = (function() {
-            let id = 0;
-            return () => ++id;
-        }());
-        
+        let idGenerator = Util.createIdGenerator();
         let constructionContext = {
-            createNode: () => new FlowNode(makeNewId())
+            createNode: () => new FlowNode(idGenerator.makeNew())
         };
         
         return parseProgram(program, constructionContext);
