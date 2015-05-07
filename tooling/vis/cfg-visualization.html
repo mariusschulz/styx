@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>CFG Visualization</title>
+        <link rel="stylesheet" type="text/css" href="../../vendor/stylesheets/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css">                      
+    </head>    
+    <body>
+        <div class="container">
+            <h1>Control Flow Graph Visualization</h1>
+            <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="6"></textarea>
+            <div id="graph"></div>
+        </div>
+
+        <script type="text/javascript" src="../../vendor/jquery.min.js"></script>
+        <script type="text/javascript" src="../../vendor/lodash.js"></script>
+        <script type="text/javascript" src="../../vendor/esprima.js"></script>
+        <script type="text/javascript" src="../../vendor/vis.js"></script>
+        <script type="text/javascript" src="../../dist/styx.js"></script>
+        <script type="text/javascript" src="cfg-visualization.js"></script>
+
+        <script type="text/javascript">
+            (function() {
+                var container = document.getElementById("graph");
+                var graph = window.cfgVisualization.initNetworkGraph(container);
+                
+                var $input = $("#input");
+                var debouncedUpdate = _.debounce(function() {
+                    var code = $input.val();
+                    graph.visualizeCode(code);
+                }, 200);
+                
+                $input.on("keyup", debouncedUpdate);
+            }());            
+        </script>
+    </body>
+</html>
