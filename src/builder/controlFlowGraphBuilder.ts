@@ -80,6 +80,9 @@ module Styx.ControlFlowGraphBuilder {
         let ifNode = context.createNode().appendTo(currentFlowNode);
         let elseNode = context.createNode().appendTo(currentFlowNode);
         
-        return context.createNode().appendTo(ifNode, elseNode);
+        let endOfIfBranch = parseStatement(ifStatement.consequent, ifNode, context);
+        let endOfElseBranch = parseStatement(ifStatement.alternate, elseNode, context);
+        
+        return context.createNode().appendTo(endOfIfBranch, endOfElseBranch);
     }
 }
