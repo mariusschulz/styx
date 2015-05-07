@@ -33,7 +33,7 @@
 
         function visualizeCode(code) {
             if (!code) {
-                network.setData({});
+                network.setData({ nodes: [{ id: 1 }] });
             } else {
                 var cfg;
 
