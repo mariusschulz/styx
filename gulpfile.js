@@ -8,6 +8,6 @@ gulp.task("typescript", function() {
         .pipe(shell(["node ../TypeScript/built/local/tsc src/styx.ts --out dist/styx.js"]));
 });
 
-gulp.task("default", function() {
+gulp.task("default", ["typescript"], function() {
     return gulp.watch(scriptGlobs, ["typescript"]); 
 });
