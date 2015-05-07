@@ -66,6 +66,7 @@
             var visEdge = {
                 from: node.id,
                 to: outgoingEdge.target.id,
+                label: outgoingEdge.label,
                 style: "arrow"
             };
             

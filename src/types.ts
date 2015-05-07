@@ -20,19 +20,21 @@ module Styx {
             this.outgoingEdges.push(edge);
         }
 
-        appendTo(node: FlowNode): FlowNode {
-            let edge = new FlowEdge(this);
+        appendTo(node: FlowNode, label?: string): FlowNode {
+            let edge = new FlowEdge(this, label);
             node.addOutgoingEdge(edge);
-    
+
             return this;
         }
     }
 
     export class FlowEdge {
         target: FlowNode;
+        label: string;
 
-        constructor(target: FlowNode) {
+        constructor(target: FlowNode, label?: string) {
             this.target = target;
+            this.label = label || "";
         }
     }
 }
