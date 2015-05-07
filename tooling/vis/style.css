@@ -1,0 +1,16 @@
+body {
+    background: whitesmoke;
+}
+
+#graph {
+    height: 700px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+}
+
+.code-input {
+    margin-bottom: 20px;
+    font-family: Consolas, Menlo, Monaco, monospace;
+    font-size: 16px;
+}
