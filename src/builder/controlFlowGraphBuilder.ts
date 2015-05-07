@@ -68,12 +68,11 @@ module Styx.ControlFlowGraphBuilder {
 
     function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         let ifNode = context.createNode().appendTo(currentFlowNode);
-        let finalNode = context.createNode().appendTo(ifNode);
-
-        let edgeToFinalNode = new FlowEdge(finalNode);
-        currentFlowNode.addOutgoingEdge(edgeToFinalNode);
-
-        return finalNode;
+        let endOfIfBranch = parseStatement(ifStatement.consequent, ifNode, context);
+        
+        return context.createNode()
+            .appendTo(currentFlowNode)
+            .appendTo(endOfIfBranch);
     }
 
     function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
