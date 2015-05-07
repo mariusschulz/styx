@@ -20,13 +20,9 @@ module Styx {
             this.outgoingEdges.push(edge);
         }
 
-        appendTo(node: FlowNode, ...otherNodes: FlowNode[]): FlowNode {
-            let nodes = [node, ...otherNodes];
-    
-            for (let node of nodes) {
-                let edge = new FlowEdge(this);
-                node.addOutgoingEdge(edge);
-            }
+        appendTo(node: FlowNode): FlowNode {
+            let edge = new FlowEdge(this);
+            node.addOutgoingEdge(edge);
     
             return this;
         }
