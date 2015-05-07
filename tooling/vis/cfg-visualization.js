@@ -35,14 +35,7 @@
             if (!code) {
                 network.setData({ nodes: [{ id: 1 }] });
             } else {
-                var cfg;
-
-                try {
-                    cfg = Styx.parse(esprima.parse(code));
-                } catch (e) {
-                    cfg = Styx.parse(esprima.parse(""));
-                }
-
+                var cfg = Styx.parse(esprima.parse(code));
                 var graphData = generateNodesAndEdges(cfg);
                 network.setData(graphData);
             }
