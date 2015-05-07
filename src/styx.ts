@@ -9,13 +9,13 @@ module Styx {
             throw Error("Invalid node: 'type' property required");
         }
 
-        if (node.type === ESTree.NodeType.Program) {
-            var program = <ESTree.Program>node;
-            var controlFlowGraph = ControlFlowGraphBuilder.constructGraphFor(program);
-                        
-            return controlFlowGraph;
+        if (node.type !== ESTree.NodeType.Program) {
+            throw Error(`The node type '${node.type}' is not supported`);
         }
 
-        throw Error(`The node type '${node.type}' is not supported`);
+        var program = <ESTree.Program>node;
+        var controlFlowGraph = ControlFlowGraphBuilder.constructGraphFor(program);
+                    
+        return controlFlowGraph;
     }
 }
