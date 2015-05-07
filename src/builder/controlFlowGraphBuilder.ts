@@ -25,15 +25,20 @@ module Styx.ControlFlowGraphBuilder {
         return flowGraph;
     }
 
-    function parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode, context: ConstructionContext) {
+    function parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         for (let statement of statements) {
             currentFlowNode = parseStatement(statement, currentFlowNode, context);
         }
+        
+        return currentFlowNode;
     }
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
             currentFlowNode = context.createNode().appendTo(currentFlowNode);
+        } else if (statement.type === ESTree.NodeType.BlockStatement) {
+            let blockStatement = <ESTree.BlockStatement>statement;
+            currentFlowNode = parseStatements(blockStatement.body, currentFlowNode, context);
         } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
             let declaration = <ESTree.VariableDeclaration>statement;
             currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode, context);

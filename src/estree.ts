@@ -1,5 +1,6 @@
 module ESTree {
     export class NodeType {
+        static BlockStatement = "BlockStatement";
         static EmptyStatement = "EmptyStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
@@ -37,6 +38,10 @@ module ESTree {
 
     export interface Statement extends Node {
 
+    }
+    
+    export interface BlockStatement extends Statement {
+        body: Statement[];
     }
     
     export interface IfStatement extends Statement {
