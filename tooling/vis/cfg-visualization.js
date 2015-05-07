@@ -50,17 +50,42 @@
     }
 
     function generateNodesAndEdges(cfg) {
+        var nodeSet = { };
+        collectNodes(cfg.entry, nodeSet);
+
         var nodes = [];
         var edges = [];
-
-        nodes.push({ id: 1, name: "A" });
-        nodes.push({ id: 2, name: "B" });
-
-        edges.push({ from: 1, to: 2, style: "arrow" });
+        
+        _.each(nodeSet, function(node) {
+            addNodeAndEdges(node, nodes, edges);
+        });
 
         return {
             nodes: nodes,
             edges: edges
         };
+    }
+    
+    function addNodeAndEdges(node, nodes, edges) {
+        nodes.push(node);
+        
+        _.each(node.outgoingEdges, function(outgoingEdge) {
+            var visEdge = {
+                from: node.id,
+                to: outgoingEdge.target.id,
+                style: "arrow"
+            };
+            
+            edges.push(visEdge);
+        }); 
+    }
+    
+    function collectNodes(node, nodeSet) {
+        nodeSet[node.id] = node;
+        
+        for (var i = 0; i < node.outgoingEdges.length; i++) {
+            var targetNode = node.outgoingEdges[i].target;
+            collectNodes(targetNode, nodeSet);
+        }
     }
 }());
