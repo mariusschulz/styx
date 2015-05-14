@@ -5,6 +5,7 @@ module ESTree {
         static IfStatement = "IfStatement";
         static Program = "Program";
         static VariableDeclaration = "VariableDeclaration";
+        static WhileStatement = "WhileStatement";
     }
     
     

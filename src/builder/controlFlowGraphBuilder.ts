@@ -45,6 +45,9 @@ module Styx.ControlFlowGraphBuilder {
         } else if (statement.type === ESTree.NodeType.IfStatement) {
             let ifStatement = <ESTree.IfStatement>statement;
             currentFlowNode = parseIfStatement(ifStatement, currentFlowNode, context);
+        } else if (statement.type === ESTree.NodeType.WhileStatement) {
+            let whileStatement = <ESTree.WhileStatement>statement;
+            currentFlowNode = parseWhileStatement(whileStatement, currentFlowNode, context);
         } else {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
@@ -87,5 +90,14 @@ module Styx.ControlFlowGraphBuilder {
         return context.createNode()
             .appendTo(endOfIfBranch)
             .appendTo(endOfElseBranch);
+    }
+    
+    function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        let loopBodyNode = context.createNode().appendTo(currentFlowNode, "Pos");
+        currentFlowNode.appendTo(loopBodyNode);
+        
+        let finalNode = context.createNode().appendTo(currentFlowNode, "Neg");
+        
+        return finalNode;
     }
 }
