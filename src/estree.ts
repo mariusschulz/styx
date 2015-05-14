@@ -1,6 +1,7 @@
 module ESTree {
     export class NodeType {
         static BlockStatement = "BlockStatement";
+        static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";

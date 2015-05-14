@@ -48,6 +48,9 @@ module Styx.ControlFlowGraphBuilder {
         } else if (statement.type === ESTree.NodeType.WhileStatement) {
             let whileStatement = <ESTree.WhileStatement>statement;
             currentFlowNode = parseWhileStatement(whileStatement, currentFlowNode, context);
+        } else if (statement.type === ESTree.NodeType.DoWhileStatement) {
+            let doWhileStatement = <ESTree.DoWhileStatement>statement;
+            currentFlowNode = parseDoWhileStatement(doWhileStatement, currentFlowNode, context);
         } else {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
@@ -99,6 +102,15 @@ module Styx.ControlFlowGraphBuilder {
         currentFlowNode.appendTo(endOfLoopBodyNode);
         
         let finalNode = context.createNode().appendTo(currentFlowNode, "Neg");
+        
+        return finalNode;
+    }
+    
+    function parseDoWhileStatement(whileStatement: ESTree.DoWhileStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        let endOfLoopBodyNode = parseStatement(whileStatement.body, currentFlowNode, context);
+        currentFlowNode.appendTo(endOfLoopBodyNode, "Pos");
+        
+        let finalNode = context.createNode().appendTo(endOfLoopBodyNode, "Neg");
         
         return finalNode;
     }
