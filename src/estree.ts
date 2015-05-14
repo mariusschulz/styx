@@ -3,6 +3,7 @@ module ESTree {
         static BlockStatement = "BlockStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
+        static ForStatement = "ForStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
         static VariableDeclaration = "VariableDeclaration";
