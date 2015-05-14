@@ -25,15 +25,17 @@
                 
                 var $input = $("#input");
                 
-                $input.val(sessionStorage.getItem("code"));
-                
-                var debouncedUpdate = _.debounce(function() {
+                var update = function() {
                     var code = $input.val();
                     sessionStorage.setItem("code", code);
                     graph.visualizeCode(code);
-                }, 200);
+                };
+                var debouncedUpdate = _.debounce(update, 200);
                 
                 $input.on("keyup", debouncedUpdate);
+                
+                $input.val(sessionStorage.getItem("code"));
+                update();
             }());            
         </script>
     </body>
