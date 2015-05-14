@@ -50,6 +50,11 @@ module ESTree {
         alternate?: Statement;
     }
     
+    export interface WhileStatement extends Statement {
+        test: Expression;
+        body: Statement;
+    }
+    
     
     // Declarations
     
