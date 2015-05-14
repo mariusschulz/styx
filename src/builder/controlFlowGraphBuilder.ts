@@ -94,7 +94,9 @@ module Styx.ControlFlowGraphBuilder {
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         let loopBodyNode = context.createNode().appendTo(currentFlowNode, "Pos");
-        currentFlowNode.appendTo(loopBodyNode);
+        
+        let endOfLoopBodyNode = parseStatement(whileStatement.body, loopBodyNode, context);
+        currentFlowNode.appendTo(endOfLoopBodyNode);
         
         let finalNode = context.createNode().appendTo(currentFlowNode, "Neg");
         
