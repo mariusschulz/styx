@@ -1,6 +1,7 @@
 module ESTree {
     export class NodeType {
         static BlockStatement = "BlockStatement";
+        static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
@@ -54,6 +55,11 @@ module ESTree {
     export interface WhileStatement extends Statement {
         test: Expression;
         body: Statement;
+    }
+    
+    export interface DoWhileStatement extends Statement {
+        body: Statement;
+        test: Expression;
     }
     
     
