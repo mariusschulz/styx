@@ -62,6 +62,13 @@ module ESTree {
         test: Expression;
     }
     
+    export interface ForStatement extends Statement {
+        init?: VariableDeclaration | Expression;
+        test?: Expression;
+        update?: Expression;
+        body: Statement;
+    }
+    
     
     // Declarations
     
