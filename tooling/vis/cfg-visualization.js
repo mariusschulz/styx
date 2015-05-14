@@ -75,6 +75,10 @@
     }
     
     function collectNodes(node, nodeSet) {
+        if (nodeSet[node.id]) {
+            return;
+        }
+        
         nodeSet[node.id] = node;
         
         for (var i = 0; i < node.outgoingEdges.length; i++) {

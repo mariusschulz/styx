@@ -5,6 +5,7 @@ module ESTree {
         static IfStatement = "IfStatement";
         static Program = "Program";
         static VariableDeclaration = "VariableDeclaration";
+        static WhileStatement = "WhileStatement";
     }
     
     
@@ -48,6 +49,11 @@ module ESTree {
         test: Expression;
         consequent: Statement;
         alternate?: Statement;
+    }
+    
+    export interface WhileStatement extends Statement {
+        test: Expression;
+        body: Statement;
     }
     
     
