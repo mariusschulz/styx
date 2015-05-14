@@ -56,6 +56,11 @@ module ESTree {
         body: Statement;
     }
     
+    export interface DoWhileStatement extends Statement {
+        body: Statement;
+        test: Expression;
+    }
+    
     
     // Declarations
     
