@@ -24,8 +24,12 @@
                 var graph = window.cfgVisualization.initNetworkGraph(container);
                 
                 var $input = $("#input");
+                
+                $input.val(sessionStorage.getItem("code"));
+                
                 var debouncedUpdate = _.debounce(function() {
                     var code = $input.val();
+                    sessionStorage.setItem("code", code);
                     graph.visualizeCode(code);
                 }, 200);
                 
