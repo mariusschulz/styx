@@ -10,7 +10,7 @@
     function initNetworkGraph(container) {
         var options = {
             stabilize: false,
-            smoothCurves: false,
+            smoothCurves: true,
             hierarchicalLayout: {
                 nodeSpacing: 50,
                 direction: "UD",
