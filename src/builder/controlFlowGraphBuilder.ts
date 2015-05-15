@@ -27,86 +27,86 @@ module Styx {
             return flowGraph;
         }
     
-        parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode): FlowNode {
+        parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {
             for (let statement of statements) {
-                currentFlowNode = this.parseStatement(statement, currentFlowNode);
+                currentNode = this.parseStatement(statement, currentNode);
             }
             
-            return currentFlowNode;
+            return currentNode;
         }
     
-        parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
+        parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
             if (statement.type === ESTree.NodeType.EmptyStatement) {
                 return this.createNode()
-                    .appendTo(currentFlowNode, "(empty)");
+                    .appendTo(currentNode, "(empty)");
             }
             
             if (statement.type === ESTree.NodeType.BlockStatement) {
                 let blockStatement = <ESTree.BlockStatement>statement;
-                return this.parseStatements(blockStatement.body, currentFlowNode);
+                return this.parseStatements(blockStatement.body, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.VariableDeclaration) {
                 let declaration = <ESTree.VariableDeclaration>statement;
-                return this.parseVariableDeclaration(declaration, currentFlowNode);
+                return this.parseVariableDeclaration(declaration, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.IfStatement) {
                 let ifStatement = <ESTree.IfStatement>statement;
-                return this.parseIfStatement(ifStatement, currentFlowNode);
+                return this.parseIfStatement(ifStatement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.WhileStatement) {
                 let whileStatement = <ESTree.WhileStatement>statement;
-                return this.parseWhileStatement(whileStatement, currentFlowNode);
+                return this.parseWhileStatement(whileStatement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.DoWhileStatement) {
                 let doWhileStatement = <ESTree.DoWhileStatement>statement;
-                return this.parseDoWhileStatement(doWhileStatement, currentFlowNode);
+                return this.parseDoWhileStatement(doWhileStatement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.ForStatement) {
                 let forStatement = <ESTree.ForStatement>statement;
-                return this.parseForStatement(forStatement, currentFlowNode);
+                return this.parseForStatement(forStatement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
                 let expressionStatement = <ESTree.ExpressionStatement>statement;
-                return this.parseExpression(expressionStatement.expression, currentFlowNode);
+                return this.parseExpression(expressionStatement.expression, currentNode);
             }
             
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
     
-        parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
+        parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
             for (let declarator of declaration.declarations) {
-                currentFlowNode = this.createNode().appendTo(currentFlowNode);
+                currentNode = this.createNode().appendTo(currentNode);
             }
     
-            return currentFlowNode;
+            return currentNode;
         }
     
-        parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+        parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             return ifStatement.alternate === null
-                ? this.parseSimpleIfStatement(ifStatement, currentFlowNode)
-                : this.parseIfElseStatement(ifStatement, currentFlowNode);
+                ? this.parseSimpleIfStatement(ifStatement, currentNode)
+                : this.parseIfElseStatement(ifStatement, currentNode);
         }
     
-        parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
-            let ifNode = this.createNode().appendTo(currentFlowNode);
+        parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
+            let ifNode = this.createNode().appendTo(currentNode);
             let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
             
             return this.createNode()
-                .appendTo(currentFlowNode)
+                .appendTo(currentNode)
                 .appendTo(endOfIfBranch);
         }
     
-        parseIfElseStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+        parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             let condition = ifStatement.test.type;
             
-            let ifNode = this.createNode().appendTo(currentFlowNode, `Pos(${condition})`);
-            let elseNode = this.createNode().appendTo(currentFlowNode, `Neg(${condition})`);
+            let ifNode = this.createNode().appendTo(currentNode, `Pos(${condition})`);
+            let elseNode = this.createNode().appendTo(currentNode, `Neg(${condition})`);
             
             let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
@@ -116,25 +116,25 @@ module Styx {
                 .appendTo(endOfElseBranch);
         }
         
-        parseWhileStatement(whileStatement: ESTree.WhileStatement, currentFlowNode: FlowNode): FlowNode {
-            let loopBodyNode = this.createNode().appendTo(currentFlowNode, "Pos");        
+        parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
+            let loopBodyNode = this.createNode().appendTo(currentNode, "Pos");        
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
-            currentFlowNode.appendTo(endOfLoopBodyNode);
+            currentNode.appendTo(endOfLoopBodyNode);
             
             return this.createNode()
-                .appendTo(currentFlowNode, "Neg");
+                .appendTo(currentNode, "Neg");
         }
         
-        parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentFlowNode: FlowNode): FlowNode {
-            let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentFlowNode);
-            currentFlowNode.appendTo(endOfLoopBodyNode, "Pos");
+        parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
+            let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
+            currentNode.appendTo(endOfLoopBodyNode, "Pos");
             
             return this.createNode()
                 .appendTo(endOfLoopBodyNode, "Neg");
         }
         
-        parseForStatement(forStatement: ESTree.ForStatement, currentFlowNode: FlowNode): FlowNode {
-            let preLoopNode = this.parseStatement(forStatement.init, currentFlowNode);
+        parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+            let preLoopNode = this.parseStatement(forStatement.init, currentNode);
             
             let loopBodyNode = this.createNode().appendTo(preLoopNode, "Pos");
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
@@ -145,30 +145,30 @@ module Styx {
             return this.createNode().appendTo(preLoopNode, "Neg");
         }
         
-        parseExpression(expression: ESTree.Expression, currentFlowNode: FlowNode): FlowNode {
+        parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
             if (expression.type === ESTree.NodeType.UpdateExpression) {
                 let updateExpression = <ESTree.UpdateExpression>expression;
-                return this.parseUpdateExpression(updateExpression, currentFlowNode);
+                return this.parseUpdateExpression(updateExpression, currentNode);
             }
             
             if (expression.type === ESTree.NodeType.SequenceExpression) {
                 let sequenceExpression = <ESTree.SequenceExpression>expression;
-                return this.parseSequenceExpression(sequenceExpression, currentFlowNode);
+                return this.parseSequenceExpression(sequenceExpression, currentNode);
             }
             
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
         }
         
-        parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode): FlowNode {
-            return this.createNode().appendTo(currentFlowNode, expression.operator);
+        parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
+            return this.createNode().appendTo(currentNode, expression.operator);
         }
         
-        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode): FlowNode {
+        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
             for (let expression of sequenceExpression.expressions) {
-                currentFlowNode = this.parseExpression(expression, currentFlowNode);
+                currentNode = this.parseExpression(expression, currentNode);
             }
             
-            return currentFlowNode;
+            return currentNode;
         }
         
         private createNode(): FlowNode {
