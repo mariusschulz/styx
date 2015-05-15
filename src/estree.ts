@@ -5,7 +5,9 @@ module ESTree {
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
+        static Identifier = "Identifier";
         static IfStatement = "IfStatement";
+        static Literal = "Literal";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
         static UpdateExpression = "UpdateExpression";
@@ -89,7 +91,7 @@ module ESTree {
     }
     
     export interface VariableDeclarator extends Node {
-        id: Pattern;
+        id: Identifier;
         init?: Expression;
     }
     
@@ -111,20 +113,13 @@ module ESTree {
     }
     
     
-    // Patterns
-    
-    interface Pattern extends Node {
-        
-    }
-    
-    
     // Miscellaneous
     
-    interface Identifier extends Node, Expression, Pattern {
+    export interface Identifier extends Node, Expression {
         name: string;
     }
     
-    interface Literal extends Node, Expression {
-        value?: string | boolean | number | RegExp
+    export interface Literal extends Node, Expression {
+        value?: string | boolean | number | RegExp;
     }
 }

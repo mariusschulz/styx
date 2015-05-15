@@ -1,6 +1,7 @@
 /// <reference path="../estree.ts"/>
 /// <reference path="../types.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
+/// <reference path="expressionStringifier.ts"/>
 
 module Styx {
     interface ConstructionContext {
@@ -81,7 +82,9 @@ module Styx {
     
         parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
             for (let declarator of declaration.declarations) {
-                currentNode = this.createNode().appendTo(currentNode);
+                let initString = ExpressionStringifier.stringify(declarator.init);
+                let edgeLabel = `${declarator.id.name} = ${initString}`;
+                currentNode = this.createNode().appendTo(currentNode, edgeLabel);
             }
     
             return currentNode;
