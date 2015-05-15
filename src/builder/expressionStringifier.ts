@@ -54,15 +54,22 @@ module Styx.ExpressionStringifier {
         let leftString = stringify(expression.left);
         let rightString = stringify(expression.right);
         
-        if (expression.left.type === ESTree.NodeType.LogicalExpression) {
+        if (needsParenthesizing(expression.left)) {
             leftString = parenthesize(leftString);
         }
         
-        if (expression.right.type === ESTree.NodeType.LogicalExpression) {
+        if (needsParenthesizing(expression.right)) {
             rightString = parenthesize(rightString);
         }
         
         return `${leftString} ${expression.operator} ${rightString}`;
+    }
+    
+    function needsParenthesizing(expression: ESTree.Expression): boolean {
+        return [
+            ESTree.NodeType.BinaryExpression,
+            ESTree.NodeType.LogicalExpression
+        ].indexOf(expression.type) > -1;
     }
     
     function parenthesize(value: string): string {
