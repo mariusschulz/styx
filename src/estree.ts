@@ -3,8 +3,11 @@ module ESTree {
         static BlockStatement = "BlockStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
+        static ForStatement = "ForStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
+        static SequenceExpression = "SequenceExpression";
+        static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
     }
@@ -62,6 +65,13 @@ module ESTree {
         test: Expression;
     }
     
+    export interface ForStatement extends Statement {
+        init?: VariableDeclaration | Expression;
+        test?: Expression;
+        update?: Expression;
+        body: Statement;
+    }
+    
     
     // Declarations
     
@@ -81,8 +91,18 @@ module ESTree {
     
     // Expressions 
     
-    interface Expression extends Node {
+    export interface Expression extends Node {
         
+    }
+    
+    export interface SequenceExpression extends Expression {
+        expressions: Expression[];
+    }
+    
+    export interface UpdateExpression extends Expression {
+        operator: string;
+        argument: Expression;
+        prefix: boolean;
     }
     
     

@@ -35,7 +35,7 @@ module Styx.ControlFlowGraphBuilder {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            currentFlowNode = context.createNode().appendTo(currentFlowNode);
+            currentFlowNode = context.createNode().appendTo(currentFlowNode, "(empty)");
         } else if (statement.type === ESTree.NodeType.BlockStatement) {
             let blockStatement = <ESTree.BlockStatement>statement;
             currentFlowNode = parseStatements(blockStatement.body, currentFlowNode, context);
@@ -51,6 +51,9 @@ module Styx.ControlFlowGraphBuilder {
         } else if (statement.type === ESTree.NodeType.DoWhileStatement) {
             let doWhileStatement = <ESTree.DoWhileStatement>statement;
             currentFlowNode = parseDoWhileStatement(doWhileStatement, currentFlowNode, context);
+        } else if (statement.type === ESTree.NodeType.ForStatement) {
+            let forStatement = <ESTree.ForStatement>statement;
+            currentFlowNode = parseForStatement(forStatement, currentFlowNode, context);
         } else {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
@@ -113,5 +116,43 @@ module Styx.ControlFlowGraphBuilder {
         let finalNode = context.createNode().appendTo(endOfLoopBodyNode, "Neg");
         
         return finalNode;
+    }
+    
+    function parseForStatement(forStatement: ESTree.ForStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        let preLoopNode = parseStatement(forStatement.init, currentFlowNode, context);
+        
+        let loopBodyNode = context.createNode().appendTo(preLoopNode, "Pos");
+        let endOfLoopBodyNode = parseStatement(forStatement.body, loopBodyNode, context);
+        
+        let updateExpression = parseExpression(forStatement.update, endOfLoopBodyNode, context);
+        preLoopNode.appendTo(updateExpression);
+        
+        return context.createNode().appendTo(preLoopNode, "Neg");
+    }
+    
+    function parseExpression(expression: ESTree.Expression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        if (expression.type === ESTree.NodeType.UpdateExpression) {
+            let updateExpression = <ESTree.UpdateExpression>expression;
+            return parseUpdateExpression(updateExpression, currentFlowNode, context);
+        }
+        
+        if (expression.type === ESTree.NodeType.SequenceExpression) {
+            let sequenceExpression = <ESTree.SequenceExpression>expression;
+            return parseSequenceExpression(sequenceExpression, currentFlowNode, context);
+        }
+        
+        throw Error(`Encountered unsupported expression type '${expression.type}'`);
+    }
+    
+    function parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        return context.createNode().appendTo(currentFlowNode, expression.operator);
+    }
+    
+    function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        for (let expression of sequenceExpression.expressions) {
+            currentFlowNode = parseExpression(expression, currentFlowNode, context);
+        }
+        
+        return currentFlowNode;
     }
 }
