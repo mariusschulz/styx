@@ -145,7 +145,7 @@ module Styx.ControlFlowGraphBuilder {
     }
     
     function parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        return context.createNode().appendTo(currentFlowNode, "update");
+        return context.createNode().appendTo(currentFlowNode, expression.operator);
     }
     
     function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
