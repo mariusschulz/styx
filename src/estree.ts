@@ -6,6 +6,7 @@ module ESTree {
         static ForStatement = "ForStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
+        static SequenceExpression = "SequenceExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
@@ -92,6 +93,10 @@ module ESTree {
     
     export interface Expression extends Node {
         
+    }
+    
+    export interface SequenceExpression extends Expression {
+        expressions: Expression[];
     }
     
     export interface UpdateExpression extends Expression {

@@ -136,10 +136,23 @@ module Styx.ControlFlowGraphBuilder {
             return parseUpdateExpression(updateExpression, currentFlowNode, context);
         }
         
+        if (expression.type === ESTree.NodeType.SequenceExpression) {
+            let sequenceExpression = <ESTree.SequenceExpression>expression;
+            return parseSequenceExpression(sequenceExpression, currentFlowNode, context);
+        }
+        
         throw Error(`Encountered unsupported expression type '${expression.type}'`);
     }
     
     function parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         return context.createNode().appendTo(currentFlowNode, "update");
+    }
+    
+    function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        for (let expression of sequenceExpression.expressions) {
+            currentFlowNode = parseExpression(expression, currentFlowNode, context);
+        }
+        
+        return currentFlowNode;
     }
 }
