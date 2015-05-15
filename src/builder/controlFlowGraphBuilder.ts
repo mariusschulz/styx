@@ -35,30 +35,41 @@ module Styx.ControlFlowGraphBuilder {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            currentFlowNode = context.createNode().appendTo(currentFlowNode, "(empty)");
-        } else if (statement.type === ESTree.NodeType.BlockStatement) {
-            let blockStatement = <ESTree.BlockStatement>statement;
-            currentFlowNode = parseStatements(blockStatement.body, currentFlowNode, context);
-        } else if (statement.type === ESTree.NodeType.VariableDeclaration) {
-            let declaration = <ESTree.VariableDeclaration>statement;
-            currentFlowNode = parseVariableDeclaration(declaration, currentFlowNode, context);
-        } else if (statement.type === ESTree.NodeType.IfStatement) {
-            let ifStatement = <ESTree.IfStatement>statement;
-            currentFlowNode = parseIfStatement(ifStatement, currentFlowNode, context);
-        } else if (statement.type === ESTree.NodeType.WhileStatement) {
-            let whileStatement = <ESTree.WhileStatement>statement;
-            currentFlowNode = parseWhileStatement(whileStatement, currentFlowNode, context);
-        } else if (statement.type === ESTree.NodeType.DoWhileStatement) {
-            let doWhileStatement = <ESTree.DoWhileStatement>statement;
-            currentFlowNode = parseDoWhileStatement(doWhileStatement, currentFlowNode, context);
-        } else if (statement.type === ESTree.NodeType.ForStatement) {
-            let forStatement = <ESTree.ForStatement>statement;
-            currentFlowNode = parseForStatement(forStatement, currentFlowNode, context);
-        } else {
-            throw Error(`Encountered unsupported statement type '${statement.type}'`);
+            return context.createNode()
+                .appendTo(currentFlowNode, "(empty)");
         }
-
-        return currentFlowNode;
+        
+        if (statement.type === ESTree.NodeType.BlockStatement) {
+            let blockStatement = <ESTree.BlockStatement>statement;
+            return parseStatements(blockStatement.body, currentFlowNode, context);
+        }
+        
+        if (statement.type === ESTree.NodeType.VariableDeclaration) {
+            let declaration = <ESTree.VariableDeclaration>statement;
+            return parseVariableDeclaration(declaration, currentFlowNode, context);
+        }
+        
+        if (statement.type === ESTree.NodeType.IfStatement) {
+            let ifStatement = <ESTree.IfStatement>statement;
+            return parseIfStatement(ifStatement, currentFlowNode, context);
+        }
+        
+        if (statement.type === ESTree.NodeType.WhileStatement) {
+            let whileStatement = <ESTree.WhileStatement>statement;
+            return parseWhileStatement(whileStatement, currentFlowNode, context);
+        }
+        
+        if (statement.type === ESTree.NodeType.DoWhileStatement) {
+            let doWhileStatement = <ESTree.DoWhileStatement>statement;
+            return parseDoWhileStatement(doWhileStatement, currentFlowNode, context);
+        }
+        
+        if (statement.type === ESTree.NodeType.ForStatement) {
+            let forStatement = <ESTree.ForStatement>statement;
+            return parseForStatement(forStatement, currentFlowNode, context);
+        }
+        
+        throw Error(`Encountered unsupported statement type '${statement.type}'`);
     }
 
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
