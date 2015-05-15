@@ -2,170 +2,177 @@
 /// <reference path="../types.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
 
-module Styx.ControlFlowGraphBuilder {
+module Styx {
     interface ConstructionContext {
         createNode: () => FlowNode;
     }
     
-    export function constructGraphFor(program: ESTree.Program): ControlFlowGraph {
-        let idGenerator = Util.createIdGenerator();
-        let constructionContext = {
-            createNode: () => new FlowNode(idGenerator.makeNew())
-        };
+    export class ControlFlowGraphBuilder {
+        public controlFlowGraph: ControlFlowGraph;
         
-        return parseProgram(program, constructionContext);
-    }
-
-    function parseProgram(program: ESTree.Program, context: ConstructionContext): ControlFlowGraph {
-        let entryNode = context.createNode();
-        let flowGraph = new ControlFlowGraph(entryNode);
-
-        parseStatements(program.body, flowGraph.entry, context);
-
-        return flowGraph;
-    }
-
-    function parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        for (let statement of statements) {
-            currentFlowNode = parseStatement(statement, currentFlowNode, context);
+        private idGenerator: Util.IdGenerator;
+        
+        constructor(private program: ESTree.Program) {
+            this.idGenerator = Util.createIdGenerator();
+            
+            this.controlFlowGraph = this.parseProgram(program);
         }
-        
-        return currentFlowNode;
-    }
-
-    function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        if (statement.type === ESTree.NodeType.EmptyStatement) {
-            return context.createNode()
-                .appendTo(currentFlowNode, "(empty)");
-        }
-        
-        if (statement.type === ESTree.NodeType.BlockStatement) {
-            let blockStatement = <ESTree.BlockStatement>statement;
-            return parseStatements(blockStatement.body, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.VariableDeclaration) {
-            let declaration = <ESTree.VariableDeclaration>statement;
-            return parseVariableDeclaration(declaration, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.IfStatement) {
-            let ifStatement = <ESTree.IfStatement>statement;
-            return parseIfStatement(ifStatement, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.WhileStatement) {
-            let whileStatement = <ESTree.WhileStatement>statement;
-            return parseWhileStatement(whileStatement, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.DoWhileStatement) {
-            let doWhileStatement = <ESTree.DoWhileStatement>statement;
-            return parseDoWhileStatement(doWhileStatement, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.ForStatement) {
-            let forStatement = <ESTree.ForStatement>statement;
-            return parseForStatement(forStatement, currentFlowNode, context);
-        }
-        
-        if (statement.type === ESTree.NodeType.ExpressionStatement) {
-            let expressionStatement = <ESTree.ExpressionStatement>statement;
-            return parseExpression(expressionStatement.expression, currentFlowNode, context);
-        }
-        
-        throw Error(`Encountered unsupported statement type '${statement.type}'`);
-    }
-
-    function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        for (let declarator of declaration.declarations) {
-            currentFlowNode = context.createNode().appendTo(currentFlowNode);
-        }
-
-        return currentFlowNode;
-    }
-
-    function parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        return ifStatement.alternate === null
-            ? parseSimpleIfStatement(ifStatement, currentFlowNode, context)
-            : parseIfElseStatement(ifStatement, currentFlowNode, context);
-    }
-
-    function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        let ifNode = context.createNode().appendTo(currentFlowNode);
-        let endOfIfBranch = parseStatement(ifStatement.consequent, ifNode, context);
-        
-        return context.createNode()
-            .appendTo(currentFlowNode)
-            .appendTo(endOfIfBranch);
-    }
-
-    function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        let condition = ifStatement.test.type;
-        
-        let ifNode = context.createNode().appendTo(currentFlowNode, `Pos(${condition})`);
-        let elseNode = context.createNode().appendTo(currentFlowNode, `Neg(${condition})`);
-        
-        let endOfIfBranch = parseStatement(ifStatement.consequent, ifNode, context);
-        let endOfElseBranch = parseStatement(ifStatement.alternate, elseNode, context);
-        
-        return context.createNode()
-            .appendTo(endOfIfBranch)
-            .appendTo(endOfElseBranch);
-    }
     
-    function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        let loopBodyNode = context.createNode().appendTo(currentFlowNode, "Pos");        
-        let endOfLoopBodyNode = parseStatement(whileStatement.body, loopBodyNode, context);
-        currentFlowNode.appendTo(endOfLoopBodyNode);
-        
-        return context.createNode()
-            .appendTo(currentFlowNode, "Neg");
-    }
+        parseProgram(program: ESTree.Program): ControlFlowGraph {
+            let entryNode = this.createNode();
+            let flowGraph = new ControlFlowGraph(entryNode);
     
-    function parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        let endOfLoopBodyNode = parseStatement(doWhileStatement.body, currentFlowNode, context);
-        currentFlowNode.appendTo(endOfLoopBodyNode, "Pos");
-        
-        return context.createNode()
-            .appendTo(endOfLoopBodyNode, "Neg");
-    }
+            this.parseStatements(program.body, flowGraph.entry);
     
-    function parseForStatement(forStatement: ESTree.ForStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        let preLoopNode = parseStatement(forStatement.init, currentFlowNode, context);
-        
-        let loopBodyNode = context.createNode().appendTo(preLoopNode, "Pos");
-        let endOfLoopBodyNode = parseStatement(forStatement.body, loopBodyNode, context);
-        
-        let updateExpression = parseExpression(forStatement.update, endOfLoopBodyNode, context);
-        preLoopNode.appendTo(updateExpression);
-        
-        return context.createNode().appendTo(preLoopNode, "Neg");
-    }
+            return flowGraph;
+        }
     
-    function parseExpression(expression: ESTree.Expression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        if (expression.type === ESTree.NodeType.UpdateExpression) {
-            let updateExpression = <ESTree.UpdateExpression>expression;
-            return parseUpdateExpression(updateExpression, currentFlowNode, context);
+        parseStatements(statements: ESTree.Statement[], currentFlowNode: FlowNode): FlowNode {
+            for (let statement of statements) {
+                currentFlowNode = this.parseStatement(statement, currentFlowNode);
+            }
+            
+            return currentFlowNode;
+        }
+    
+        parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode): FlowNode {
+            if (statement.type === ESTree.NodeType.EmptyStatement) {
+                return this.createNode()
+                    .appendTo(currentFlowNode, "(empty)");
+            }
+            
+            if (statement.type === ESTree.NodeType.BlockStatement) {
+                let blockStatement = <ESTree.BlockStatement>statement;
+                return this.parseStatements(blockStatement.body, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.VariableDeclaration) {
+                let declaration = <ESTree.VariableDeclaration>statement;
+                return this.parseVariableDeclaration(declaration, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.IfStatement) {
+                let ifStatement = <ESTree.IfStatement>statement;
+                return this.parseIfStatement(ifStatement, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.WhileStatement) {
+                let whileStatement = <ESTree.WhileStatement>statement;
+                return this.parseWhileStatement(whileStatement, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.DoWhileStatement) {
+                let doWhileStatement = <ESTree.DoWhileStatement>statement;
+                return this.parseDoWhileStatement(doWhileStatement, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.ForStatement) {
+                let forStatement = <ESTree.ForStatement>statement;
+                return this.parseForStatement(forStatement, currentFlowNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.ExpressionStatement) {
+                let expressionStatement = <ESTree.ExpressionStatement>statement;
+                return this.parseExpression(expressionStatement.expression, currentFlowNode);
+            }
+            
+            throw Error(`Encountered unsupported statement type '${statement.type}'`);
+        }
+    
+        parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentFlowNode: FlowNode): FlowNode {
+            for (let declarator of declaration.declarations) {
+                currentFlowNode = this.createNode().appendTo(currentFlowNode);
+            }
+    
+            return currentFlowNode;
+        }
+    
+        parseIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+            return ifStatement.alternate === null
+                ? this.parseSimpleIfStatement(ifStatement, currentFlowNode)
+                : this.parseIfElseStatement(ifStatement, currentFlowNode);
+        }
+    
+        parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+            let ifNode = this.createNode().appendTo(currentFlowNode);
+            let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
+            
+            return this.createNode()
+                .appendTo(currentFlowNode)
+                .appendTo(endOfIfBranch);
+        }
+    
+        parseIfElseStatement(ifStatement: ESTree.IfStatement, currentFlowNode: FlowNode): FlowNode {
+            let condition = ifStatement.test.type;
+            
+            let ifNode = this.createNode().appendTo(currentFlowNode, `Pos(${condition})`);
+            let elseNode = this.createNode().appendTo(currentFlowNode, `Neg(${condition})`);
+            
+            let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
+            let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
+            
+            return this.createNode()
+                .appendTo(endOfIfBranch)
+                .appendTo(endOfElseBranch);
         }
         
-        if (expression.type === ESTree.NodeType.SequenceExpression) {
-            let sequenceExpression = <ESTree.SequenceExpression>expression;
-            return parseSequenceExpression(sequenceExpression, currentFlowNode, context);
+        parseWhileStatement(whileStatement: ESTree.WhileStatement, currentFlowNode: FlowNode): FlowNode {
+            let loopBodyNode = this.createNode().appendTo(currentFlowNode, "Pos");        
+            let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
+            currentFlowNode.appendTo(endOfLoopBodyNode);
+            
+            return this.createNode()
+                .appendTo(currentFlowNode, "Neg");
         }
         
-        throw Error(`Encountered unsupported expression type '${expression.type}'`);
-    }
-    
-    function parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        return context.createNode().appendTo(currentFlowNode, expression.operator);
-    }
-    
-    function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        for (let expression of sequenceExpression.expressions) {
-            currentFlowNode = parseExpression(expression, currentFlowNode, context);
+        parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentFlowNode: FlowNode): FlowNode {
+            let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentFlowNode);
+            currentFlowNode.appendTo(endOfLoopBodyNode, "Pos");
+            
+            return this.createNode()
+                .appendTo(endOfLoopBodyNode, "Neg");
         }
         
-        return currentFlowNode;
+        parseForStatement(forStatement: ESTree.ForStatement, currentFlowNode: FlowNode): FlowNode {
+            let preLoopNode = this.parseStatement(forStatement.init, currentFlowNode);
+            
+            let loopBodyNode = this.createNode().appendTo(preLoopNode, "Pos");
+            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
+            
+            let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
+            preLoopNode.appendTo(updateExpression);
+            
+            return this.createNode().appendTo(preLoopNode, "Neg");
+        }
+        
+        parseExpression(expression: ESTree.Expression, currentFlowNode: FlowNode): FlowNode {
+            if (expression.type === ESTree.NodeType.UpdateExpression) {
+                let updateExpression = <ESTree.UpdateExpression>expression;
+                return this.parseUpdateExpression(updateExpression, currentFlowNode);
+            }
+            
+            if (expression.type === ESTree.NodeType.SequenceExpression) {
+                let sequenceExpression = <ESTree.SequenceExpression>expression;
+                return this.parseSequenceExpression(sequenceExpression, currentFlowNode);
+            }
+            
+            throw Error(`Encountered unsupported expression type '${expression.type}'`);
+        }
+        
+        parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode): FlowNode {
+            return this.createNode().appendTo(currentFlowNode, expression.operator);
+        }
+        
+        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentFlowNode: FlowNode): FlowNode {
+            for (let expression of sequenceExpression.expressions) {
+                currentFlowNode = this.parseExpression(expression, currentFlowNode);
+            }
+            
+            return currentFlowNode;
+        }
+        
+        private createNode(): FlowNode {
+            return new FlowNode(this.idGenerator.makeNew());
+        }
     }
 }
