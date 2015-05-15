@@ -3,6 +3,7 @@ module ESTree {
         static BlockStatement = "BlockStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
+        static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
@@ -47,6 +48,10 @@ module ESTree {
     
     export interface BlockStatement extends Statement {
         body: Statement[];
+    }
+    
+    export interface ExpressionStatement extends Statement {
+        expression: Expression;
     }
     
     export interface IfStatement extends Statement {

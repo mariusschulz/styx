@@ -69,6 +69,11 @@ module Styx.ControlFlowGraphBuilder {
             return parseForStatement(forStatement, currentFlowNode, context);
         }
         
+        if (statement.type === ESTree.NodeType.ExpressionStatement) {
+            let expressionStatement = <ESTree.ExpressionStatement>statement;
+            return parseExpression(expressionStatement.expression, currentFlowNode, context);
+        }
+        
         throw Error(`Encountered unsupported statement type '${statement.type}'`);
     }
 
