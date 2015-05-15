@@ -14,8 +14,8 @@ module Styx {
         }
 
         var program = <ESTree.Program>node;
-        var controlFlowGraph = ControlFlowGraphBuilder.constructGraphFor(program);
+        var graphBuilder = new ControlFlowGraphBuilder(program);
                     
-        return controlFlowGraph;
+        return graphBuilder.controlFlowGraph;
     }
 }
