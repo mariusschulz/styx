@@ -119,6 +119,27 @@ module Styx.ControlFlowGraphBuilder {
     }
     
     function parseForStatement(forStatement: ESTree.ForStatement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
-        return currentFlowNode;
+        let preLoopNode = parseStatement(forStatement.init, currentFlowNode, context);
+        
+        let loopBodyNode = context.createNode().appendTo(preLoopNode, "Pos");
+        let endOfLoopBodyNode = parseStatement(forStatement.body, loopBodyNode, context);
+        
+        let updateExpression = parseExpression(forStatement.update, endOfLoopBodyNode, context);
+        preLoopNode.appendTo(updateExpression);
+        
+        return context.createNode().appendTo(preLoopNode, "Neg");
+    }
+    
+    function parseExpression(expression: ESTree.Expression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        if (expression.type === ESTree.NodeType.UpdateExpression) {
+            let updateExpression = <ESTree.UpdateExpression>expression;
+            return parseUpdateExpression(updateExpression, currentFlowNode, context);
+        }
+        
+        throw Error(`Encountered unsupported expression type '${expression.type}'`);
+    }
+    
+    function parseUpdateExpression(expression: ESTree.UpdateExpression, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
+        return context.createNode().appendTo(currentFlowNode, "update");
     }
 }

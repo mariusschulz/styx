@@ -6,6 +6,7 @@ module ESTree {
         static ForStatement = "ForStatement";
         static IfStatement = "IfStatement";
         static Program = "Program";
+        static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
     }
@@ -89,8 +90,14 @@ module ESTree {
     
     // Expressions 
     
-    interface Expression extends Node {
+    export interface Expression extends Node {
         
+    }
+    
+    export interface UpdateExpression extends Expression {
+        operator: string;
+        argument: Expression;
+        prefix: boolean;
     }
     
     
