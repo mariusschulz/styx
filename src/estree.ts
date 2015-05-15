@@ -8,6 +8,7 @@ module ESTree {
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
         static Literal = "Literal";
+        static LogicalExpression = "LogicalExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
         static UpdateExpression = "UpdateExpression";
@@ -110,6 +111,12 @@ module ESTree {
         operator: string;
         argument: Expression;
         prefix: boolean;
+    }
+    
+    export interface LogicalExpression extends Expression {
+        operator: string;
+        left: Expression;
+        right: Expression;
     }
     
     

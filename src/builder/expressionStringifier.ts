@@ -13,6 +13,10 @@ module Styx.ExpressionStringifier {
             return stringifyUpdateExpression(<ESTree.UpdateExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.LogicalExpression) {
+            return stringifyLogicalExpression(<ESTree.LogicalExpression>expression);
+        }
+        
         return "<UNEXPECTED>";
     }
     
@@ -30,5 +34,24 @@ module Styx.ExpressionStringifier {
         return expression.prefix
             ? expression.operator + stringify(expression.argument)
             : stringify(expression.argument) + expression.operator;
+    }
+    
+    function stringifyLogicalExpression(expression: ESTree.LogicalExpression): string {
+        let leftString = stringify(expression.left);
+        let rightString = stringify(expression.right);
+        
+        if (expression.left.type === ESTree.NodeType.LogicalExpression) {
+            leftString = parenthesize(leftString);
+        }
+        
+        if (expression.right.type === ESTree.NodeType.LogicalExpression) {
+            rightString = parenthesize(rightString);
+        }
+        
+        return `${leftString} ${expression.operator} ${rightString}`;
+    }
+    
+    function parenthesize(value: string): string {
+        return `(${value})`;
     }
 }
