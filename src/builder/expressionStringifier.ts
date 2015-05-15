@@ -17,6 +17,10 @@ module Styx.ExpressionStringifier {
             return stringifyUnaryExpression(<ESTree.UnaryExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.BinaryExpression) {
+            return stringifyBinaryExpression(<ESTree.BinaryExpression>expression);
+        }
+        
         if (expression.type === ESTree.NodeType.LogicalExpression) {
             return stringifyLogicalExpression(<ESTree.LogicalExpression>expression);
         }
@@ -38,6 +42,21 @@ module Styx.ExpressionStringifier {
         return expression.prefix
             ? expression.operator + stringify(expression.argument)
             : stringify(expression.argument) + expression.operator;
+    }
+    
+    function stringifyBinaryExpression(expression: ESTree.BinaryExpression): string {
+        let leftString = stringify(expression.left);
+        let rightString = stringify(expression.right);
+        
+        if (needsParenthesizing(expression.left)) {
+            leftString = parenthesize(leftString);
+        }
+        
+        if (needsParenthesizing(expression.right)) {
+            rightString = parenthesize(rightString);
+        }
+        
+        return `${leftString} ${expression.operator} ${rightString}`;
     }
     
     function stringifyUnaryExpression(expression: ESTree.UnaryExpression): string {
