@@ -13,6 +13,10 @@ module Styx.ExpressionStringifier {
             return stringifyUpdateExpression(<ESTree.UpdateExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.UnaryExpression) {
+            return stringifyUnaryExpression(<ESTree.UnaryExpression>expression);
+        }
+        
         if (expression.type === ESTree.NodeType.LogicalExpression) {
             return stringifyLogicalExpression(<ESTree.LogicalExpression>expression);
         }
@@ -34,6 +38,16 @@ module Styx.ExpressionStringifier {
         return expression.prefix
             ? expression.operator + stringify(expression.argument)
             : stringify(expression.argument) + expression.operator;
+    }
+    
+    function stringifyUnaryExpression(expression: ESTree.UnaryExpression): string {
+        let operator = expression.operator;
+        let argument = stringify(expression.argument);
+        let joiner = operator.length > 1 ? " " : "";
+        
+        return expression.prefix
+            ? operator + joiner + argument
+            : argument + joiner + operator;
     }
     
     function stringifyLogicalExpression(expression: ESTree.LogicalExpression): string {

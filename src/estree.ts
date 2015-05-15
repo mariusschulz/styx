@@ -11,6 +11,7 @@ module ESTree {
         static LogicalExpression = "LogicalExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
+        static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
@@ -105,6 +106,12 @@ module ESTree {
     
     export interface SequenceExpression extends Expression {
         expressions: Expression[];
+    }
+    
+    export interface UnaryExpression extends Expression {
+        operator: string;
+        prefix: boolean;
+        argument: Expression;
     }
     
     export interface UpdateExpression extends Expression {
