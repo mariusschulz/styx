@@ -35,7 +35,7 @@ module Styx.ControlFlowGraphBuilder {
 
     function parseStatement(statement: ESTree.Statement, currentFlowNode: FlowNode, context: ConstructionContext): FlowNode {
         if (statement.type === ESTree.NodeType.EmptyStatement) {
-            currentFlowNode = context.createNode().appendTo(currentFlowNode);
+            currentFlowNode = context.createNode().appendTo(currentFlowNode, "(empty)");
         } else if (statement.type === ESTree.NodeType.BlockStatement) {
             let blockStatement = <ESTree.BlockStatement>statement;
             currentFlowNode = parseStatements(blockStatement.body, currentFlowNode, context);
