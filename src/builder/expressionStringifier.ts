@@ -29,6 +29,10 @@ module Styx.ExpressionStringifier {
             return stringifyAssignmentExpression(<ESTree.AssignmentExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.MemberExpression) {
+            return stringifyMemberExpression(<ESTree.MemberExpression>expression);
+        }
+        
         return "<UNEXPECTED>";
     }
     
@@ -93,6 +97,15 @@ module Styx.ExpressionStringifier {
         let rightString = stringify(expression.right);
         
         return `${leftString} ${expression.operator} ${rightString}`;
+    }
+    
+    function stringifyMemberExpression(expression: ESTree.MemberExpression): string {
+        let objectString = stringify(expression.object);
+        let propertyString = stringify(expression.property);
+        
+        return expression.computed
+            ? `${objectString}[${propertyString}]`
+            : `${objectString}.${propertyString}`;
     }
     
     function needsParenthesizing(expression: ESTree.Expression): boolean {

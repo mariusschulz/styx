@@ -11,6 +11,7 @@ module ESTree {
         static IfStatement = "IfStatement";
         static Literal = "Literal";
         static LogicalExpression = "LogicalExpression";
+        static MemberExpression = "MemberExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
         static UnaryExpression = "UnaryExpression";
@@ -138,6 +139,12 @@ module ESTree {
         operator: string;
         left: Expression;
         right: Expression;
+    }
+    
+    export interface MemberExpression extends Expression, Identifier {
+        object: Expression;
+        property: Expression;
+        computed: boolean;
     }
     
     
