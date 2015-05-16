@@ -1,5 +1,6 @@
 module ESTree {
     export class NodeType {
+        static AssignmentExpression = "AssignmentExpression";
         static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
         static DoWhileStatement = "DoWhileStatement";
@@ -118,6 +119,12 @@ module ESTree {
     export interface BinaryExpression extends Expression {
         operator: string;
         left: Expression;
+        right: Expression;
+    }
+    
+    export interface AssignmentExpression extends Expression {
+        operator: string;
+        left: Identifier | Expression;
         right: Expression;
     }
     

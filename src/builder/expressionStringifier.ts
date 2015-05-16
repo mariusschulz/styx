@@ -25,6 +25,10 @@ module Styx.ExpressionStringifier {
             return stringifyLogicalExpression(<ESTree.LogicalExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.AssignmentExpression) {
+            return stringifyAssignmentExpression(<ESTree.AssignmentExpression>expression);
+        }
+        
         return "<UNEXPECTED>";
     }
     
@@ -80,6 +84,13 @@ module Styx.ExpressionStringifier {
         if (needsParenthesizing(expression.right)) {
             rightString = parenthesize(rightString);
         }
+        
+        return `${leftString} ${expression.operator} ${rightString}`;
+    }
+    
+    function stringifyAssignmentExpression(expression: ESTree.AssignmentExpression): string {
+        let leftString = stringify(expression.left);
+        let rightString = stringify(expression.right);
         
         return `${leftString} ${expression.operator} ${rightString}`;
     }
