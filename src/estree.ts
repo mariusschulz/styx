@@ -1,13 +1,20 @@
 module ESTree {
     export class NodeType {
+        static AssignmentExpression = "AssignmentExpression";
+        static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
+        static Identifier = "Identifier";
         static IfStatement = "IfStatement";
+        static Literal = "Literal";
+        static LogicalExpression = "LogicalExpression";
+        static MemberExpression = "MemberExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
+        static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
@@ -89,7 +96,7 @@ module ESTree {
     }
     
     export interface VariableDeclarator extends Node {
-        id: Pattern;
+        id: Identifier;
         init?: Expression;
     }
     
@@ -104,27 +111,50 @@ module ESTree {
         expressions: Expression[];
     }
     
+    export interface UnaryExpression extends Expression {
+        operator: string;
+        prefix: boolean;
+        argument: Expression;
+    }
+    
+    export interface BinaryExpression extends Expression {
+        operator: string;
+        left: Expression;
+        right: Expression;
+    }
+    
+    export interface AssignmentExpression extends Expression {
+        operator: string;
+        left: Identifier | Expression;
+        right: Expression;
+    }
+    
     export interface UpdateExpression extends Expression {
         operator: string;
         argument: Expression;
         prefix: boolean;
     }
     
+    export interface LogicalExpression extends Expression {
+        operator: string;
+        left: Expression;
+        right: Expression;
+    }
     
-    // Patterns
-    
-    interface Pattern extends Node {
-        
+    export interface MemberExpression extends Expression, Identifier {
+        object: Expression;
+        property: Expression;
+        computed: boolean;
     }
     
     
     // Miscellaneous
     
-    interface Identifier extends Node, Expression, Pattern {
+    export interface Identifier extends Node, Expression {
         name: string;
     }
     
-    interface Literal extends Node, Expression {
-        value?: string | boolean | number | RegExp
+    export interface Literal extends Node, Expression {
+        value?: string | boolean | number | RegExp;
     }
 }
