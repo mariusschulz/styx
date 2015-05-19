@@ -7,6 +7,7 @@ module ESTree {
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
+        static FunctionDeclaration = "FunctionDeclaration";
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
         static Literal = "Literal";
@@ -44,6 +45,15 @@ module ESTree {
 
     export interface Program extends Node {
         body: Statement[];
+    }
+    
+    
+    // Functions
+    
+    export interface Function extends Node {
+        id?: Identifier;
+        params: Identifier[];
+        body: BlockStatement;
     }
 
 
@@ -89,6 +99,10 @@ module ESTree {
     
     export interface Declaration extends Statement {
         
+    }
+    
+    export interface FunctionDeclaration extends Function, Declaration {
+        id: Identifier;
     }
     
     export interface VariableDeclaration extends Declaration {
