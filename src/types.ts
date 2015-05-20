@@ -1,9 +1,15 @@
 module Styx {
     export class ControlFlowGraph {
         entry: FlowNode;
+        functionDeclarations: FlowNode[];
 
         constructor(entry: FlowNode) {
             this.entry = entry;
+            this.functionDeclarations = [];
+        }
+        
+        addFunction(functionDeclaration: FlowNode) {
+            this.functionDeclarations.push(functionDeclaration);
         }
     }
 

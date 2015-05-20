@@ -16,16 +16,13 @@ module Styx {
         constructor(private program: ESTree.Program) {
             this.idGenerator = Util.createIdGenerator();
             
-            this.controlFlowGraph = this.parseProgram(program);
+            let entryNode = this.createNode();
+            this.controlFlowGraph = new ControlFlowGraph(entryNode);
+            this.parseProgram(program, this.controlFlowGraph.entry);
         }
     
-        parseProgram(program: ESTree.Program): ControlFlowGraph {
-            let entryNode = this.createNode();
-            let flowGraph = new ControlFlowGraph(entryNode);
-    
-            this.parseStatements(program.body, flowGraph.entry);
-    
-            return flowGraph;
+        parseProgram(program: ESTree.Program, currentNode: FlowNode): FlowNode {
+            return this.parseStatements(program.body, currentNode);
         }
     
         parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {
@@ -75,6 +72,15 @@ module Styx {
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
                 let expressionStatement = <ESTree.ExpressionStatement>statement;
                 return this.parseExpression(expressionStatement.expression, currentNode);
+            }
+            
+            if (statement.type === ESTree.NodeType.FunctionDeclaration) {
+                let functionDeclaration = <ESTree.FunctionDeclaration>statement;
+                let functionNode = this.parseFunctionDeclaration(functionDeclaration, this.createNode());
+                
+                this.controlFlowGraph.addFunction(functionNode);
+                
+                return currentNode;
             }
             
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
@@ -170,6 +176,12 @@ module Styx {
             for (let expression of sequenceExpression.expressions) {
                 currentNode = this.parseExpression(expression, currentNode);
             }
+            
+            return currentNode;
+        }
+        
+        parseFunctionDeclaration(functionDeclaration: ESTree.FunctionDeclaration, currentNode: FlowNode): FlowNode {
+          //  this.createNode().appendTo(currentNode);
             
             return currentNode;
         }
