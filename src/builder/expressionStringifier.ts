@@ -1,6 +1,10 @@
 /// <reference path="../estree.ts" />
 module Styx.ExpressionStringifier {
     export function stringify(expression: ESTree.Expression): string {
+        if (expression.type === ESTree.NodeType.ArrayExpression) {
+            return stringifyArrayExpression(<ESTree.ArrayExpression>expression);
+        }
+        
         if (expression.type === ESTree.NodeType.Literal) {
             return stringifyLiteral(<ESTree.Literal>expression);
         }
@@ -38,6 +42,33 @@ module Styx.ExpressionStringifier {
         }
         
         return "<UNEXPECTED>";
+    }
+    
+    function stringifyArrayExpression(expression: ESTree.ArrayExpression): string {
+        let arrayLiteral = "";        
+        let isFirst = true;
+        let previousElementWasNull = false;
+        
+        for (let element of expression.elements) {
+            if (element === null) {
+                if (!isFirst && !previousElementWasNull) {
+                    arrayLiteral += ",";
+                }
+                
+                arrayLiteral += ",";
+                previousElementWasNull = true;
+            } else {
+                let leadingComma = isFirst || previousElementWasNull ? "" : ",";
+                let elementString = ExpressionStringifier.stringify(element);
+                
+                arrayLiteral += leadingComma + elementString;
+                previousElementWasNull = false;
+            }
+            
+            isFirst = false;
+        }
+        
+        return `[${arrayLiteral}]`;
     }
     
     function stringifyLiteral(literal: ESTree.Literal): string {

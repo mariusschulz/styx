@@ -1,5 +1,6 @@
 module ESTree {
     export class NodeType {
+        static ArrayExpression= "ArrayExpression";
         static AssignmentExpression = "AssignmentExpression";
         static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
@@ -106,6 +107,10 @@ module ESTree {
     
     export interface Expression extends Node {
         
+    }
+    
+    export interface ArrayExpression extends Expression {
+        elements: Expression[];
     }
     
     export interface SequenceExpression extends Expression {
