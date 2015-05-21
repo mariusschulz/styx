@@ -72,9 +72,13 @@ module Styx.ExpressionStringifier {
     }
     
     function stringifyLiteral(literal: ESTree.Literal): string {
-        return typeof literal.value === "string"
-            ? `"${literal.value}"`
-            : literal.value.toString();
+        let value = literal.value;
+        
+        return typeof value === "string"
+            ? `"${value}"`
+            : value === null
+                ? "null"
+                : value.toString();
     }
     
     function stringifyIdentifier(identifier: ESTree.Identifier): string {
