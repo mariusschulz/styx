@@ -3,6 +3,7 @@ module ESTree {
         static AssignmentExpression = "AssignmentExpression";
         static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
+        static CallExpression = "CallExpression";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
@@ -139,6 +140,11 @@ module ESTree {
         operator: string;
         left: Expression;
         right: Expression;
+    }
+    
+    export interface CallExpression extends Expression {
+        callee: Expression;
+        arguments: Expression[];
     }
     
     export interface MemberExpression extends Expression, Identifier {

@@ -29,6 +29,10 @@ module Styx.ExpressionStringifier {
             return stringifyAssignmentExpression(<ESTree.AssignmentExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.CallExpression) {
+            return stringifyCallExpression(<ESTree.CallExpression>expression);
+        }
+        
         if (expression.type === ESTree.NodeType.MemberExpression) {
             return stringifyMemberExpression(<ESTree.MemberExpression>expression);
         }
@@ -97,6 +101,15 @@ module Styx.ExpressionStringifier {
         let rightString = stringify(expression.right);
         
         return `${leftString} ${expression.operator} ${rightString}`;
+    }
+    
+    function stringifyCallExpression(expression: ESTree.CallExpression): string {        
+        let calleeString = ExpressionStringifier.stringify(expression.callee);
+        let argsString = expression.arguments
+            .map(arg => ExpressionStringifier.stringify(arg))
+            .join(", ");
+        
+        return `${calleeString}(${argsString})`;
     }
     
     function stringifyMemberExpression(expression: ESTree.MemberExpression): string {
