@@ -98,8 +98,8 @@ module Styx {
         }
     
         parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
-            let ifNode = this.createNode().appendTo(currentNode);
-            let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
+            let thenNode = this.createNode().appendTo(currentNode);
+            let endOfIfBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             return this.createNode()
                 .appendTo(currentNode)
