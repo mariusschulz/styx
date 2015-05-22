@@ -189,7 +189,9 @@ module Styx {
         }
         
         parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
-            return this.createNode().appendTo(currentNode, expression.operator);
+            let stringifiedUpdate = ExpressionStringifier.stringify(expression);
+            
+            return this.createNode().appendTo(currentNode, stringifiedUpdate);
         }
         
         parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
