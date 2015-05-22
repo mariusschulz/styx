@@ -1,6 +1,7 @@
 /// <reference path="../estree.ts"/>
 /// <reference path="../types.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
+/// <reference path="expressionNegator.ts"/>
 /// <reference path="expressionStringifier.ts"/>
 
 module Styx {
@@ -106,16 +107,20 @@ module Styx {
         }
     
         parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
-            let condition = ifStatement.test.type;
+            // Then branch
+            let thenCondition = ifStatement.test;
+            let thenLabel = ExpressionStringifier.stringify(thenCondition);
+            let thenNode = this.createNode().appendTo(currentNode, thenLabel);
+            let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
-            let ifNode = this.createNode().appendTo(currentNode, `Pos(${condition})`);
-            let elseNode = this.createNode().appendTo(currentNode, `Neg(${condition})`);
-            
-            let endOfIfBranch = this.parseStatement(ifStatement.consequent, ifNode);
+            // Else branch
+            let elseCondition = ExpressionNegator.safelyNegate(thenCondition);
+            let elseLabel = ExpressionStringifier.stringify(elseCondition); 
+            let elseNode = this.createNode().appendTo(currentNode, elseLabel);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
             return this.createNode()
-                .appendTo(endOfIfBranch)
+                .appendTo(endOfThenBranch)
                 .appendTo(endOfElseBranch);
         }
         
