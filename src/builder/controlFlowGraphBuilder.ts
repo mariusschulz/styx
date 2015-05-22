@@ -149,6 +149,11 @@ module Styx {
         }
         
         parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
+            if (expression.type === ESTree.NodeType.AssignmentExpression) {
+                let assignmentExpression = <ESTree.AssignmentExpression>expression;
+                return this.parseAssignmentExpression(assignmentExpression, currentNode);
+            }
+            
             if (expression.type === ESTree.NodeType.UpdateExpression) {
                 let updateExpression = <ESTree.UpdateExpression>expression;
                 return this.parseUpdateExpression(updateExpression, currentNode);
@@ -170,6 +175,14 @@ module Styx {
             }
             
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
+        }
+        
+        parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
+            let leftString = ExpressionStringifier.stringify(assignmentExpression.left);
+            let rightString = ExpressionStringifier.stringify(assignmentExpression.right);
+            
+            return this.createNode()
+                .appendTo(currentNode, `${leftString} = ${rightString}`);
         }
         
         parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
