@@ -1,12 +1,18 @@
 /// <reference path="../estree.ts" />
 
 module Styx.ExpressionNegator {
-    export function safelyNegate(expression: ESTree.Expression): ESTree.Expression {
+    export function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
         if (expression.type === ESTree.NodeType.Literal) {
             let literal = <ESTree.Literal>expression;
             
             if (typeof literal.value === "boolean") {
                 return createBooleanLiteral(!literal.value);
+            }
+        } else if (expression.type === ESTree.NodeType.UnaryExpression) {
+            let unaryExpression = <ESTree.UnaryExpression>expression;
+            
+            if (unaryExpression.operator === "!") {
+                return unaryExpression.argument;
             }
         } else if (expression.type === ESTree.NodeType.BinaryExpression) {
             let binaryExpression = <ESTree.BinaryExpression>expression;

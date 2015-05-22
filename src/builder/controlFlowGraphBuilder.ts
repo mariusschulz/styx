@@ -114,7 +114,7 @@ module Styx {
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
-            let elseCondition = ExpressionNegator.safelyNegate(thenCondition);
+            let elseCondition = ExpressionNegator.negateTruthiness(thenCondition);
             let elseLabel = ExpressionStringifier.stringify(elseCondition); 
             let elseNode = this.createNode().appendTo(currentNode, elseLabel);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
