@@ -1,6 +1,8 @@
 /// <reference path="../estree.ts" />
 
 module Styx.ExpressionNegator {
+    const equalityComparisonOperators = ["==", "===", "!=", "!=="];
+    
     export function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
         if (expression.type === ESTree.NodeType.Literal) {
             let literal = <ESTree.Literal>expression;
@@ -17,7 +19,7 @@ module Styx.ExpressionNegator {
         } else if (expression.type === ESTree.NodeType.BinaryExpression) {
             let binaryExpression = <ESTree.BinaryExpression>expression;
             
-            if (["==", "===", "!=", "!=="].indexOf(binaryExpression.operator) > -1) {
+            if (equalityComparisonOperators.indexOf(binaryExpression.operator) > -1) {
                 return invertEqualityComparisonOperator(binaryExpression);
             }
         }
