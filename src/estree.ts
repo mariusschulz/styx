@@ -57,6 +57,10 @@ module ESTree {
 
     }
     
+    export interface EmptyStatement extends Statement {
+        
+    }
+    
     export interface BlockStatement extends Statement {
         body: Statement[];
     }

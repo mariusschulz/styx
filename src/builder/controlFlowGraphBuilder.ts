@@ -35,8 +35,7 @@ module Styx {
     
         parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
             if (statement.type === ESTree.NodeType.EmptyStatement) {
-                return this.createNode()
-                    .appendTo(currentNode, "(empty)");
+                return this.parseEmptyStatement(<ESTree.EmptyStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.BlockStatement) {
@@ -75,6 +74,10 @@ module Styx {
             }
             
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
+        }
+        
+        parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
+            return this.createNode().appendTo(currentNode, "(empty)");
         }
     
         parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
