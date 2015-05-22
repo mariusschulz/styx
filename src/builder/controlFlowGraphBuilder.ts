@@ -63,8 +63,7 @@ module Styx {
             }
             
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
-                let expressionStatement = <ESTree.ExpressionStatement>statement;
-                return this.parseExpression(expressionStatement.expression, currentNode);
+                return this.parseExpressionStatement(<ESTree.ExpressionStatement>statement, currentNode);
             }
             
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
@@ -176,6 +175,10 @@ module Styx {
             preLoopNode.appendTo(updateExpression);
             
             return this.createNode().appendTo(preLoopNode, falsyConditionLabel);
+        }
+        
+        parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
+            return this.parseExpression(expressionStatement.expression, currentNode);
         }
         
         parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
