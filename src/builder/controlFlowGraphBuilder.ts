@@ -142,11 +142,19 @@ module Styx {
         }
         
         parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
+            // Truthy test (enter loop)
+            let truthyCondition = doWhileStatement.test;
+            let truthyConditionLabel = ExpressionStringifier.stringify(truthyCondition);
+            
+            // Falsy test (exit loop)
+            let falsyCondition = ExpressionNegator.negateTruthiness(truthyCondition);            
+            let falsyConditionLabel = ExpressionStringifier.stringify(falsyCondition);
+            
             let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
-            currentNode.appendTo(endOfLoopBodyNode, "Pos");
+            currentNode.appendTo(endOfLoopBodyNode, truthyConditionLabel);
             
             return this.createNode()
-                .appendTo(endOfLoopBodyNode, "Neg");
+                .appendTo(endOfLoopBodyNode, falsyConditionLabel);
         }
         
         parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
