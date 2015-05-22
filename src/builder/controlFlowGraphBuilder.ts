@@ -5,10 +5,6 @@
 /// <reference path="expressionStringifier.ts"/>
 
 module Styx {
-    interface ConstructionContext {
-        createNode: () => FlowNode;
-    }
-    
     export class ControlFlowGraphBuilder {
         public controlFlowGraph: ControlFlowGraph;
         
