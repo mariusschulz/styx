@@ -101,11 +101,11 @@ module Styx {
             let falsyConditionLabel = ExpressionStringifier.stringify(falsyCondition);
             
             let thenNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
-            let endOfIfBranch = this.parseStatement(ifStatement.consequent, thenNode);
+            let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             return this.createNode()
                 .appendTo(currentNode, falsyConditionLabel)
-                .appendTo(endOfIfBranch);
+                .appendTo(endOfThenBranch);
         }
     
         parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
