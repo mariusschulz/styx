@@ -94,11 +94,17 @@ module Styx {
         }
     
         parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
-            let thenNode = this.createNode().appendTo(currentNode);
+            let truthyCondition = ifStatement.test;
+            let truthyConditionLabel = ExpressionStringifier.stringify(truthyCondition);
+            
+            let falsyCondition = ExpressionNegator.negateTruthiness(truthyCondition);
+            let falsyConditionLabel = ExpressionStringifier.stringify(falsyCondition);
+            
+            let thenNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
             let endOfIfBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             return this.createNode()
-                .appendTo(currentNode)
+                .appendTo(currentNode, falsyConditionLabel)
                 .appendTo(endOfIfBranch);
         }
     
