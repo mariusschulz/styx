@@ -43,28 +43,23 @@ module Styx {
             }
             
             if (statement.type === ESTree.NodeType.VariableDeclaration) {
-                let declaration = <ESTree.VariableDeclaration>statement;
-                return this.parseVariableDeclaration(declaration, currentNode);
+                return this.parseVariableDeclaration(<ESTree.VariableDeclaration>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.IfStatement) {
-                let ifStatement = <ESTree.IfStatement>statement;
-                return this.parseIfStatement(ifStatement, currentNode);
+                return this.parseIfStatement(<ESTree.IfStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.WhileStatement) {
-                let whileStatement = <ESTree.WhileStatement>statement;
-                return this.parseWhileStatement(whileStatement, currentNode);
+                return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.DoWhileStatement) {
-                let doWhileStatement = <ESTree.DoWhileStatement>statement;
-                return this.parseDoWhileStatement(doWhileStatement, currentNode);
+                return this.parseDoWhileStatement(<ESTree.DoWhileStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.ForStatement) {
-                let forStatement = <ESTree.ForStatement>statement;
-                return this.parseForStatement(forStatement, currentNode);
+                return this.parseForStatement(<ESTree.ForStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
