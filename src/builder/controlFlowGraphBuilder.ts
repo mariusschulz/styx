@@ -139,13 +139,16 @@ module Styx {
         parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
             let preLoopNode = this.parseStatement(forStatement.init, currentNode);
             
-            let loopBodyNode = this.createNode().appendTo(preLoopNode, "Pos");
+            let conditionTrueLabel = ExpressionStringifier.stringify(forStatement.test);
+            let conditionFalseLabel = `!(${conditionTrueLabel})`;
+            
+            let loopBodyNode = this.createNode().appendTo(preLoopNode, conditionTrueLabel);
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
             
             let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
             preLoopNode.appendTo(updateExpression);
             
-            return this.createNode().appendTo(preLoopNode, "Neg");
+            return this.createNode().appendTo(preLoopNode, conditionFalseLabel);
         }
         
         parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
