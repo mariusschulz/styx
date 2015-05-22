@@ -164,6 +164,11 @@ module Styx {
                 return this.parseCallExpression(callExpression, currentNode);
             }
             
+            if (expression.type === ESTree.NodeType.NewExpression) {
+                let newExpression = <ESTree.NewExpression>expression;
+                return this.parseNewExpression(newExpression, currentNode);
+            }
+            
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
         }
         
@@ -184,6 +189,13 @@ module Styx {
 
             return this.createNode()
                 .appendTo(currentNode, callLabel);
+        }
+        
+        parseNewExpression(newExpression: ESTree.NewExpression, currentNode: FlowNode): FlowNode {
+            let newLabel = ExpressionStringifier.stringify(newExpression);
+            
+            return this.createNode()
+                .appendTo(currentNode, newLabel);
         }
         
         private createNode(): FlowNode {
