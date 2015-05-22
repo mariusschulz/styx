@@ -109,12 +109,16 @@ module Styx.ExpressionStringifier {
     
     function stringifyUnaryExpression(expression: ESTree.UnaryExpression): string {
         let operator = expression.operator;
-        let argument = stringify(expression.argument);
+        let stringifiedArgument = stringify(expression.argument);
         let joiner = operator.length > 1 ? " " : "";
         
+        if (needsParenthesizing(expression.argument)) {
+            stringifiedArgument = parenthesize(stringifiedArgument);
+        }
+        
         return expression.prefix
-            ? operator + joiner + argument
-            : argument + joiner + operator;
+            ? operator + joiner + stringifiedArgument
+            : stringifiedArgument + joiner + operator;
     }
     
     function stringifyLogicalExpression(expression: ESTree.LogicalExpression): string {
