@@ -50,18 +50,15 @@ module Styx.ExpressionStringifier {
         let previousElementWasNull = false;
         
         for (let element of expression.elements) {
+            if (!isFirst && !previousElementWasNull) {
+                arrayLiteral += ",";
+            }
+            
             if (element === null) {
-                if (!isFirst && !previousElementWasNull) {
-                    arrayLiteral += ",";
-                }
-                
                 arrayLiteral += ",";
                 previousElementWasNull = true;
-            } else {
-                let leadingComma = isFirst || previousElementWasNull ? "" : ",";
-                let elementString = ExpressionStringifier.stringify(element);
-                
-                arrayLiteral += leadingComma + elementString;
+            } else {                
+                arrayLiteral += ExpressionStringifier.stringify(element);
                 previousElementWasNull = false;
             }
             
