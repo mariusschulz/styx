@@ -39,8 +39,7 @@ module Styx {
             }
             
             if (statement.type === ESTree.NodeType.BlockStatement) {
-                let blockStatement = <ESTree.BlockStatement>statement;
-                return this.parseStatements(blockStatement.body, currentNode);
+                return this.parseBlockStatement(<ESTree.BlockStatement>statement, currentNode);
             }
             
             if (statement.type === ESTree.NodeType.VariableDeclaration) {
@@ -78,6 +77,10 @@ module Styx {
         
         parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
             return this.createNode().appendTo(currentNode, "(empty)");
+        }
+        
+        parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
+            return this.parseStatements(blockStatement.body, currentNode);
         }
     
         parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
