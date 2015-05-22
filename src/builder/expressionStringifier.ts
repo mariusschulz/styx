@@ -5,6 +5,10 @@ module Styx.ExpressionStringifier {
             return stringifyArrayExpression(<ESTree.ArrayExpression>expression);
         }
         
+        if (expression.type === ESTree.NodeType.ObjectExpression) {
+            return stringifyObjectExpression(<ESTree.ObjectExpression>expression);
+        }
+        
         if (expression.type === ESTree.NodeType.Literal) {
             return stringifyLiteral(<ESTree.Literal>expression);
         }
@@ -70,6 +74,17 @@ module Styx.ExpressionStringifier {
         }
         
         return `[${arrayLiteral}]`;
+    }
+    
+    function stringifyObjectExpression(objectExpression: ESTree.ObjectExpression): string {
+        let properties = objectExpression.properties.map(property => {
+            let key = ExpressionStringifier.stringify(property.key);
+            let value = ExpressionStringifier.stringify(property.value);
+            
+            return `${key}: ${value}`;
+        }).join(", ");
+        
+        return `{ ${properties} }`;
     }
     
     function stringifyLiteral(literal: ESTree.Literal): string {

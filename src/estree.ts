@@ -15,6 +15,7 @@ module ESTree {
         static LogicalExpression = "LogicalExpression";
         static MemberExpression = "MemberExpression";
         static NewExpression = "NewExpression";
+        static ObjectExpression = "ObjectExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
         static UnaryExpression = "UnaryExpression";
@@ -112,6 +113,16 @@ module ESTree {
     
     export interface ArrayExpression extends Expression {
         elements: Expression[];
+    }
+    
+    export interface ObjectExpression extends Expression {
+        properties: Property[];
+    }
+    
+    export interface Property extends Node {
+        key: Literal | Identifier;
+        value: Expression;
+        kind: string;
     }
     
     export interface SequenceExpression extends Expression {
