@@ -187,28 +187,23 @@ module Styx {
         
         parseExpression(expression: ESTree.Expression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             if (expression.type === ESTree.NodeType.AssignmentExpression) {
-                let assignmentExpression = <ESTree.AssignmentExpression>expression;
-                return this.parseAssignmentExpression(assignmentExpression, currentNode);
+                return this.parseAssignmentExpression(<ESTree.AssignmentExpression>expression, currentNode);
             }
             
             if (expression.type === ESTree.NodeType.UpdateExpression) {
-                let updateExpression = <ESTree.UpdateExpression>expression;
-                return this.parseUpdateExpression(updateExpression, currentNode, finalNode);
+                return this.parseUpdateExpression(<ESTree.UpdateExpression>expression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.SequenceExpression) {
-                let sequenceExpression = <ESTree.SequenceExpression>expression;
-                return this.parseSequenceExpression(sequenceExpression, currentNode, finalNode);
+                return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.CallExpression) {
-                let callExpression = <ESTree.CallExpression>expression;
-                return this.parseCallExpression(callExpression, currentNode);
+                return this.parseCallExpression(<ESTree.CallExpression>expression, currentNode);
             }
             
             if (expression.type === ESTree.NodeType.NewExpression) {
-                let newExpression = <ESTree.NewExpression>expression;
-                return this.parseNewExpression(newExpression, currentNode);
+                return this.parseNewExpression(<ESTree.NewExpression>expression, currentNode);
             }
             
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
