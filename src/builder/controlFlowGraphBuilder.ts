@@ -171,17 +171,21 @@ module Styx {
             let loopBodyNode = this.createNode().appendTo(preLoopNode, truthyConditionLabel);
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
             
-            let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-            preLoopNode.appendTo(updateExpression);
+            let targetNodeForUpdateEdge = this.parseExpression(forStatement.update, endOfLoopBodyNode, preLoopNode);
             
-            return this.createNode().appendTo(preLoopNode, falsyConditionLabel);
+            if (targetNodeForUpdateEdge !== preLoopNode) {
+                preLoopNode.appendTo(targetNodeForUpdateEdge);
+            }
+            
+            return this.createNode()
+                .appendTo(preLoopNode, falsyConditionLabel);
         }
         
         parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
             return this.parseExpression(expressionStatement.expression, currentNode);
         }
         
-        parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
+        parseExpression(expression: ESTree.Expression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             if (expression.type === ESTree.NodeType.AssignmentExpression) {
                 let assignmentExpression = <ESTree.AssignmentExpression>expression;
                 return this.parseAssignmentExpression(assignmentExpression, currentNode);
@@ -189,12 +193,12 @@ module Styx {
             
             if (expression.type === ESTree.NodeType.UpdateExpression) {
                 let updateExpression = <ESTree.UpdateExpression>expression;
-                return this.parseUpdateExpression(updateExpression, currentNode);
+                return this.parseUpdateExpression(updateExpression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.SequenceExpression) {
                 let sequenceExpression = <ESTree.SequenceExpression>expression;
-                return this.parseSequenceExpression(sequenceExpression, currentNode);
+                return this.parseSequenceExpression(sequenceExpression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.CallExpression) {
@@ -215,18 +219,28 @@ module Styx {
             let rightString = ExpressionStringifier.stringify(assignmentExpression.right);
             let assignmentLabel = `${leftString} ${assignmentExpression.operator} ${rightString}`;
             
-            return this.createNode().appendTo(currentNode, assignmentLabel);
+            return this.createNode()
+                .appendTo(currentNode, assignmentLabel);
         }
         
-        parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
+        parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             let stringifiedUpdate = ExpressionStringifier.stringify(expression);
+            let targetNodeForUpdateEdge = finalNode || this.createNode();
             
-            return this.createNode().appendTo(currentNode, stringifiedUpdate);
+            return targetNodeForUpdateEdge
+                .appendTo(currentNode, stringifiedUpdate);
         }
         
-        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
-            for (let expression of sequenceExpression.expressions) {
-                currentNode = this.parseExpression(expression, currentNode);
+        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
+            let expressionCount = sequenceExpression.expressions.length;
+            
+            for (let i = 0; i < expressionCount; i++) {
+                let expression = sequenceExpression.expressions[i];
+                
+                // Pass along finalNode to last expression
+                let currentFinalNode = i === expressionCount - 1 ? finalNode : null; 
+                
+                currentNode = this.parseExpression(expression, currentNode, currentFinalNode);
             }
             
             return currentNode;
