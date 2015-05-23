@@ -199,7 +199,7 @@ module Styx {
             }
             
             if (expression.type === ESTree.NodeType.CallExpression) {
-                return this.parseCallExpression(<ESTree.CallExpression>expression, currentNode);
+                return this.parseCallExpression(<ESTree.CallExpression>expression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.NewExpression) {
@@ -220,10 +220,9 @@ module Styx {
         
         parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             let stringifiedUpdate = ExpressionStringifier.stringify(expression);
-            let targetNodeForUpdateEdge = finalNode || this.createNode();
+            finalNode = finalNode || this.createNode();
             
-            return targetNodeForUpdateEdge
-                .appendTo(currentNode, stringifiedUpdate);
+            return finalNode.appendTo(currentNode, stringifiedUpdate);
         }
         
         parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
@@ -241,11 +240,11 @@ module Styx {
             return currentNode;
         }
         
-        parseCallExpression(callExpression: ESTree.CallExpression, currentNode: FlowNode): FlowNode {
+        parseCallExpression(callExpression: ESTree.CallExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             let callLabel = ExpressionStringifier.stringify(callExpression);
+            finalNode = finalNode || this.createNode();
 
-            return this.createNode()
-                .appendTo(currentNode, callLabel);
+            return finalNode.appendTo(currentNode, callLabel);
         }
         
         parseNewExpression(newExpression: ESTree.NewExpression, currentNode: FlowNode): FlowNode {
