@@ -34,6 +34,10 @@ module Styx {
         }
     
         parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
+            if (statement === null) {
+                return currentNode;
+            }
+            
             if (statement.type === ESTree.NodeType.EmptyStatement) {
                 return this.parseEmptyStatement(<ESTree.EmptyStatement>statement, currentNode);
             }
