@@ -178,6 +178,8 @@ module Styx {
             let targetNodeForUpdateEdge = this.parseExpression(forStatement.update, endOfLoopBodyNode, conditionNode);
             
             if (targetNodeForUpdateEdge !== conditionNode) {
+                // Connect the update edge's target node to the loop's condition node
+                // if the target node isn't already the condition node itself
                 conditionNode.appendTo(targetNodeForUpdateEdge);
             }
             
