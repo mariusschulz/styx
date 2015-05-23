@@ -187,7 +187,7 @@ module Styx {
         
         parseExpression(expression: ESTree.Expression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             if (expression.type === ESTree.NodeType.AssignmentExpression) {
-                return this.parseAssignmentExpression(<ESTree.AssignmentExpression>expression, currentNode);
+                return this.parseAssignmentExpression(<ESTree.AssignmentExpression>expression, currentNode, finalNode);
             }
             
             if (expression.type === ESTree.NodeType.UpdateExpression) {
@@ -209,13 +209,14 @@ module Styx {
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
         }
         
-        parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
+        parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
             let leftString = ExpressionStringifier.stringify(assignmentExpression.left);
             let rightString = ExpressionStringifier.stringify(assignmentExpression.right);
             let assignmentLabel = `${leftString} ${assignmentExpression.operator} ${rightString}`;
             
-            return this.createNode()
-                .appendTo(currentNode, assignmentLabel);
+            finalNode = finalNode || this.createNode();
+            
+            return finalNode.appendTo(currentNode, assignmentLabel);
         }
         
         parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode, finalNode?: FlowNode): FlowNode {
