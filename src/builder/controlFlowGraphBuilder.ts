@@ -32,6 +32,10 @@ module Styx {
         parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {
             for (let statement of statements) {
                 currentNode = this.parseStatement(statement, currentNode);
+                
+                if (statement.type === ESTree.NodeType.BreakStatement) {
+                    return currentNode;
+                }
             }
             
             return currentNode;
