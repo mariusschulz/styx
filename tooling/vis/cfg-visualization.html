@@ -14,21 +14,20 @@
         <script type="text/javascript" src="../../vendor/jquery.min.js"></script>
         <script type="text/javascript" src="../../vendor/lodash.js"></script>
         <script type="text/javascript" src="../../vendor/esprima.js"></script>
-        <script type="text/javascript" src="../../vendor/vis.js"></script>
+        <script type="text/javascript" src="../../vendor/vis.min.js"></script>
         <script type="text/javascript" src="../../dist/styx.js"></script>
         <script type="text/javascript" src="cfg-visualization.js"></script>
 
         <script type="text/javascript">
             (function() {
                 var container = document.getElementById("graph");
-                var graph = window.cfgVisualization.initNetworkGraph(container);
-                
                 var $input = $("#input");
                 
                 var update = function() {
                     var code = $input.val();
                     sessionStorage.setItem("code", code);
-                    graph.visualizeCode(code);
+                    
+                    window.cfgVisualization.renderControlFlowGraph(container, code);
                 };
                 var debouncedUpdate = _.debounce(update, 200);
                 
