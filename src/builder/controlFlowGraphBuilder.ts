@@ -164,6 +164,12 @@ module Styx {
         }
         
         parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+            return forStatement.test === null
+                ? this.parseForStatementWithoutTest(forStatement, currentNode)
+                : this.parseForStatementWithTest(forStatement, currentNode);
+        }
+        
+        parseForStatementWithTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
             let conditionNode = this.parseStatement(forStatement.init, currentNode);
             
             let truthyCondition = forStatement.test;
@@ -175,10 +181,28 @@ module Styx {
             let loopBodyNode = this.createNode().appendTo(conditionNode, truthyConditionLabel);
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
             
-            let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-            conditionNode.appendTo(updateExpression);
+            if (forStatement.update === null) {
+                conditionNode.appendTo(endOfLoopBodyNode);
+            } else {
+                let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
+                conditionNode.appendTo(updateExpression);
+            }
             
             return this.createNode().appendTo(conditionNode, falsyConditionLabel);
+        }
+        
+        parseForStatementWithoutTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+            let loopStartNode = this.parseStatement(forStatement.init, currentNode);            
+            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopStartNode);
+            
+            if (forStatement.update === null) {
+                loopStartNode.appendTo(endOfLoopBodyNode);
+            } else {
+                let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
+                loopStartNode.appendTo(updateExpression);
+            }
+            
+            return this.createNode();
         }
         
         parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
