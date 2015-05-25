@@ -4,42 +4,45 @@
 /* global vis */
 (function() {
     window.cfgVisualization = {
-        initNetworkGraph: initNetworkGraph
+        renderControlFlowGraph: renderControlFlowGraph
     };
 
-    function initNetworkGraph(container) {
-        var options = {
-            stabilize: false,
-            smoothCurves: true,
-            hierarchicalLayout: {
-                nodeSpacing: 50,
-                direction: "UD",
-                layout: "direction"
-            },
+    function renderControlFlowGraph(container, code) {
+        var options = {            
             width: "100%",
-            height: "700px"
+            height: "100%",
+            
+            layout: {
+                hierarchical: {
+                    levelSeparation: 150,
+                    direction: "UD",
+                    sortMethod: "directed"
+                }
+            },
+            
+            edges: {
+                smooth: {
+                    type: "curvedCW"
+                }
+            }
         };
-
-        var network = new vis.Network(container);
-        network.setOptions(options);
-
-        return graphFor(network);
+        
+        var graphData = computeGraphData(code);
+        
+        return new vis.Network(container, graphData, options);
     }
 
-    function graphFor(network) {
-        return {
-            visualizeCode: visualizeCode
-        };
-
-        function visualizeCode(code) {
-            if (!code) {
-                network.setData({ nodes: [{ id: 1 }] });
-            } else {
-                var cfg = Styx.parse(esprima.parse(code));
-                var graphData = generateNodesAndEdges(cfg);
-                network.setData(graphData);
-            }
+    function computeGraphData(code) {
+        if (code) {
+            var cfg = Styx.parse(esprima.parse(code));
+            
+            return generateNodesAndEdges(cfg);            
         }
+        
+        return {
+            nodes: new vis.DataSet([{ id: 1, label: "1" }]),
+            edges: new vis.DataSet([])
+        };
     }
 
     function generateNodesAndEdges(cfg) {
@@ -54,20 +57,23 @@
         });
 
         return {
-            nodes: nodes,
-            edges: edges
+            nodes: new vis.DataSet(nodes),
+            edges: new vis.DataSet(edges)
         };
     }
     
     function addNodeAndEdges(node, nodes, edges) {
-        nodes.push(node);
+        nodes.push({
+            id: node.id,
+            label: node.label || node.id
+        });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
             var visEdge = {
                 from: node.id,
                 to: outgoingEdge.target.id,
                 label: outgoingEdge.label,
-                style: "arrow"
+                arrows: "to"
             };
             
             edges.push(visEdge);
