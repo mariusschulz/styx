@@ -11,7 +11,11 @@ module Styx.Util {
         }
         
         pop(): T {
-            return this.elements[this.elements.length - 1];
+            return this.elements.pop();
+        }
+        
+        peek(): T {
+            return this.elements[this.elements.length - 1];            
         }
     }
 }
