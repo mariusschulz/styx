@@ -5,6 +5,7 @@ module ESTree {
         static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
         static CallExpression = "CallExpression";
+        static DebuggerStatement = "DebuggerStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";

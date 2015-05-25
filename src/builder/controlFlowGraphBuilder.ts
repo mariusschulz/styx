@@ -34,7 +34,7 @@ module Styx {
         }
     
         parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
-            if (statement === null) {
+            if (statement === null || statement.type === ESTree.NodeType.DebuggerStatement) {
                 return currentNode;
             }
             
