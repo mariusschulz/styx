@@ -58,6 +58,10 @@ module Styx {
                 return this.parseIfStatement(<ESTree.IfStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.BreakStatement) {
+                return this.parseBreakStatement(<ESTree.BreakStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.WhileStatement) {
                 return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
             }
@@ -134,6 +138,13 @@ module Styx {
                 .appendTo(endOfElseBranch);
         }
         
+        parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
+            let enclosingLoop = this.enclosingIterationStatements.peek();
+            enclosingLoop.finalNode.appendTo(currentNode, "break");
+            
+            return currentNode;
+        }
+        
         parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
@@ -143,11 +154,20 @@ module Styx {
             let falsyCondition = ExpressionNegator.negateTruthiness(truthyCondition);            
             let falsyConditionLabel = ExpressionStringifier.stringify(falsyCondition);
             
-            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel);        
+            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
+            let finalNode = this.createNode();
+            
+            this.enclosingIterationStatements.push({
+                iterationStatement: whileStatement,
+                finalNode: finalNode
+            });
+            
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
             currentNode.appendTo(endOfLoopBodyNode);
             
-            return this.createNode()
+            this.enclosingIterationStatements.peek();
+            
+            return finalNode
                 .appendTo(currentNode, falsyConditionLabel);
         }
         
