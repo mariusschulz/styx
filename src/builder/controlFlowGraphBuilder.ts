@@ -213,9 +213,9 @@ module Styx {
         parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
             let leftString = ExpressionStringifier.stringify(assignmentExpression.left);
             let rightString = ExpressionStringifier.stringify(assignmentExpression.right);
+            let assignmentLabel = `${leftString} ${assignmentExpression.operator} ${rightString}`;
             
-            return this.createNode()
-                .appendTo(currentNode, `${leftString} = ${rightString}`);
+            return this.createNode().appendTo(currentNode, assignmentLabel);
         }
         
         parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
