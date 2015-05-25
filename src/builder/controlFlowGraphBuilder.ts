@@ -181,8 +181,12 @@ module Styx {
             let loopBodyNode = this.createNode().appendTo(conditionNode, truthyConditionLabel);
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
             
-            let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-            conditionNode.appendTo(updateExpression);
+            if (forStatement.update === null) {
+                conditionNode.appendTo(endOfLoopBodyNode);
+            } else {
+                let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
+                conditionNode.appendTo(updateExpression);
+            }
             
             return this.createNode().appendTo(conditionNode, falsyConditionLabel);
         }
@@ -191,8 +195,12 @@ module Styx {
             let loopStartNode = this.parseStatement(forStatement.init, currentNode);            
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopStartNode);
             
-            let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-            loopStartNode.appendTo(updateExpression);
+            if (forStatement.update === null) {
+                loopStartNode.appendTo(endOfLoopBodyNode);
+            } else {
+                let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
+                loopStartNode.appendTo(updateExpression);
+            }
             
             return this.createNode();
         }
