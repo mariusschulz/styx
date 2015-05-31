@@ -14,8 +14,8 @@ module Styx.Expressions.Stringifier {
             [ESTree.NodeType.NewExpression]: stringifyNewExpression,
             [ESTree.NodeType.ObjectExpression]: stringifyObjectExpression,
             [ESTree.NodeType.SequenceExpression]: stringifySequenceExpression,
-            [ESTree.NodeType.UpdateExpression]: stringifyUpdateExpression,
-            [ESTree.NodeType.UnaryExpression]: stringifyUnaryExpression
+            [ESTree.NodeType.UnaryExpression]: stringifyUnaryExpression,
+            [ESTree.NodeType.UpdateExpression]: stringifyUpdateExpression
         };
         
         let stringifier = stringifiers[expression.type];
