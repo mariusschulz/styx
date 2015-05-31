@@ -309,6 +309,10 @@ module Styx {
                 return this.parseNewExpression(<ESTree.NewExpression>expression, currentNode);
             }
             
+            if (expression.type === ESTree.NodeType.Identifier) {
+                return this.parseIdentifier(<ESTree.Identifier>expression, currentNode);
+            }
+            
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
         }
         
@@ -346,6 +350,13 @@ module Styx {
             
             return this.createNode()
                 .appendTo(currentNode, newLabel);
+        }
+        
+        private parseIdentifier(identifier: ESTree.Identifier, currentNode: FlowNode): FlowNode {
+            let identifierLabel = Expressions.Stringifier.stringify(identifier);
+            
+            return this.createNode()
+                .appendTo(currentNode, identifierLabel);
         }
         
         private static isAbruptCompletion(statement: ESTree.Statement): boolean {
