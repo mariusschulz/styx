@@ -329,6 +329,7 @@ module Styx {
         private static isAbruptCompletion(statement: ESTree.Statement): boolean {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
+                case ESTree.NodeType.ContinueStatement:
                     return true;
                     
                 default:
