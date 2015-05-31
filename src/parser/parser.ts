@@ -235,8 +235,8 @@ module Styx {
         }
         
         private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            let preTestNode = this.parseStatement(forStatement.init, currentNode);
-            let loopBodyNode = this.createNode();
+            let testDecisionNode = this.parseStatement(forStatement.init, currentNode);
+            let beginOfLoopBodyNode = this.createNode();
             let updateNode = this.createNode();
             let finalNode = this.createNode();
             
@@ -247,10 +247,10 @@ module Styx {
                 let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
                 let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
                 
-                loopBodyNode.appendTo(preTestNode, truthyConditionLabel)
-                finalNode.appendTo(preTestNode, falsyConditionLabel);
+                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel)
+                finalNode.appendTo(testDecisionNode, falsyConditionLabel);
             } else {
-                loopBodyNode.appendTo(preTestNode);
+                beginOfLoopBodyNode.appendTo(testDecisionNode);
             }
             
             this.enclosingIterationStatements.push({
@@ -259,15 +259,15 @@ module Styx {
                 finalNode: finalNode
             });
             
-            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
+            let endOfLoopBodyNode = this.parseStatement(forStatement.body, beginOfLoopBodyNode);
             
             this.enclosingIterationStatements.pop();
             
             if (forStatement.update === null) {
-                preTestNode.appendTo(updateNode);                                        
+                testDecisionNode.appendTo(updateNode);                                        
             } else {
                 let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
-                preTestNode.appendTo(endOfUpdateNode);
+                testDecisionNode.appendTo(endOfUpdateNode);
             }
             
             if (endOfLoopBodyNode) {
