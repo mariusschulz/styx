@@ -235,42 +235,60 @@ module Styx {
         }
         
         private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+            // Parse initialization
             let testDecisionNode = this.parseStatement(forStatement.init, currentNode);
+            
+            // Create nodes for loop cornerstones
             let beginOfLoopBodyNode = this.createNode();
             let updateNode = this.createNode();
             let finalNode = this.createNode();
             
             if (forStatement.test) {
+                // If the loop has a test expression,
+                // we need to add truthy and falsy edges
                 let truthyCondition = forStatement.test;
-                let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
-                
                 let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
+                
+                // Create edges labels
+                let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);                
                 let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
                 
+                // Add truthy and falsy edges
                 beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel)
                 finalNode.appendTo(testDecisionNode, falsyConditionLabel);
             } else {
+                // If the loop doesn't have a test expression,
+                // the loop body starts unconditionally after the initialization
                 beginOfLoopBodyNode.appendTo(testDecisionNode);
             }
             
+            // Begin loop context
             this.enclosingIterationStatements.push({
                 iterationStatement: forStatement,
                 continueTarget: updateNode,
                 finalNode: finalNode
             });
             
+            // Parse body
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, beginOfLoopBodyNode);
             
+            // End loop context
             this.enclosingIterationStatements.pop();
             
-            if (forStatement.update === null) {
-                testDecisionNode.appendTo(updateNode);                                        
-            } else {
+            if (forStatement.update) {
+                // If the loop has an update expression,
+                // parse it and append it to the end of the loop body
                 let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
-                testDecisionNode.appendTo(endOfUpdateNode);
+                testDecisionNode.appendTo(endOfUpdateNode);                                   
+            } else {
+                // If the loop doesn't have an update expression,
+                // treat the update node as a dummy and point it to the test node
+                testDecisionNode.appendTo(updateNode);
             }
             
             if (endOfLoopBodyNode) {
+                // If we reached the end of the loop body through normal control flow,
+                // continue regularly with the update
                 updateNode.appendTo(endOfLoopBodyNode);
             }
             
