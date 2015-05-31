@@ -1,5 +1,5 @@
 /// <reference path="../definitions/lodash.d.ts"/>
-/// <reference path="builder/controlFlowGraphBuilder.ts"/>
+/// <reference path="parser/parser.ts"/>
 /// <reference path="estree.ts"/>
 /// <reference path="types.ts"/>
 
@@ -14,8 +14,8 @@ module Styx {
         }
 
         var program = <ESTree.Program>node;
-        var graphBuilder = new ControlFlowGraphBuilder(program);
+        var parser = new Parser(program);
                     
-        return graphBuilder.controlFlowGraph;
+        return parser.controlFlowGraph;
     }
 }

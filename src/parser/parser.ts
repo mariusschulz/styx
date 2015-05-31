@@ -7,7 +7,7 @@
 /// <reference path="expressionStringifier.ts"/>
 
 module Styx {
-    export class ControlFlowGraphBuilder {
+    export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         
         private idGenerator: Util.IdGenerator;
@@ -33,7 +33,7 @@ module Styx {
             for (let statement of statements) {
                 currentNode = this.parseStatement(statement, currentNode);
                 
-                if (ControlFlowGraphBuilder.isAbruptCompletion(statement)) {
+                if (Parser.isAbruptCompletion(statement)) {
                     return currentNode;
                 }
             }

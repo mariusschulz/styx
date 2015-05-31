@@ -1,4 +1,5 @@
 /// <reference path="../estree.ts" />
+
 module Styx.ExpressionStringifier {
     export function stringify(expression: ESTree.Expression): string {
         if (expression.type === ESTree.NodeType.ArrayExpression) {
