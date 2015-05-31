@@ -169,7 +169,7 @@ module Styx {
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
             currentNode.appendTo(endOfLoopBodyNode);
             
-            this.enclosingIterationStatements.peek();
+            this.enclosingIterationStatements.pop();
             
             return finalNode
                 .appendTo(currentNode, falsyConditionLabel);
