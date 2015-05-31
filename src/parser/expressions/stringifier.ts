@@ -164,10 +164,14 @@ module Styx.Expressions.Stringifier {
     }
     
     function needsParenthesizing(expression: ESTree.Expression): boolean {
-        return [
-            ESTree.NodeType.BinaryExpression,
-            ESTree.NodeType.LogicalExpression
-        ].indexOf(expression.type) > -1;
+        switch (expression.type) {
+            case ESTree.NodeType.BinaryExpression:
+            case ESTree.NodeType.LogicalExpression:
+                return true;
+            
+            default:
+                return false;
+        }
     }
     
     function parenthesize(value: string): string {
