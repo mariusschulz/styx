@@ -20,7 +20,7 @@ module Styx {
             this.controlFlowGraph = this.parseProgram(program);
         }
     
-        parseProgram(program: ESTree.Program): ControlFlowGraph {
+        private parseProgram(program: ESTree.Program): ControlFlowGraph {
             let entryNode = this.createNode();
             let flowGraph = new ControlFlowGraph(entryNode);
     
@@ -29,7 +29,7 @@ module Styx {
             return flowGraph;
         }
     
-        parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {
+        private parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {
             for (let statement of statements) {
                 currentNode = this.parseStatement(statement, currentNode);
                 
@@ -41,7 +41,7 @@ module Styx {
             return currentNode;
         }
     
-        parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
+        private parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
             if (statement === null || statement.type === ESTree.NodeType.DebuggerStatement) {
                 return currentNode;
             }
@@ -85,15 +85,15 @@ module Styx {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
         
-        parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
+        private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
             return this.createNode().appendTo(currentNode, "(empty)");
         }
         
-        parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
+        private parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
             return this.parseStatements(blockStatement.body, currentNode);
         }
     
-        parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
+        private parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
             for (let declarator of declaration.declarations) {
                 let initString = ExpressionStringifier.stringify(declarator.init);
                 let edgeLabel = `${declarator.id.name} = ${initString}`;
@@ -103,13 +103,13 @@ module Styx {
             return currentNode;
         }
     
-        parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
+        private parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             return ifStatement.alternate === null
                 ? this.parseSimpleIfStatement(ifStatement, currentNode)
                 : this.parseIfElseStatement(ifStatement, currentNode);
         }
     
-        parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
+        private parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             let truthyCondition = ifStatement.test;
             let truthyConditionLabel = ExpressionStringifier.stringify(truthyCondition);
             
@@ -129,7 +129,7 @@ module Styx {
             return finalNode;
         }
     
-        parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
+        private parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             // Then branch
             let thenCondition = ifStatement.test;
             let thenLabel = ExpressionStringifier.stringify(thenCondition);
@@ -155,14 +155,14 @@ module Styx {
             return finalNode;
         }
         
-        parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
+        private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
             enclosingLoop.finalNode.appendTo(currentNode, "break");
             
             return null;
         }
         
-        parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
+        private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
             let truthyConditionLabel = ExpressionStringifier.stringify(truthyCondition);
@@ -191,7 +191,7 @@ module Styx {
                 .appendTo(currentNode, falsyConditionLabel);
         }
         
-        parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
+        private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = doWhileStatement.test;
             let truthyConditionLabel = ExpressionStringifier.stringify(truthyCondition);
@@ -219,13 +219,13 @@ module Styx {
             return finalNode;
         }
         
-        parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+        private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
             return forStatement.test === null
                 ? this.parseForStatementWithoutTest(forStatement, currentNode)
                 : this.parseForStatementWithTest(forStatement, currentNode);
         }
         
-        parseForStatementWithTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+        private parseForStatementWithTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
             let conditionNode = this.parseStatement(forStatement.init, currentNode);
             
             let truthyCondition = forStatement.test;
@@ -259,7 +259,7 @@ module Styx {
             return finalNode.appendTo(conditionNode, falsyConditionLabel);
         }
         
-        parseForStatementWithoutTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+        private parseForStatementWithoutTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
             let loopStartNode = this.parseStatement(forStatement.init, currentNode);            
             let finalNode = this.createNode();
             
@@ -284,11 +284,11 @@ module Styx {
             return finalNode;
         }
         
-        parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
+        private parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
             return this.parseExpression(expressionStatement.expression, currentNode);
         }
         
-        parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
+        private parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
             if (expression.type === ESTree.NodeType.AssignmentExpression) {
                 return this.parseAssignmentExpression(<ESTree.AssignmentExpression>expression, currentNode);
             }
@@ -312,7 +312,7 @@ module Styx {
             throw Error(`Encountered unsupported expression type '${expression.type}'`);
         }
         
-        parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
+        private parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
             let leftString = ExpressionStringifier.stringify(assignmentExpression.left);
             let rightString = ExpressionStringifier.stringify(assignmentExpression.right);
             let assignmentLabel = `${leftString} ${assignmentExpression.operator} ${rightString}`;
@@ -320,13 +320,13 @@ module Styx {
             return this.createNode().appendTo(currentNode, assignmentLabel);
         }
         
-        parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
+        private parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
             let stringifiedUpdate = ExpressionStringifier.stringify(expression);
             
             return this.createNode().appendTo(currentNode, stringifiedUpdate);
         }
         
-        parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
+        private parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
             for (let expression of sequenceExpression.expressions) {
                 currentNode = this.parseExpression(expression, currentNode);
             }
@@ -334,14 +334,14 @@ module Styx {
             return currentNode;
         }
         
-        parseCallExpression(callExpression: ESTree.CallExpression, currentNode: FlowNode): FlowNode {
+        private parseCallExpression(callExpression: ESTree.CallExpression, currentNode: FlowNode): FlowNode {
             let callLabel = ExpressionStringifier.stringify(callExpression);
 
             return this.createNode()
                 .appendTo(currentNode, callLabel);
         }
         
-        parseNewExpression(newExpression: ESTree.NewExpression, currentNode: FlowNode): FlowNode {
+        private parseNewExpression(newExpression: ESTree.NewExpression, currentNode: FlowNode): FlowNode {
             let newLabel = ExpressionStringifier.stringify(newExpression);
             
             return this.createNode()
