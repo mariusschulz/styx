@@ -163,7 +163,7 @@ module Styx {
         
         private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.finalNode.appendTo(currentNode, "break");
+            enclosingLoop.breakTarget.appendTo(currentNode, "break");
             
             return null;
         }
@@ -190,7 +190,7 @@ module Styx {
             this.enclosingIterationStatements.push({
                 iterationStatement: whileStatement,
                 continueTarget: currentNode,
-                finalNode: finalNode
+                breakTarget: finalNode
             });
             
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
@@ -219,7 +219,7 @@ module Styx {
             this.enclosingIterationStatements.push({
                 iterationStatement: doWhileStatement,
                 continueTarget: null, // todo
-                finalNode: finalNode
+                breakTarget: finalNode
             });
             
             let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
@@ -266,7 +266,7 @@ module Styx {
             this.enclosingIterationStatements.push({
                 iterationStatement: forStatement,
                 continueTarget: updateNode,
-                finalNode: finalNode
+                breakTarget: finalNode
             });
             
             // Parse body
