@@ -33,7 +33,7 @@ module Styx {
             for (let statement of statements) {
                 currentNode = this.parseStatement(statement, currentNode);
                 
-                if (statement.type === ESTree.NodeType.BreakStatement) {
+                if (ControlFlowGraphBuilder.isAbruptCompletion(statement)) {
                     return currentNode;
                 }
             }
@@ -346,6 +346,16 @@ module Styx {
             
             return this.createNode()
                 .appendTo(currentNode, newLabel);
+        }
+        
+        private static isAbruptCompletion(statement: ESTree.Statement): boolean {
+            switch (statement.type) {
+                case ESTree.NodeType.BreakStatement:
+                    return true;
+                    
+                default:
+                    return false;
+            }
         }
         
         private createNode(): FlowNode {
