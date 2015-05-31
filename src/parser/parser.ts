@@ -34,6 +34,8 @@ module Styx {
                 currentNode = this.parseStatement(statement, currentNode);
                 
                 if (Parser.isAbruptCompletion(statement)) {
+                    // If we encounter an abrupt completion, normal control flow is interrupted
+                    // and the following statements aren't executed
                     return currentNode;
                 }
             }
