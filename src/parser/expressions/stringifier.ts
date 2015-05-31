@@ -1,56 +1,27 @@
 /// <reference path="../../estree.ts" />
 
 module Styx.Expressions.Stringifier {
-    export function stringify(expression: ESTree.Expression): string {
-        if (expression.type === ESTree.NodeType.ArrayExpression) {
-            return stringifyArrayExpression(<ESTree.ArrayExpression>expression);
-        }
+    export function stringify(expression: ESTree.Expression): string {        
+        let stringifiers = {
+            [ESTree.NodeType.ArrayExpression]: stringifyArrayExpression,
+            [ESTree.NodeType.AssignmentExpression]: stringifyAssignmentExpression,
+            [ESTree.NodeType.BinaryExpression]: stringifyBinaryExpression,
+            [ESTree.NodeType.CallExpression]: stringifyCallExpression,
+            [ESTree.NodeType.Identifier]: stringifyIdentifier,
+            [ESTree.NodeType.Literal]: stringifyLiteral,            
+            [ESTree.NodeType.LogicalExpression]: stringifyLogicalExpression,
+            [ESTree.NodeType.MemberExpression]: stringifyMemberExpression,
+            [ESTree.NodeType.NewExpression]: stringifyNewExpression,
+            [ESTree.NodeType.ObjectExpression]: stringifyObjectExpression,
+            [ESTree.NodeType.UpdateExpression]: stringifyUpdateExpression,
+            [ESTree.NodeType.UnaryExpression]: stringifyUnaryExpression
+        };
         
-        if (expression.type === ESTree.NodeType.ObjectExpression) {
-            return stringifyObjectExpression(<ESTree.ObjectExpression>expression);
-        }
+        let stringifier = stringifiers[expression.type];
         
-        if (expression.type === ESTree.NodeType.Literal) {
-            return stringifyLiteral(<ESTree.Literal>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.Identifier) {
-            return stringifyIdentifier(<ESTree.Identifier>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.UpdateExpression) {
-            return stringifyUpdateExpression(<ESTree.UpdateExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.UnaryExpression) {
-            return stringifyUnaryExpression(<ESTree.UnaryExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.BinaryExpression) {
-            return stringifyBinaryExpression(<ESTree.BinaryExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.LogicalExpression) {
-            return stringifyLogicalExpression(<ESTree.LogicalExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.AssignmentExpression) {
-            return stringifyAssignmentExpression(<ESTree.AssignmentExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.CallExpression) {
-            return stringifyCallExpression(<ESTree.CallExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.NewExpression) {
-            return stringifyNewExpression(<ESTree.NewExpression>expression);
-        }
-        
-        if (expression.type === ESTree.NodeType.MemberExpression) {
-            return stringifyMemberExpression(<ESTree.MemberExpression>expression);
-        }
-        
-        return "<UNEXPECTED>";
+        return stringifier
+            ? stringifier(expression)
+            : "<UNEXPECTED>";
     }
     
     function stringifyArrayExpression(expression: ESTree.ArrayExpression): string {
