@@ -73,6 +73,7 @@
                 from: node.id,
                 to: outgoingEdge.target.id,
                 label: outgoingEdge.label,
+                color: outgoingEdge.label ? null : "#999",
                 arrows: "to"
             };
             
