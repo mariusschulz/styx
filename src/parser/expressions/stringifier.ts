@@ -1,6 +1,6 @@
-/// <reference path="../estree.ts" />
+/// <reference path="../../estree.ts" />
 
-module Styx.ExpressionStringifier {
+module Styx.Expressions.Stringifier {
     export function stringify(expression: ESTree.Expression): string {
         if (expression.type === ESTree.NodeType.ArrayExpression) {
             return stringifyArrayExpression(<ESTree.ArrayExpression>expression);
@@ -67,7 +67,7 @@ module Styx.ExpressionStringifier {
                 arrayLiteral += ",";
                 previousElementWasNull = true;
             } else {                
-                arrayLiteral += ExpressionStringifier.stringify(element);
+                arrayLiteral += stringify(element);
                 previousElementWasNull = false;
             }
             
@@ -79,8 +79,8 @@ module Styx.ExpressionStringifier {
     
     function stringifyObjectExpression(objectExpression: ESTree.ObjectExpression): string {
         let properties = objectExpression.properties.map(property => {
-            let key = ExpressionStringifier.stringify(property.key);
-            let value = ExpressionStringifier.stringify(property.value);
+            let key = stringify(property.key);
+            let value = stringify(property.value);
             
             return `${key}: ${value}`;
         }).join(", ");
@@ -160,9 +160,9 @@ module Styx.ExpressionStringifier {
     }
     
     function stringifyCallExpression(expression: ESTree.CallExpression): string {        
-        let calleeString = ExpressionStringifier.stringify(expression.callee);
+        let calleeString = stringify(expression.callee);
         let argsString = expression.arguments
-            .map(arg => ExpressionStringifier.stringify(arg))
+            .map(arg => stringify(arg))
             .join(", ");
         
         return `${calleeString}(${argsString})`;

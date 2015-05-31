@@ -5,7 +5,7 @@ describe("ExpressionStringifier", function() {
         var program = esprima.parse(array);
         var arrayExpression = program.body[0].expression;
         
-        return Styx.ExpressionStringifier.stringify(arrayExpression);
+        return Styx.Expressions.Stringifier.stringify(arrayExpression);
     }
     
     describe("#stringify()", function() {
