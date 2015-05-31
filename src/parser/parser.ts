@@ -289,49 +289,22 @@ module Styx {
         }
         
         private parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
-            if (expression.type === ESTree.NodeType.AssignmentExpression) {
-                return this.parseAssignmentExpression(<ESTree.AssignmentExpression>expression, currentNode);
+            switch (expression.type) {
+                case ESTree.NodeType.AssignmentExpression:
+                case ESTree.NodeType.CallExpression:
+                case ESTree.NodeType.Identifier:
+                case ESTree.NodeType.Literal:
+                case ESTree.NodeType.NewExpression:
+                case ESTree.NodeType.UpdateExpression:
+                    let expressionLabel = Expressions.Stringifier.stringify(expression);
+                    return this.createNode().appendTo(currentNode, expressionLabel);
+                
+                case ESTree.NodeType.SequenceExpression:
+                    return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode);
+                
+                default:
+                    throw Error(`Encountered unsupported expression type '${expression.type}'`);
             }
-            
-            if (expression.type === ESTree.NodeType.UpdateExpression) {
-                return this.parseUpdateExpression(<ESTree.UpdateExpression>expression, currentNode);
-            }
-            
-            if (expression.type === ESTree.NodeType.SequenceExpression) {
-                return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode);
-            }
-            
-            if (expression.type === ESTree.NodeType.CallExpression) {
-                return this.parseCallExpression(<ESTree.CallExpression>expression, currentNode);
-            }
-            
-            if (expression.type === ESTree.NodeType.NewExpression) {
-                return this.parseNewExpression(<ESTree.NewExpression>expression, currentNode);
-            }
-            
-            if (expression.type === ESTree.NodeType.Identifier) {
-                return this.parseIdentifier(<ESTree.Identifier>expression, currentNode);
-            }
-            
-            if (expression.type === ESTree.NodeType.Literal) {
-                return this.parseLiteral(<ESTree.Literal>expression, currentNode);
-            }
-            
-            throw Error(`Encountered unsupported expression type '${expression.type}'`);
-        }
-        
-        private parseAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression, currentNode: FlowNode): FlowNode {
-            let leftString = Expressions.Stringifier.stringify(assignmentExpression.left);
-            let rightString = Expressions.Stringifier.stringify(assignmentExpression.right);
-            let assignmentLabel = `${leftString} ${assignmentExpression.operator} ${rightString}`;
-            
-            return this.createNode().appendTo(currentNode, assignmentLabel);
-        }
-        
-        private parseUpdateExpression(expression: ESTree.UpdateExpression, currentNode: FlowNode): FlowNode {
-            let stringifiedUpdate = Expressions.Stringifier.stringify(expression);
-            
-            return this.createNode().appendTo(currentNode, stringifiedUpdate);
         }
         
         private parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
@@ -340,34 +313,6 @@ module Styx {
             }
             
             return currentNode;
-        }
-        
-        private parseCallExpression(callExpression: ESTree.CallExpression, currentNode: FlowNode): FlowNode {
-            let callLabel = Expressions.Stringifier.stringify(callExpression);
-
-            return this.createNode()
-                .appendTo(currentNode, callLabel);
-        }
-        
-        private parseNewExpression(newExpression: ESTree.NewExpression, currentNode: FlowNode): FlowNode {
-            let newLabel = Expressions.Stringifier.stringify(newExpression);
-            
-            return this.createNode()
-                .appendTo(currentNode, newLabel);
-        }
-        
-        private parseIdentifier(identifier: ESTree.Identifier, currentNode: FlowNode): FlowNode {
-            let identifierLabel = Expressions.Stringifier.stringify(identifier);
-            
-            return this.createNode()
-                .appendTo(currentNode, identifierLabel);
-        }
-        
-        private parseLiteral(literal: ESTree.Literal, currentNode: FlowNode): FlowNode {
-            let literalLabel = Expressions.Stringifier.stringify(literal);
-            
-            return this.createNode()
-                .appendTo(currentNode, literalLabel);
         }
         
         private static isAbruptCompletion(statement: ESTree.Statement): boolean {
