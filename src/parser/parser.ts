@@ -1,7 +1,7 @@
 /// <reference path="../estree.ts"/>
 /// <reference path="../types.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
-/// <reference path="../util/stack.ts"/>
+/// <reference path="../collections/stack.ts"/>
 /// <reference path="enclosingIterationStatement.ts"/>
 /// <reference path="expressionNegator.ts"/>
 /// <reference path="expressionStringifier.ts"/>
@@ -11,11 +11,11 @@ module Styx {
         public controlFlowGraph: ControlFlowGraph;
         
         private idGenerator: Util.IdGenerator;
-        private enclosingIterationStatements: Util.Stack<EnclosingIterationStatement>;
+        private enclosingIterationStatements: Collections.Stack<EnclosingIterationStatement>;
         
         constructor(private program: ESTree.Program) {
             this.idGenerator = Util.createIdGenerator();
-            this.enclosingIterationStatements = new Util.Stack<EnclosingIterationStatement>();
+            this.enclosingIterationStatements = new Collections.Stack<EnclosingIterationStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
         }

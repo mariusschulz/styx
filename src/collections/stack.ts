@@ -1,4 +1,4 @@
-module Styx.Util {
+module Styx.Collections {
     export class Stack<T> {
         private elements: T[];
         
