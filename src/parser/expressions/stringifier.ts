@@ -13,6 +13,7 @@ module Styx.Expressions.Stringifier {
             [ESTree.NodeType.MemberExpression]: stringifyMemberExpression,
             [ESTree.NodeType.NewExpression]: stringifyNewExpression,
             [ESTree.NodeType.ObjectExpression]: stringifyObjectExpression,
+            [ESTree.NodeType.SequenceExpression]: stringifySequenceExpression,
             [ESTree.NodeType.UpdateExpression]: stringifyUpdateExpression,
             [ESTree.NodeType.UnaryExpression]: stringifyUnaryExpression
         };
@@ -57,6 +58,14 @@ module Styx.Expressions.Stringifier {
         }).join(", ");
         
         return `{ ${properties} }`;
+    }
+    
+    function stringifySequenceExpression(sequenceExpression: ESTree.SequenceExpression): string {
+        let commaSeparatedExpressions = sequenceExpression.expressions
+            .map(Expressions.Stringifier.stringify)
+            .join(", ");
+        
+        return parenthesize(commaSeparatedExpressions);
     }
     
     function stringifyLiteral(literal: ESTree.Literal): string {
