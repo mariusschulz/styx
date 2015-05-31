@@ -4,6 +4,7 @@ module ESTree {
         static AssignmentExpression = "AssignmentExpression";
         static BinaryExpression = "BinaryExpression"
         static BlockStatement = "BlockStatement";
+        static BreakStatement = "BreakStatement"
         static CallExpression = "CallExpression";
         static DebuggerStatement = "DebuggerStatement";
         static DoWhileStatement = "DoWhileStatement";
@@ -76,21 +77,26 @@ module ESTree {
         alternate?: Statement;
     }
     
-    export interface WhileStatement extends Statement {
-        test: Expression;
+    export interface BreakStatement extends Statement {
+        label?: Identifier;
+    }
+    
+    export interface IterationStatement extends Statement {
         body: Statement;
     }
     
-    export interface DoWhileStatement extends Statement {
-        body: Statement;
+    export interface WhileStatement extends IterationStatement {
         test: Expression;
     }
     
-    export interface ForStatement extends Statement {
+    export interface DoWhileStatement extends IterationStatement {
+        test: Expression;
+    }
+    
+    export interface ForStatement extends IterationStatement {
         init?: VariableDeclaration | Expression;
         test?: Expression;
         update?: Expression;
-        body: Statement;
     }
     
     
