@@ -68,6 +68,10 @@ module Styx {
                 return this.parseBreakStatement(<ESTree.BreakStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.ContinueStatement) {
+                return this.parseContinueStatement(<ESTree.ContinueStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.WhileStatement) {
                 return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
             }
@@ -164,6 +168,13 @@ module Styx {
             return null;
         }
         
+        private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
+            let enclosingLoop = this.enclosingIterationStatements.peek();
+            enclosingLoop.continueTarget.appendTo(currentNode, "continue");
+            
+            return null;
+        }
+        
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
@@ -178,6 +189,7 @@ module Styx {
             
             this.enclosingIterationStatements.push({
                 iterationStatement: whileStatement,
+                continueTarget: currentNode,
                 finalNode: finalNode
             });
             
@@ -206,6 +218,7 @@ module Styx {
             
             this.enclosingIterationStatements.push({
                 iterationStatement: doWhileStatement,
+                continueTarget: null, // todo
                 finalNode: finalNode
             });
             
@@ -222,26 +235,27 @@ module Styx {
         }
         
         private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            return forStatement.test === null
-                ? this.parseForStatementWithoutTest(forStatement, currentNode)
-                : this.parseForStatementWithTest(forStatement, currentNode);
-        }
-        
-        private parseForStatementWithTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            let conditionNode = this.parseStatement(forStatement.init, currentNode);
-            
-            let truthyCondition = forStatement.test;
-            let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
-            
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
-            let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
-            
-            let loopBodyNode = this.createNode().appendTo(conditionNode, truthyConditionLabel);
-            
+            let preTestNode = this.parseStatement(forStatement.init, currentNode);
+            let loopBodyNode = this.createNode();
+            let updateNode = this.createNode();
             let finalNode = this.createNode();
+            
+            if (forStatement.test) {
+                let truthyCondition = forStatement.test;
+                let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
+                
+                let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
+                let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+                
+                loopBodyNode.appendTo(preTestNode, truthyConditionLabel)
+                finalNode.appendTo(preTestNode, falsyConditionLabel);
+            } else {
+                loopBodyNode.appendTo(preTestNode);
+            }
             
             this.enclosingIterationStatements.push({
                 iterationStatement: forStatement,
+                continueTarget: updateNode,
                 finalNode: finalNode
             });
             
@@ -249,38 +263,15 @@ module Styx {
             
             this.enclosingIterationStatements.pop();
             
-            if (endOfLoopBodyNode) {
-                if (forStatement.update === null) {
-                    conditionNode.appendTo(endOfLoopBodyNode);
-                } else {
-                    let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-                    conditionNode.appendTo(updateExpression);
-                }
+            if (forStatement.update === null) {
+                preTestNode.appendTo(updateNode);                                        
+            } else {
+                let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
+                preTestNode.appendTo(endOfUpdateNode);
             }
             
-            return finalNode.appendTo(conditionNode, falsyConditionLabel);
-        }
-        
-        private parseForStatementWithoutTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            let loopStartNode = this.parseStatement(forStatement.init, currentNode);            
-            let finalNode = this.createNode();
-            
-            this.enclosingIterationStatements.push({
-                iterationStatement: forStatement,
-                finalNode: finalNode
-            });
-            
-            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopStartNode);
-            
-            this.enclosingIterationStatements.pop();
-            
             if (endOfLoopBodyNode) {
-                if (forStatement.update === null) {
-                    loopStartNode.appendTo(endOfLoopBodyNode);
-                } else {
-                    let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-                    loopStartNode.appendTo(updateExpression);
-                }
+                updateNode.appendTo(endOfLoopBodyNode);
             }
             
             return finalNode;
