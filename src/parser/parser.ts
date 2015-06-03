@@ -129,7 +129,7 @@ module Styx {
                 .appendTo(currentNode, falsyConditionLabel);
             
             if (endOfThenBranch) {
-                finalNode.appendTo(endOfThenBranch);
+                finalNode.appendEpsilonEdgeTo(endOfThenBranch);
             }
             
             return finalNode;
@@ -151,11 +151,11 @@ module Styx {
             let finalNode = this.createNode();
             
             if (endOfThenBranch) {
-                finalNode.appendTo(endOfThenBranch);
+                finalNode.appendEpsilonEdgeTo(endOfThenBranch);
             }
             
             if (endOfElseBranch) {
-                finalNode.appendTo(endOfElseBranch);
+                finalNode.appendEpsilonEdgeTo(endOfElseBranch);
             }
             
             return finalNode;
@@ -196,7 +196,7 @@ module Styx {
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
             
             if (endOfLoopBodyNode) {
-                currentNode.appendTo(endOfLoopBodyNode);
+                currentNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             this.enclosingIterationStatements.pop();
@@ -231,7 +231,7 @@ module Styx {
             finalNode.appendTo(testNode, falsyConditionLabel);
             
             if (endOfLoopBodyNode) {
-                testNode.appendTo(endOfLoopBodyNode);
+                testNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             return finalNode;
@@ -262,7 +262,7 @@ module Styx {
             } else {
                 // If the loop doesn't have a test expression,
                 // the loop body starts unconditionally after the initialization
-                beginOfLoopBodyNode.appendTo(testDecisionNode);
+                beginOfLoopBodyNode.appendEpsilonEdgeTo(testDecisionNode);
             }
             
             // Begin loop context
@@ -282,17 +282,17 @@ module Styx {
                 // If the loop has an update expression,
                 // parse it and append it to the end of the loop body
                 let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
-                testDecisionNode.appendTo(endOfUpdateNode);                                   
+                testDecisionNode.appendEpsilonEdgeTo(endOfUpdateNode);                                   
             } else {
                 // If the loop doesn't have an update expression,
                 // treat the update node as a dummy and point it to the test node
-                testDecisionNode.appendTo(updateNode);
+                testDecisionNode.appendEpsilonEdgeTo(updateNode);
             }
             
             if (endOfLoopBodyNode) {
                 // If we reached the end of the loop body through normal control flow,
                 // continue regularly with the update
-                updateNode.appendTo(endOfLoopBodyNode);
+                updateNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             return finalNode;
