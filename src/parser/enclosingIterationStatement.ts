@@ -5,6 +5,6 @@ module Styx {
         label?: string;
         iterationStatement: ESTree.IterationStatement;
         continueTarget: FlowNode;
-        finalNode: FlowNode;
+        breakTarget: FlowNode;
     }
 }
