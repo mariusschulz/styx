@@ -69,11 +69,15 @@
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
+            var color = getEdgeColor(outgoingEdge);
             var visEdge = {
                 from: node.id,
                 to: outgoingEdge.target.id,
                 label: outgoingEdge.label,
-                color: getEdgeColor(outgoingEdge),
+                color: color,
+                font: {
+                    color: color
+                },
                 arrows: "to"
             };
             
@@ -82,16 +86,16 @@
     }
     
     function getEdgeColor(edge) {
-        console.log(edge.type)
         switch (edge.type) {
-            case Styx.EdgeType.Conditional:
-                return "green";
-            case Styx.EdgeType.AbruptCompletion:
-                return "#df0000";
             case Styx.EdgeType.Epsilon:
                 return "#999999";
+            case Styx.EdgeType.Conditional:
+                return "#FF9500";
+            case Styx.EdgeType.AbruptCompletion:
+                return "#FF2D55";
             default:
-                return null; // null falls back to the default color
+                // null falls back to the default color
+                return null;
         }
     }
     
