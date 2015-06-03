@@ -214,11 +214,12 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
+            let testNode = this.createNode();
             let finalNode = this.createNode();
             
             this.enclosingIterationStatements.push({
                 iterationStatement: doWhileStatement,
-                continueTarget: null, // todo
+                continueTarget: testNode,
                 breakTarget: finalNode
             });
             
@@ -226,9 +227,11 @@ module Styx {
             
             this.enclosingIterationStatements.pop();
             
+            currentNode.appendTo(testNode, truthyConditionLabel);
+            finalNode.appendTo(testNode, falsyConditionLabel);
+            
             if (endOfLoopBodyNode) {
-                currentNode.appendTo(endOfLoopBodyNode, truthyConditionLabel);
-                finalNode.appendTo(endOfLoopBodyNode, falsyConditionLabel);
+                testNode.appendTo(endOfLoopBodyNode);
             }
             
             return finalNode;
