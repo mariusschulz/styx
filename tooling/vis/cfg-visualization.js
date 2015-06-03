@@ -73,12 +73,26 @@
                 from: node.id,
                 to: outgoingEdge.target.id,
                 label: outgoingEdge.label,
-                color: outgoingEdge.label ? null : "#999",
+                color: getEdgeColor(outgoingEdge),
                 arrows: "to"
             };
             
             edges.push(visEdge);
         }); 
+    }
+    
+    function getEdgeColor(edge) {
+        console.log(edge.type)
+        switch (edge.type) {
+            case Styx.EdgeType.Conditional:
+                return "green";
+            case Styx.EdgeType.AbruptCompletion:
+                return "#df0000";
+            case Styx.EdgeType.Epsilon:
+                return "#999999";
+            default:
+                return null; // null falls back to the default color
+        }
     }
     
     function collectNodes(node, nodeSet) {
