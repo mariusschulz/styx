@@ -165,14 +165,14 @@ module Styx {
         
         private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.breakTarget.appendTo(currentNode, "break");
+            enclosingLoop.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
             
             return null;
         }
         
         private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.continueTarget.appendTo(currentNode, "continue");
+            enclosingLoop.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
             
             return null;
         }
