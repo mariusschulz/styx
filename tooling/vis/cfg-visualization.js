@@ -14,7 +14,7 @@
             
             layout: {
                 hierarchical: {
-                    levelSeparation: 65,
+                    levelSeparation: 85,
                     direction: "UD",
                     sortMethod: "directed"
                 }
