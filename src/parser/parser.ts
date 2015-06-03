@@ -92,7 +92,7 @@ module Styx {
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
-            return this.createNode().appendTo(currentNode, "(empty)");
+            return this.createNode().appendTo(currentNode, "(empty)", EdgeType.Epsilon);
         }
         
         private parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
