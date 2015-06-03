@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "noImplicitAny": true,
         "out": "dist/styx.js"
     },
     "files": [

@@ -1,8 +1,14 @@
 /// <reference path="../../estree.ts" />
 
 module Styx.Expressions.Stringifier {
+    type StringificationFunction = (expression: ESTree.Expression) => string;
+    
+    interface StringificationMap {
+        [key: string]: StringificationFunction;
+    }
+    
     export function stringify(expression: ESTree.Expression): string {        
-        let stringifiers = {
+        let stringifiers: StringificationMap = {
             [ESTree.NodeType.ArrayExpression]: stringifyArrayExpression,
             [ESTree.NodeType.AssignmentExpression]: stringifyAssignmentExpression,
             [ESTree.NodeType.BinaryExpression]: stringifyBinaryExpression,
