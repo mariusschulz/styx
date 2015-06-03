@@ -122,11 +122,13 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
-            let thenNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
+            let thenNode = this.createNode()
+                .appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
+            
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             let finalNode = this.createNode()
-                .appendTo(currentNode, falsyConditionLabel);
+                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
             
             if (endOfThenBranch) {
                 finalNode.appendEpsilonEdgeTo(endOfThenBranch);
@@ -139,13 +141,13 @@ module Styx {
             // Then branch
             let thenCondition = ifStatement.test;
             let thenLabel = Expressions.Stringifier.stringify(thenCondition);
-            let thenNode = this.createNode().appendTo(currentNode, thenLabel);
+            let thenNode = this.createNode().appendTo(currentNode, thenLabel, EdgeType.Conditional);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
             let elseCondition = Expressions.Negator.negateTruthiness(thenCondition);
             let elseLabel = Expressions.Stringifier.stringify(elseCondition); 
-            let elseNode = this.createNode().appendTo(currentNode, elseLabel);
+            let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
             let finalNode = this.createNode();
@@ -184,7 +186,7 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
-            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
+            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
             let finalNode = this.createNode();
             
             this.enclosingIterationStatements.push({
@@ -202,7 +204,7 @@ module Styx {
             this.enclosingIterationStatements.pop();
             
             return finalNode
-                .appendTo(currentNode, falsyConditionLabel);
+                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
         }
         
         private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
@@ -227,8 +229,8 @@ module Styx {
             
             this.enclosingIterationStatements.pop();
             
-            currentNode.appendTo(testNode, truthyConditionLabel);
-            finalNode.appendTo(testNode, falsyConditionLabel);
+            currentNode.appendTo(testNode, truthyConditionLabel, EdgeType.Conditional);
+            finalNode.appendTo(testNode, falsyConditionLabel, EdgeType.Conditional);
             
             if (endOfLoopBodyNode) {
                 testNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
@@ -257,8 +259,8 @@ module Styx {
                 let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
                 
                 // Add truthy and falsy edges
-                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel)
-                finalNode.appendTo(testDecisionNode, falsyConditionLabel);
+                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel, EdgeType.Conditional)
+                finalNode.appendTo(testDecisionNode, falsyConditionLabel, EdgeType.Conditional);
             } else {
                 // If the loop doesn't have a test expression,
                 // the loop body starts unconditionally after the initialization
