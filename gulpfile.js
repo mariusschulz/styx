@@ -5,7 +5,7 @@ var scriptGlobs = ["src/**/*.ts"];
 
 gulp.task("typescript", function() {
 	return gulp.src(scriptGlobs)
-        .pipe(shell(["node ../TypeScript/built/local/tsc src/styx.ts --out dist/styx.js"]));
+        .pipe(shell(["node ../TypeScript/built/local/tsc -p src"]));
 });
 
 gulp.task("default", ["typescript"], function() {

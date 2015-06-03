@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "out": "dist/styx.js"
+    },
+    "files": [
+        "styx.ts"
+    ]
+}
