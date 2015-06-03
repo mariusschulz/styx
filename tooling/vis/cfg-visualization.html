@@ -22,13 +22,21 @@
             (function() {
                 var container = document.getElementById("graph");
                 var $input = $("#input");
+                var previousCode;
                 
                 var update = function() {
                     var code = $input.val();
+                    
+                    if (code === previousCode) {
+                        return;
+                    }
+                    
+                    previousCode = code;
                     sessionStorage.setItem("code", code);
                     
                     window.cfgVisualization.renderControlFlowGraph(container, code);
                 };
+                
                 var debouncedUpdate = _.debounce(update, 200);
                 
                 $input.on("keyup", debouncedUpdate);
