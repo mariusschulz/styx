@@ -6,6 +6,7 @@ module ESTree {
         static BlockStatement = "BlockStatement";
         static BreakStatement = "BreakStatement"
         static CallExpression = "CallExpression";
+        static ContinueStatement = "ContinueStatement";
         static DebuggerStatement = "DebuggerStatement";
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
@@ -78,6 +79,10 @@ module ESTree {
     }
     
     export interface BreakStatement extends Statement {
+        label?: Identifier;
+    }
+    
+    export interface ContinueStatement extends Statement {
         label?: Identifier;
     }
     

@@ -68,6 +68,10 @@ module Styx {
                 return this.parseBreakStatement(<ESTree.BreakStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.ContinueStatement) {
+                return this.parseContinueStatement(<ESTree.ContinueStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.WhileStatement) {
                 return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
             }
@@ -159,7 +163,14 @@ module Styx {
         
         private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.finalNode.appendTo(currentNode, "break");
+            enclosingLoop.breakTarget.appendTo(currentNode, "break");
+            
+            return null;
+        }
+        
+        private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
+            let enclosingLoop = this.enclosingIterationStatements.peek();
+            enclosingLoop.continueTarget.appendTo(currentNode, "continue");
             
             return null;
         }
@@ -178,7 +189,8 @@ module Styx {
             
             this.enclosingIterationStatements.push({
                 iterationStatement: whileStatement,
-                finalNode: finalNode
+                continueTarget: currentNode,
+                breakTarget: finalNode
             });
             
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
@@ -202,85 +214,85 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
+            let testNode = this.createNode();
             let finalNode = this.createNode();
             
             this.enclosingIterationStatements.push({
                 iterationStatement: doWhileStatement,
-                finalNode: finalNode
+                continueTarget: testNode,
+                breakTarget: finalNode
             });
             
             let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
             
             this.enclosingIterationStatements.pop();
             
+            currentNode.appendTo(testNode, truthyConditionLabel);
+            finalNode.appendTo(testNode, falsyConditionLabel);
+            
             if (endOfLoopBodyNode) {
-                currentNode.appendTo(endOfLoopBodyNode, truthyConditionLabel);
-                finalNode.appendTo(endOfLoopBodyNode, falsyConditionLabel);
+                testNode.appendTo(endOfLoopBodyNode);
             }
             
             return finalNode;
         }
         
         private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            return forStatement.test === null
-                ? this.parseForStatementWithoutTest(forStatement, currentNode)
-                : this.parseForStatementWithTest(forStatement, currentNode);
-        }
-        
-        private parseForStatementWithTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            let conditionNode = this.parseStatement(forStatement.init, currentNode);
+            // Parse initialization
+            let testDecisionNode = this.parseStatement(forStatement.init, currentNode);
             
-            let truthyCondition = forStatement.test;
-            let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
-            
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
-            let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
-            
-            let loopBodyNode = this.createNode().appendTo(conditionNode, truthyConditionLabel);
-            
+            // Create nodes for loop cornerstones
+            let beginOfLoopBodyNode = this.createNode();
+            let updateNode = this.createNode();
             let finalNode = this.createNode();
             
-            this.enclosingIterationStatements.push({
-                iterationStatement: forStatement,
-                finalNode: finalNode
-            });
-            
-            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopBodyNode);
-            
-            this.enclosingIterationStatements.pop();
-            
-            if (endOfLoopBodyNode) {
-                if (forStatement.update === null) {
-                    conditionNode.appendTo(endOfLoopBodyNode);
-                } else {
-                    let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-                    conditionNode.appendTo(updateExpression);
-                }
+            if (forStatement.test) {
+                // If the loop has a test expression,
+                // we need to add truthy and falsy edges
+                let truthyCondition = forStatement.test;
+                let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
+                
+                // Create edges labels
+                let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);                
+                let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+                
+                // Add truthy and falsy edges
+                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel)
+                finalNode.appendTo(testDecisionNode, falsyConditionLabel);
+            } else {
+                // If the loop doesn't have a test expression,
+                // the loop body starts unconditionally after the initialization
+                beginOfLoopBodyNode.appendTo(testDecisionNode);
             }
             
-            return finalNode.appendTo(conditionNode, falsyConditionLabel);
-        }
-        
-        private parseForStatementWithoutTest(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
-            let loopStartNode = this.parseStatement(forStatement.init, currentNode);            
-            let finalNode = this.createNode();
-            
+            // Begin loop context
             this.enclosingIterationStatements.push({
                 iterationStatement: forStatement,
-                finalNode: finalNode
+                continueTarget: updateNode,
+                breakTarget: finalNode
             });
             
-            let endOfLoopBodyNode = this.parseStatement(forStatement.body, loopStartNode);
+            // Parse body
+            let endOfLoopBodyNode = this.parseStatement(forStatement.body, beginOfLoopBodyNode);
             
+            // End loop context
             this.enclosingIterationStatements.pop();
             
+            if (forStatement.update) {
+                // If the loop has an update expression,
+                // parse it and append it to the end of the loop body
+                let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
+                testDecisionNode.appendTo(endOfUpdateNode);                                   
+            } else {
+                // If the loop doesn't have an update expression,
+                // treat the update node as a dummy and point it to the test node
+                testDecisionNode.appendTo(updateNode);
+            }
+            
             if (endOfLoopBodyNode) {
-                if (forStatement.update === null) {
-                    loopStartNode.appendTo(endOfLoopBodyNode);
-                } else {
-                    let updateExpression = this.parseExpression(forStatement.update, endOfLoopBodyNode);
-                    loopStartNode.appendTo(updateExpression);
-                }
+                // If we reached the end of the loop body through normal control flow,
+                // continue regularly with the update
+                updateNode.appendTo(endOfLoopBodyNode);
             }
             
             return finalNode;
@@ -320,6 +332,7 @@ module Styx {
         private static isAbruptCompletion(statement: ESTree.Statement): boolean {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
+                case ESTree.NodeType.ContinueStatement:
                     return true;
                     
                 default:
