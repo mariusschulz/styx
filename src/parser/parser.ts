@@ -305,22 +305,14 @@ module Styx {
         }
         
         private parseExpression(expression: ESTree.Expression, currentNode: FlowNode): FlowNode {
-            switch (expression.type) {
-                case ESTree.NodeType.AssignmentExpression:
-                case ESTree.NodeType.CallExpression:
-                case ESTree.NodeType.Identifier:
-                case ESTree.NodeType.Literal:
-                case ESTree.NodeType.NewExpression:
-                case ESTree.NodeType.UpdateExpression:
-                    let expressionLabel = Expressions.Stringifier.stringify(expression);
-                    return this.createNode().appendTo(currentNode, expressionLabel);
-                
-                case ESTree.NodeType.SequenceExpression:
-                    return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode);
-                
-                default:
-                    throw Error(`Encountered unsupported expression type '${expression.type}'`);
+            if (expression.type === ESTree.NodeType.SequenceExpression) {
+                return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode);
             }
+            
+            let expressionLabel = Expressions.Stringifier.stringify(expression);
+            
+            return this.createNode()
+                .appendTo(currentNode, expressionLabel);
         }
         
         private parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode): FlowNode {
