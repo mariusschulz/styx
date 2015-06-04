@@ -1,7 +1,7 @@
 /// <reference path="../definitions/lodash.d.ts"/>
 /// <reference path="parser/parser.ts"/>
 /// <reference path="estree.ts"/>
-/// <reference path="types.ts"/>
+/// <reference path="flow.ts"/>
 
 module Styx {
     export function parse(node: ESTree.Node): ControlFlowGraph {

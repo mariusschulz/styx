@@ -1,5 +1,5 @@
 /// <reference path="../estree.ts"/>
-/// <reference path="../types.ts"/>
+/// <reference path="../flow.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
 /// <reference path="../collections/stack.ts"/>
 /// <reference path="enclosingIterationStatement.ts"/>
