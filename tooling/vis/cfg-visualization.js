@@ -76,6 +76,7 @@
                 label: outgoingEdge.label,
                 color: color,
                 font: {
+                    background: "white",
                     color: color
                 },
                 arrows: "to"
