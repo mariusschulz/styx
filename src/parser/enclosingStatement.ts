@@ -1,9 +1,9 @@
 /// <reference path="../estree.ts" />
+/// <reference path="../flow.ts" />
 
 module Styx {
-    export interface EnclosingIterationStatement {
+    export interface EnclosingStatement {
         label?: string;
-        iterationStatement: ESTree.IterationStatement;
         continueTarget: FlowNode;
         breakTarget: FlowNode;
     }
