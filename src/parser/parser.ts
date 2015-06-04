@@ -2,7 +2,7 @@
 /// <reference path="../flow.ts"/>
 /// <reference path="../util/idGenerator.ts"/>
 /// <reference path="../collections/stack.ts"/>
-/// <reference path="enclosingIterationStatement.ts"/>
+/// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
 
@@ -11,11 +11,11 @@ module Styx {
         public controlFlowGraph: ControlFlowGraph;
         
         private idGenerator: Util.IdGenerator;
-        private enclosingIterationStatements: Collections.Stack<EnclosingIterationStatement>;
+        private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         constructor(private program: ESTree.Program) {
             this.idGenerator = Util.createIdGenerator();
-            this.enclosingIterationStatements = new Collections.Stack<EnclosingIterationStatement>();
+            this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
         }
@@ -64,6 +64,10 @@ module Styx {
                 return this.parseIfStatement(<ESTree.IfStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.LabeledStatement) {
+                return this.parseLabeledStatement(<ESTree.LabeledStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.BreakStatement) {
                 return this.parseBreakStatement(<ESTree.BreakStatement>statement, currentNode);
             }
@@ -107,6 +111,30 @@ module Styx {
             }
     
             return currentNode;
+        }
+    
+        private parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode): FlowNode {
+            if (!Parser.isEnclosingStatement(labeledStatement.body)) {
+                // If we didn't encounter an enclosing statement,
+                // the label is irrelevant for control flow and we thus don't track it.                
+                return this.parseStatement(labeledStatement.body, currentNode);
+            }
+            
+            let finalNode = this.createNode();
+            
+            let enclosingStatement = {
+                breakTarget: finalNode,
+                label: labeledStatement.label.name
+            };
+            
+            this.enclosingStatements.push(enclosingStatement);
+            
+            let endOfStatementBodyNode = this.parseStatement(labeledStatement.body, currentNode);
+            finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
+            
+            this.enclosingStatements.pop();
+            
+            return finalNode;
         }
     
         private parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
@@ -164,14 +192,18 @@ module Styx {
         }
         
         private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
-            let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
+            let label = breakStatement.label ? breakStatement.label.name : void 0;
+            let enclosingStatement = label
+                ? this.enclosingStatements.find(statement => statement.label === label)
+                : this.enclosingStatements.peek();
+            
+            enclosingStatement.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
             
             return null;
         }
         
         private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
-            let enclosingLoop = this.enclosingIterationStatements.peek();
+            let enclosingLoop = this.enclosingStatements.peek();
             enclosingLoop.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
             
             return null;
@@ -189,8 +221,7 @@ module Styx {
             let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
             let finalNode = this.createNode();
             
-            this.enclosingIterationStatements.push({
-                iterationStatement: whileStatement,
+            this.enclosingStatements.push({
                 continueTarget: currentNode,
                 breakTarget: finalNode
             });
@@ -201,7 +232,7 @@ module Styx {
                 currentNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
-            this.enclosingIterationStatements.pop();
+            this.enclosingStatements.pop();
             
             return finalNode
                 .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
@@ -219,15 +250,14 @@ module Styx {
             let testNode = this.createNode();
             let finalNode = this.createNode();
             
-            this.enclosingIterationStatements.push({
-                iterationStatement: doWhileStatement,
+            this.enclosingStatements.push({
                 continueTarget: testNode,
                 breakTarget: finalNode
             });
             
             let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
             
-            this.enclosingIterationStatements.pop();
+            this.enclosingStatements.pop();
             
             currentNode.appendTo(testNode, truthyConditionLabel, EdgeType.Conditional);
             finalNode.appendTo(testNode, falsyConditionLabel, EdgeType.Conditional);
@@ -268,8 +298,7 @@ module Styx {
             }
             
             // Begin loop context
-            this.enclosingIterationStatements.push({
-                iterationStatement: forStatement,
+            this.enclosingStatements.push({
                 continueTarget: updateNode,
                 breakTarget: finalNode
             });
@@ -278,7 +307,7 @@ module Styx {
             let endOfLoopBodyNode = this.parseStatement(forStatement.body, beginOfLoopBodyNode);
             
             // End loop context
-            this.enclosingIterationStatements.pop();
+            this.enclosingStatements.pop();
             
             if (forStatement.update) {
                 // If the loop has an update expression,
@@ -327,6 +356,19 @@ module Styx {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
                 case ESTree.NodeType.ContinueStatement:
+                    return true;
+                    
+                default:
+                    return false;
+            }
+        }
+        
+        private static isEnclosingStatement(statement: ESTree.Statement): boolean {
+            switch (statement.type) {
+                case ESTree.NodeType.BlockStatement:
+                case ESTree.NodeType.ForStatement:
+                case ESTree.NodeType.WhileStatement:
+                case ESTree.NodeType.DoWhileStatement:
                     return true;
                     
                 default:
