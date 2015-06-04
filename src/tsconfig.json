@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "preserveConstEnums": true,
         "noImplicitAny": true,
         "out": "dist/styx.js"
     },

@@ -92,7 +92,7 @@ module Styx {
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
-            return this.createNode().appendTo(currentNode, "(empty)");
+            return this.createNode().appendTo(currentNode, "(empty)", EdgeType.Epsilon);
         }
         
         private parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
@@ -122,14 +122,16 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
-            let thenNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
+            let thenNode = this.createNode()
+                .appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
+            
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             let finalNode = this.createNode()
-                .appendTo(currentNode, falsyConditionLabel);
+                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
             
             if (endOfThenBranch) {
-                finalNode.appendTo(endOfThenBranch);
+                finalNode.appendEpsilonEdgeTo(endOfThenBranch);
             }
             
             return finalNode;
@@ -139,23 +141,23 @@ module Styx {
             // Then branch
             let thenCondition = ifStatement.test;
             let thenLabel = Expressions.Stringifier.stringify(thenCondition);
-            let thenNode = this.createNode().appendTo(currentNode, thenLabel);
+            let thenNode = this.createNode().appendTo(currentNode, thenLabel, EdgeType.Conditional);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
             let elseCondition = Expressions.Negator.negateTruthiness(thenCondition);
             let elseLabel = Expressions.Stringifier.stringify(elseCondition); 
-            let elseNode = this.createNode().appendTo(currentNode, elseLabel);
+            let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
             let finalNode = this.createNode();
             
             if (endOfThenBranch) {
-                finalNode.appendTo(endOfThenBranch);
+                finalNode.appendEpsilonEdgeTo(endOfThenBranch);
             }
             
             if (endOfElseBranch) {
-                finalNode.appendTo(endOfElseBranch);
+                finalNode.appendEpsilonEdgeTo(endOfElseBranch);
             }
             
             return finalNode;
@@ -163,14 +165,14 @@ module Styx {
         
         private parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.breakTarget.appendTo(currentNode, "break");
+            enclosingLoop.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
             
             return null;
         }
         
         private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
             let enclosingLoop = this.enclosingIterationStatements.peek();
-            enclosingLoop.continueTarget.appendTo(currentNode, "continue");
+            enclosingLoop.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
             
             return null;
         }
@@ -184,7 +186,7 @@ module Styx {
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
-            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel);
+            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
             let finalNode = this.createNode();
             
             this.enclosingIterationStatements.push({
@@ -196,13 +198,13 @@ module Styx {
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
             
             if (endOfLoopBodyNode) {
-                currentNode.appendTo(endOfLoopBodyNode);
+                currentNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             this.enclosingIterationStatements.pop();
             
             return finalNode
-                .appendTo(currentNode, falsyConditionLabel);
+                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
         }
         
         private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
@@ -227,11 +229,11 @@ module Styx {
             
             this.enclosingIterationStatements.pop();
             
-            currentNode.appendTo(testNode, truthyConditionLabel);
-            finalNode.appendTo(testNode, falsyConditionLabel);
+            currentNode.appendTo(testNode, truthyConditionLabel, EdgeType.Conditional);
+            finalNode.appendTo(testNode, falsyConditionLabel, EdgeType.Conditional);
             
             if (endOfLoopBodyNode) {
-                testNode.appendTo(endOfLoopBodyNode);
+                testNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             return finalNode;
@@ -257,12 +259,12 @@ module Styx {
                 let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
                 
                 // Add truthy and falsy edges
-                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel)
-                finalNode.appendTo(testDecisionNode, falsyConditionLabel);
+                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel, EdgeType.Conditional)
+                finalNode.appendTo(testDecisionNode, falsyConditionLabel, EdgeType.Conditional);
             } else {
                 // If the loop doesn't have a test expression,
                 // the loop body starts unconditionally after the initialization
-                beginOfLoopBodyNode.appendTo(testDecisionNode);
+                beginOfLoopBodyNode.appendEpsilonEdgeTo(testDecisionNode);
             }
             
             // Begin loop context
@@ -282,17 +284,17 @@ module Styx {
                 // If the loop has an update expression,
                 // parse it and append it to the end of the loop body
                 let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode);
-                testDecisionNode.appendTo(endOfUpdateNode);                                   
+                testDecisionNode.appendEpsilonEdgeTo(endOfUpdateNode);                                   
             } else {
                 // If the loop doesn't have an update expression,
                 // treat the update node as a dummy and point it to the test node
-                testDecisionNode.appendTo(updateNode);
+                testDecisionNode.appendEpsilonEdgeTo(updateNode);
             }
             
             if (endOfLoopBodyNode) {
                 // If we reached the end of the loop body through normal control flow,
                 // continue regularly with the update
-                updateNode.appendTo(endOfLoopBodyNode);
+                updateNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
             
             return finalNode;

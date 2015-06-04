@@ -69,16 +69,34 @@
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
+            var color = getEdgeColor(outgoingEdge);
             var visEdge = {
                 from: node.id,
                 to: outgoingEdge.target.id,
                 label: outgoingEdge.label,
-                color: outgoingEdge.label ? null : "#999",
+                color: color,
+                font: {
+                    color: color
+                },
                 arrows: "to"
             };
             
             edges.push(visEdge);
         }); 
+    }
+    
+    function getEdgeColor(edge) {
+        switch (edge.type) {
+            case Styx.EdgeType.Epsilon:
+                return "#999999";
+            case Styx.EdgeType.Conditional:
+                return "#FF9500";
+            case Styx.EdgeType.AbruptCompletion:
+                return "#FF2D55";
+            default:
+                // null falls back to the default color
+                return null;
+        }
     }
     
     function collectNodes(node, nodeSet) {

@@ -20,21 +20,34 @@ module Styx {
             this.outgoingEdges.push(edge);
         }
 
-        appendTo(node: FlowNode, label?: string): FlowNode {
-            let edge = new FlowEdge(this, label);
+        appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal): FlowNode {
+            let edge = new FlowEdge(this, edgeType, label);
             node.addOutgoingEdge(edge);
 
             return this;
+        }
+        
+        appendEpsilonEdgeTo(node: FlowNode): FlowNode {
+            return this.appendTo(node, "", EdgeType.Epsilon);
         }
     }
 
     export class FlowEdge {
         target: FlowNode;
+        type: EdgeType;
         label: string;
 
-        constructor(target: FlowNode, label?: string) {
+        constructor(target: FlowNode, type: EdgeType, label: string) {
             this.target = target;
-            this.label = label || "";
+            this.type = type;
+            this.label = label;
         }
+    }
+    
+    export const enum EdgeType {
+        Normal,
+        Epsilon,
+        Conditional,
+        AbruptCompletion
     }
 }
