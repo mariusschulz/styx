@@ -4,7 +4,7 @@
 module Styx {
     export interface EnclosingStatement {
         label?: string;
-        continueTarget?: FlowNode;
+        continueTarget: FlowNode;
         breakTarget: FlowNode;
     }
 }

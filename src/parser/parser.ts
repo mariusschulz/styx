@@ -114,27 +114,43 @@ module Styx {
         }
     
         private parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode): FlowNode {
-            if (!Parser.isEnclosingStatement(labeledStatement.body)) {
-                // If we didn't encounter an enclosing statement,
-                // the label is irrelevant for control flow and we thus don't track it.                
-                return this.parseStatement(labeledStatement.body, currentNode);
+            let body = labeledStatement.body;
+            let label = labeledStatement.label.name
+            
+            if (body.type === ESTree.NodeType.BlockStatement) {
+                let finalNode = this.createNode();
+                
+                let enclosingStatement: EnclosingStatement = {
+                    breakTarget: finalNode,
+                    continueTarget: null,
+                    label: label
+                };
+                
+                this.enclosingStatements.push(enclosingStatement);
+                
+                let endOfStatementBodyNode = this.parseBlockStatement(<ESTree.BlockStatement>body, currentNode);
+                finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
+                
+                this.enclosingStatements.pop();
+                
+                return finalNode;
             }
             
-            let finalNode = this.createNode();
+            if (body.type === ESTree.NodeType.WhileStatement) {
+                return this.parseWhileStatement(<ESTree.WhileStatement>body, currentNode, label);
+            }
             
-            let enclosingStatement = {
-                breakTarget: finalNode,
-                label: labeledStatement.label.name
-            };
+            if (body.type === ESTree.NodeType.DoWhileStatement) {
+                return this.parseDoWhileStatement(<ESTree.DoWhileStatement>body, currentNode, label);
+            }
             
-            this.enclosingStatements.push(enclosingStatement);
+            if (body.type === ESTree.NodeType.ForStatement) {
+                return this.parseForStatement(<ESTree.ForStatement>body, currentNode, label);
+            }
             
-            let endOfStatementBodyNode = this.parseStatement(labeledStatement.body, currentNode);
-            finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
-            
-            this.enclosingStatements.pop();
-            
-            return finalNode;
+            // If we didn't encounter an enclosing statement,
+            // the label is irrelevant for control flow and we thus don't track it.                
+            return this.parseStatement(body, currentNode);
         }
     
         private parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
@@ -203,19 +219,27 @@ module Styx {
         }
         
         private parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode): FlowNode {
-            let enclosingLoop = this.enclosingStatements.peek();
-            enclosingLoop.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
+            let label = continueStatement.label ? continueStatement.label.name : void 0;
+            let enclosingStatement = label
+                ? this.enclosingStatements.find(statement => statement.label === label)
+                : this.enclosingStatements.peek();
+            
+            if (enclosingStatement.continueTarget === null) {
+                throw new Error(`Illegal continue target detected: "${label}" does not label an enclosing iteration statement`);
+            }
+            
+            enclosingStatement.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
             
             return null;
         }
         
-        private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode): FlowNode {
+        private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
             let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
             
             // Falsy test (exit loop)
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
+            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
             let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
             
             let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
@@ -223,7 +247,8 @@ module Styx {
             
             this.enclosingStatements.push({
                 continueTarget: currentNode,
-                breakTarget: finalNode
+                breakTarget: finalNode,
+                label: label
             });
             
             let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode);
@@ -238,7 +263,7 @@ module Styx {
                 .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
         }
         
-        private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode): FlowNode {
+        private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = doWhileStatement.test;
             let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
@@ -252,7 +277,8 @@ module Styx {
             
             this.enclosingStatements.push({
                 continueTarget: testNode,
-                breakTarget: finalNode
+                breakTarget: finalNode,
+                label: label
             });
             
             let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode);
@@ -269,7 +295,7 @@ module Styx {
             return finalNode;
         }
         
-        private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode): FlowNode {
+        private parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Parse initialization
             let testDecisionNode = this.parseStatement(forStatement.init, currentNode);
             
@@ -300,7 +326,8 @@ module Styx {
             // Begin loop context
             this.enclosingStatements.push({
                 continueTarget: updateNode,
-                breakTarget: finalNode
+                breakTarget: finalNode,
+                label: label
             });
             
             // Parse body
@@ -356,19 +383,6 @@ module Styx {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
                 case ESTree.NodeType.ContinueStatement:
-                    return true;
-                    
-                default:
-                    return false;
-            }
-        }
-        
-        private static isEnclosingStatement(statement: ESTree.Statement): boolean {
-            switch (statement.type) {
-                case ESTree.NodeType.BlockStatement:
-                case ESTree.NodeType.ForStatement:
-                case ESTree.NodeType.WhileStatement:
-                case ESTree.NodeType.DoWhileStatement:
                     return true;
                     
                 default:
