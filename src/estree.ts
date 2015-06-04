@@ -14,6 +14,7 @@ module ESTree {
         static ForStatement = "ForStatement";
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
+        static LabeledStatement = "LabeledStatement";
         static Literal = "Literal";
         static LogicalExpression = "LogicalExpression";
         static MemberExpression = "MemberExpression";
@@ -76,6 +77,11 @@ module ESTree {
         test: Expression;
         consequent: Statement;
         alternate?: Statement;
+    }
+    
+    export interface LabeledStatement extends Statement {
+        label: Identifier;
+        body: Statement;
     }
     
     export interface BreakStatement extends Statement {
