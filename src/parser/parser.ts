@@ -156,6 +156,10 @@ module Styx {
                 return this.parseForStatement(<ESTree.ForStatement>body, currentNode, label);
             }
             
+            if (body.type === ESTree.NodeType.ForInStatement) {
+                return this.parseForInStatement(<ESTree.ForInStatement>body, currentNode, label);
+            }
+            
             // If we didn't encounter an enclosing statement,
             // the label is irrelevant for control flow and we thus don't track it.                
             return this.parseStatement(body, currentNode);
@@ -371,7 +375,7 @@ module Styx {
             return finalNode;
         }
         
-        private parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode): FlowNode {
+        private parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, label?: string): FlowNode {
             let stringifiedRight = Expressions.Stringifier.stringify(forInStatement.right);
             
             let variableDeclarator = forInStatement.left.declarations[0];
@@ -388,7 +392,8 @@ module Styx {
             
             this.enclosingStatements.push({
                 breakTarget: finalNode,
-                continueTarget: null
+                continueTarget: null,
+                label: label
             });
             
             let endOfLoopBody = this.parseStatement(forInStatement.body, startOfLoopBody);
