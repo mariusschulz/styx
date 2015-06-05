@@ -27,6 +27,7 @@ module ESTree {
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
         static WhileStatement = "WhileStatement";
+        static WithStatement = "WithStatement";
     }
     
     
@@ -91,6 +92,11 @@ module ESTree {
     
     export interface ContinueStatement extends Statement {
         label?: Identifier;
+    }
+    
+    export interface WithStatement extends Statement {
+        object: Expression;
+        body: Statement;
     }
     
     export interface IterationStatement extends Statement {

@@ -76,6 +76,10 @@ module Styx {
                 return this.parseContinueStatement(<ESTree.ContinueStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.WithStatement) {
+                return this.parseWithStatement(<ESTree.WithStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.WhileStatement) {
                 return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
             }
@@ -231,6 +235,13 @@ module Styx {
             enclosingStatement.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
             
             return null;
+        }
+        
+        private parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode): FlowNode {
+            let stringifiedExpression = Expressions.Stringifier.stringify(withStatement.object);
+            let expressionNode = this.createNode().appendTo(currentNode, stringifiedExpression); 
+            
+            return this.parseStatement(withStatement.body, expressionNode);
         }
         
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
