@@ -392,7 +392,7 @@ module Styx {
             
             this.enclosingStatements.push({
                 breakTarget: finalNode,
-                continueTarget: null,
+                continueTarget: conditionNode,
                 label: label
             });
             
