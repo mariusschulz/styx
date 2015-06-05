@@ -386,9 +386,18 @@ module Styx {
             let finalNode = this.createNode()
                 .appendTo(conditionNode, "<no more>", EdgeType.Conditional);
             
+            this.enclosingStatements.push({
+                breakTarget: finalNode,
+                continueTarget: null
+            });
+            
             let endOfLoopBody = this.parseStatement(forInStatement.body, startOfLoopBody);
             
-            conditionNode.appendEpsilonEdgeTo(endOfLoopBody);
+            this.enclosingStatements.pop();
+            
+            if (endOfLoopBody) {
+                conditionNode.appendEpsilonEdgeTo(endOfLoopBody);
+            }
             
             return finalNode;
         }
