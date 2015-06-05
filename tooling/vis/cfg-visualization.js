@@ -22,7 +22,8 @@
             
             edges: {
                 smooth: {
-                    type: "curvedCW"
+                    type: "curvedCW",
+                    roundness: 0.35
                 }
             }
         };
