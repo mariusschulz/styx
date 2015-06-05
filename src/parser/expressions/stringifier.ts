@@ -176,6 +176,7 @@ module Styx.Expressions.Stringifier {
     
     function needsParenthesizing(expression: ESTree.Expression): boolean {
         switch (expression.type) {
+            case ESTree.NodeType.AssignmentExpression:
             case ESTree.NodeType.BinaryExpression:
             case ESTree.NodeType.LogicalExpression:
                 return true;
