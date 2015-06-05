@@ -118,7 +118,7 @@ module ESTree {
     }
     
     export interface ForInStatement extends Statement {
-        left: VariableDeclaration | Expression;
+        left: VariableDeclaration;
         right: Expression;
         body: Statement;
     }

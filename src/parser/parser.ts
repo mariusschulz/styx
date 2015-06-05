@@ -92,6 +92,10 @@ module Styx {
                 return this.parseForStatement(<ESTree.ForStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.ForInStatement) {
+                return this.parseForInStatement(<ESTree.ForInStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
                 return this.parseExpressionStatement(<ESTree.ExpressionStatement>statement, currentNode);
             }
@@ -363,6 +367,28 @@ module Styx {
                 // continue regularly with the update
                 updateNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
             }
+            
+            return finalNode;
+        }
+        
+        private parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode): FlowNode {
+            let stringifiedRight = Expressions.Stringifier.stringify(forInStatement.right);
+            
+            let variableDeclarator = forInStatement.left.declarations[0];
+            let variableName = variableDeclarator.id.name;
+            
+            let conditionNode = this.createNode()
+                .appendTo(currentNode, stringifiedRight);
+            
+            let startOfLoopBody = this.createNode()
+                .appendTo(conditionNode, `${variableName} = <next>`, EdgeType.Conditional);
+                
+            let finalNode = this.createNode()
+                .appendTo(conditionNode, "<no more>", EdgeType.Conditional);
+            
+            let endOfLoopBody = this.parseStatement(forInStatement.body, startOfLoopBody);
+            
+            conditionNode.appendEpsilonEdgeTo(endOfLoopBody);
             
             return finalNode;
         }
