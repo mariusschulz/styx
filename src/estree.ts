@@ -12,6 +12,7 @@ module ESTree {
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
+        static ForInStatement = "ForInStatement";
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
         static LabeledStatement = "LabeledStatement";
@@ -113,6 +114,12 @@ module ESTree {
         init?: VariableDeclaration | Expression;
         test?: Expression;
         update?: Expression;
+        body: Statement;
+    }
+    
+    export interface ForInStatement extends Statement {
+        left: VariableDeclaration | Expression;
+        right: Expression;
         body: Statement;
     }
     
