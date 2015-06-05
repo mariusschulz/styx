@@ -20,6 +20,7 @@ module Styx.Expressions.Stringifier {
             [ESTree.NodeType.NewExpression]: stringifyNewExpression,
             [ESTree.NodeType.ObjectExpression]: stringifyObjectExpression,
             [ESTree.NodeType.SequenceExpression]: stringifySequenceExpression,
+            [ESTree.NodeType.ThisExpression]: stringifyThisExpression,
             [ESTree.NodeType.UnaryExpression]: stringifyUnaryExpression,
             [ESTree.NodeType.UpdateExpression]: stringifyUpdateExpression
         };
@@ -147,6 +148,10 @@ module Styx.Expressions.Stringifier {
             .join(", ");
         
         return parenthesize(commaSeparatedExpressions);
+    }
+    
+    function stringifyThisExpression(expression: ESTree.ThisExpression): string {
+        return "this";
     }
     
     function stringifyUnaryExpression(expression: ESTree.UnaryExpression): string {

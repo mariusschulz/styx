@@ -22,6 +22,7 @@ module ESTree {
         static ObjectExpression = "ObjectExpression";
         static Program = "Program";
         static SequenceExpression = "SequenceExpression";
+        static ThisExpression = "ThisExpression";
         static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
@@ -130,6 +131,10 @@ module ESTree {
     // Expressions 
     
     export interface Expression extends Node {
+        
+    }
+    
+    export interface ThisExpression extends Expression {
         
     }
     
