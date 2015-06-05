@@ -3,12 +3,12 @@
 module Styx.Expressions.Stringifier {
     type StringificationFunction = (expression: ESTree.Expression) => string;
     
-    interface StringificationMap {
+    interface ExpressionToStringMap {
         [key: string]: StringificationFunction;
     }
     
     export function stringify(expression: ESTree.Expression): string {        
-        let stringifiers: StringificationMap = {
+        let stringifiers: ExpressionToStringMap = {
             [ESTree.NodeType.ArrayExpression]: stringifyArrayExpression,
             [ESTree.NodeType.AssignmentExpression]: stringifyAssignmentExpression,
             [ESTree.NodeType.BinaryExpression]: stringifyBinaryExpression,
