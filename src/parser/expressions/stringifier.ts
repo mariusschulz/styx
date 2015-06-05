@@ -32,12 +32,12 @@ module Styx.Expressions.Stringifier {
             : "<UNEXPECTED>";
     }
     
-    function stringifyArrayExpression(expression: ESTree.ArrayExpression): string {
+    function stringifyArrayExpression(arrayExpression: ESTree.ArrayExpression): string {
         let arrayLiteral = "";        
         let isFirst = true;
         let previousElementWasNull = false;
         
-        for (let element of expression.elements) {
+        for (let element of arrayExpression.elements) {
             if (!isFirst && !previousElementWasNull) {
                 arrayLiteral += ",";
             }
@@ -56,31 +56,31 @@ module Styx.Expressions.Stringifier {
         return `[${arrayLiteral}]`;
     }
     
-    function stringifyAssignmentExpression(expression: ESTree.AssignmentExpression): string {
-        let leftString = stringify(expression.left);
-        let rightString = stringify(expression.right);
+    function stringifyAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression): string {
+        let leftString = stringify(assignmentExpression.left);
+        let rightString = stringify(assignmentExpression.right);
         
-        return `${leftString} ${expression.operator} ${rightString}`;
+        return `${leftString} ${assignmentExpression.operator} ${rightString}`;
     }
     
-    function stringifyBinaryExpression(expression: ESTree.BinaryExpression): string {
-        let leftString = stringify(expression.left);
-        let rightString = stringify(expression.right);
+    function stringifyBinaryExpression(binaryExpression: ESTree.BinaryExpression): string {
+        let leftString = stringify(binaryExpression.left);
+        let rightString = stringify(binaryExpression.right);
         
-        if (needsParenthesizing(expression.left)) {
+        if (needsParenthesizing(binaryExpression.left)) {
             leftString = parenthesize(leftString);
         }
         
-        if (needsParenthesizing(expression.right)) {
+        if (needsParenthesizing(binaryExpression.right)) {
             rightString = parenthesize(rightString);
         }
         
-        return `${leftString} ${expression.operator} ${rightString}`;
+        return `${leftString} ${binaryExpression.operator} ${rightString}`;
     }
     
-    function stringifyCallExpression(expression: ESTree.CallExpression): string {        
-        let calleeString = stringify(expression.callee);
-        let argsString = expression.arguments
+    function stringifyCallExpression(callExpression: ESTree.CallExpression): string {        
+        let calleeString = stringify(callExpression.callee);
+        let argsString = callExpression.arguments
             .map(arg => stringify(arg))
             .join(", ");
         
@@ -101,32 +101,32 @@ module Styx.Expressions.Stringifier {
                 : value.toString();
     }
     
-    function stringifyLogicalExpression(expression: ESTree.LogicalExpression): string {
-        let leftString = stringify(expression.left);
-        let rightString = stringify(expression.right);
+    function stringifyLogicalExpression(logicalExpression: ESTree.LogicalExpression): string {
+        let leftString = stringify(logicalExpression.left);
+        let rightString = stringify(logicalExpression.right);
         
-        if (needsParenthesizing(expression.left)) {
+        if (needsParenthesizing(logicalExpression.left)) {
             leftString = parenthesize(leftString);
         }
         
-        if (needsParenthesizing(expression.right)) {
+        if (needsParenthesizing(logicalExpression.right)) {
             rightString = parenthesize(rightString);
         }
         
-        return `${leftString} ${expression.operator} ${rightString}`;
+        return `${leftString} ${logicalExpression.operator} ${rightString}`;
     }
     
-    function stringifyMemberExpression(expression: ESTree.MemberExpression): string {
-        let objectString = stringify(expression.object);
-        let propertyString = stringify(expression.property);
+    function stringifyMemberExpression(memberExpression: ESTree.MemberExpression): string {
+        let objectString = stringify(memberExpression.object);
+        let propertyString = stringify(memberExpression.property);
         
-        return expression.computed
+        return memberExpression.computed
             ? `${objectString}[${propertyString}]`
             : `${objectString}.${propertyString}`;
     }
     
-    function stringifyNewExpression(expression: ESTree.NewExpression): string {        
-        let callExpression = stringifyCallExpression(expression);
+    function stringifyNewExpression(newExpression: ESTree.NewExpression): string {        
+        let callExpression = stringifyCallExpression(newExpression);
         
         return `new ${callExpression}`;
     }
@@ -150,28 +150,28 @@ module Styx.Expressions.Stringifier {
         return parenthesize(commaSeparatedExpressions);
     }
     
-    function stringifyThisExpression(expression: ESTree.ThisExpression): string {
+    function stringifyThisExpression(thisExpression: ESTree.ThisExpression): string {
         return "this";
     }
     
-    function stringifyUnaryExpression(expression: ESTree.UnaryExpression): string {
-        let operator = expression.operator;
-        let stringifiedArgument = stringify(expression.argument);
+    function stringifyUnaryExpression(unaryExpression: ESTree.UnaryExpression): string {
+        let operator = unaryExpression.operator;
+        let stringifiedArgument = stringify(unaryExpression.argument);
         let joiner = operator.length > 1 ? " " : "";
         
-        if (needsParenthesizing(expression.argument)) {
+        if (needsParenthesizing(unaryExpression.argument)) {
             stringifiedArgument = parenthesize(stringifiedArgument);
         }
         
-        return expression.prefix
+        return unaryExpression.prefix
             ? operator + joiner + stringifiedArgument
             : stringifiedArgument + joiner + operator;
     }
     
-    function stringifyUpdateExpression(expression: ESTree.UpdateExpression): string {
-        return expression.prefix
-            ? expression.operator + stringify(expression.argument)
-            : stringify(expression.argument) + expression.operator;
+    function stringifyUpdateExpression(updateExpression: ESTree.UpdateExpression): string {
+        return updateExpression.prefix
+            ? updateExpression.operator + stringify(updateExpression.argument)
+            : stringify(updateExpression.argument) + updateExpression.operator;
     }
     
     function needsParenthesizing(expression: ESTree.Expression): boolean {
