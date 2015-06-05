@@ -99,22 +99,21 @@ module ESTree {
         body: Statement;
     }
     
-    export interface IterationStatement extends Statement {
+    export interface WhileStatement extends Statement {
+        test: Expression;
         body: Statement;
     }
     
-    export interface WhileStatement extends IterationStatement {
+    export interface DoWhileStatement extends Statement {
         test: Expression;
+        body: Statement;
     }
     
-    export interface DoWhileStatement extends IterationStatement {
-        test: Expression;
-    }
-    
-    export interface ForStatement extends IterationStatement {
+    export interface ForStatement extends Statement {
         init?: VariableDeclaration | Expression;
         test?: Expression;
         update?: Expression;
+        body: Statement;
     }
     
     
