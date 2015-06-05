@@ -1,4 +1,8 @@
 module Styx.Collections {
+    interface Predicate<T> {
+        (element: T): boolean;
+    }
+    
     export class Stack<T> {
         private elements: T[];
         
@@ -18,7 +22,7 @@ module Styx.Collections {
             return this.elements[this.elements.length - 1];            
         }
         
-        find(predicate: (element: T) => boolean): T {
+        find(predicate: Predicate<T>): T {
             for (let i = this.elements.length - 1; i >= 0; i--) {
                 let element = this.elements[i];
                 
