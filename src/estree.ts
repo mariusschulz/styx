@@ -12,6 +12,7 @@ module ESTree {
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
         static ForStatement = "ForStatement";
+        static ForInStatement = "ForInStatement";
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
         static LabeledStatement = "LabeledStatement";
@@ -35,20 +36,8 @@ module ESTree {
 
     export interface Node {
         type: string;
-        loc?: SourceLocation;
     }
 
-    export interface SourceLocation {
-        source?: string;
-        start: Position;
-        end: Position;
-    }
-
-    export interface Position {
-        line: number; // >= 1
-        column: number; // >= 0
-    }
-    
     
     // Programs
 
@@ -78,7 +67,7 @@ module ESTree {
     export interface IfStatement extends Statement {
         test: Expression;
         consequent: Statement;
-        alternate?: Statement;
+        alternate: Statement;
     }
     
     export interface LabeledStatement extends Statement {
@@ -87,11 +76,11 @@ module ESTree {
     }
     
     export interface BreakStatement extends Statement {
-        label?: Identifier;
+        label: Identifier;
     }
     
     export interface ContinueStatement extends Statement {
-        label?: Identifier;
+        label: Identifier;
     }
     
     export interface WithStatement extends Statement {
@@ -99,22 +88,27 @@ module ESTree {
         body: Statement;
     }
     
-    export interface IterationStatement extends Statement {
+    export interface WhileStatement extends Statement {
+        test: Expression;
         body: Statement;
     }
     
-    export interface WhileStatement extends IterationStatement {
+    export interface DoWhileStatement extends Statement {
         test: Expression;
+        body: Statement;
     }
     
-    export interface DoWhileStatement extends IterationStatement {
+    export interface ForStatement extends Statement {
+        init: VariableDeclaration | Expression;
         test: Expression;
+        update: Expression;
+        body: Statement;
     }
     
-    export interface ForStatement extends IterationStatement {
-        init?: VariableDeclaration | Expression;
-        test?: Expression;
-        update?: Expression;
+    export interface ForInStatement extends Statement {
+        left: VariableDeclaration;
+        right: Expression;
+        body: Statement;
     }
     
     
@@ -130,7 +124,7 @@ module ESTree {
     
     export interface VariableDeclarator extends Node {
         id: Identifier;
-        init?: Expression;
+        init: Expression;
     }
     
     
@@ -215,6 +209,6 @@ module ESTree {
     }
     
     export interface Literal extends Node, Expression {
-        value?: string | boolean | number | RegExp;
+        value: string | boolean | number | RegExp;
     }
 }

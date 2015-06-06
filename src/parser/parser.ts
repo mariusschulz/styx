@@ -6,7 +6,7 @@
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
 
-module Styx {
+namespace Styx {
     export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         
@@ -92,6 +92,10 @@ module Styx {
                 return this.parseForStatement(<ESTree.ForStatement>statement, currentNode);
             }
             
+            if (statement.type === ESTree.NodeType.ForInStatement) {
+                return this.parseForInStatement(<ESTree.ForInStatement>statement, currentNode);
+            }
+            
             if (statement.type === ESTree.NodeType.ExpressionStatement) {
                 return this.parseExpressionStatement(<ESTree.ExpressionStatement>statement, currentNode);
             }
@@ -150,6 +154,10 @@ module Styx {
             
             if (body.type === ESTree.NodeType.ForStatement) {
                 return this.parseForStatement(<ESTree.ForStatement>body, currentNode, label);
+            }
+            
+            if (body.type === ESTree.NodeType.ForInStatement) {
+                return this.parseForInStatement(<ESTree.ForInStatement>body, currentNode, label);
             }
             
             // If we didn't encounter an enclosing statement,
@@ -362,6 +370,38 @@ module Styx {
                 // If we reached the end of the loop body through normal control flow,
                 // continue regularly with the update
                 updateNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
+            }
+            
+            return finalNode;
+        }
+        
+        private parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, label?: string): FlowNode {
+            let stringifiedRight = Expressions.Stringifier.stringify(forInStatement.right);
+            
+            let variableDeclarator = forInStatement.left.declarations[0];
+            let variableName = variableDeclarator.id.name;
+            
+            let conditionNode = this.createNode()
+                .appendTo(currentNode, stringifiedRight);
+            
+            let startOfLoopBody = this.createNode()
+                .appendTo(conditionNode, `${variableName} = <next>`, EdgeType.Conditional);
+                
+            let finalNode = this.createNode()
+                .appendTo(conditionNode, "<no more>", EdgeType.Conditional);
+            
+            this.enclosingStatements.push({
+                breakTarget: finalNode,
+                continueTarget: conditionNode,
+                label: label
+            });
+            
+            let endOfLoopBody = this.parseStatement(forInStatement.body, startOfLoopBody);
+            
+            this.enclosingStatements.pop();
+            
+            if (endOfLoopBody) {
+                conditionNode.appendEpsilonEdgeTo(endOfLoopBody);
             }
             
             return finalNode;
