@@ -122,6 +122,10 @@ namespace Styx {
                 return finalNode;
             }
             
+            if (body.type === ESTree.NodeType.SwitchStatement) {
+                return this.parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, label);
+            }
+            
             if (body.type === ESTree.NodeType.WhileStatement) {
                 return this.parseWhileStatement(<ESTree.WhileStatement>body, currentNode, label);
             }
@@ -230,7 +234,7 @@ namespace Styx {
             return this.parseStatement(withStatement.body, expressionNode);
         }
         
-        private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode): FlowNode {
+        private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
             const switchExpression = "$switch";
             
             let stringifiedDiscriminant = Expressions.Stringifier.stringify(switchStatement.discriminant);
@@ -242,7 +246,7 @@ namespace Styx {
             this.enclosingStatements.push({
                 breakTarget: finalNode,
                 continueTarget: null,
-                label: null
+                label: label
             });
             
             let endOfPreviousCase: FlowNode = void 0;
