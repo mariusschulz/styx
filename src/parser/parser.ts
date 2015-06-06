@@ -7,6 +7,10 @@
 /// <reference path="expressions/stringifier.ts"/>
 
 namespace Styx {
+    interface StatementTypeToParserMap {
+        [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
+    }
+    
     export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         
@@ -48,59 +52,29 @@ namespace Styx {
                 return currentNode;
             }
             
-            if (statement.type === ESTree.NodeType.EmptyStatement) {
-                return this.parseEmptyStatement(<ESTree.EmptyStatement>statement, currentNode);
+            let statementParsers: StatementTypeToParserMap = {
+                [ESTree.NodeType.EmptyStatement]: this.parseEmptyStatement,
+                [ESTree.NodeType.BlockStatement]: this.parseBlockStatement,
+                [ESTree.NodeType.VariableDeclaration]: this.parseVariableDeclaration,
+                [ESTree.NodeType.IfStatement]: this.parseIfStatement,
+                [ESTree.NodeType.LabeledStatement]: this.parseLabeledStatement,
+                [ESTree.NodeType.BreakStatement]: this.parseBreakStatement,
+                [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
+                [ESTree.NodeType.WithStatement]: this.parseWithStatement,
+                [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
+                [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
+                [ESTree.NodeType.ForStatement]: this.parseForInStatement,
+                [ESTree.NodeType.ForInStatement]: this.parseEmptyStatement,
+                [ESTree.NodeType.ExpressionStatement]: this.parseExpressionStatement
+            };
+            
+            let parsingMethod = statementParsers[statement.type];
+            
+            if (!parsingMethod) {
+                throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
             
-            if (statement.type === ESTree.NodeType.BlockStatement) {
-                return this.parseBlockStatement(<ESTree.BlockStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.VariableDeclaration) {
-                return this.parseVariableDeclaration(<ESTree.VariableDeclaration>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.IfStatement) {
-                return this.parseIfStatement(<ESTree.IfStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.LabeledStatement) {
-                return this.parseLabeledStatement(<ESTree.LabeledStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.BreakStatement) {
-                return this.parseBreakStatement(<ESTree.BreakStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.ContinueStatement) {
-                return this.parseContinueStatement(<ESTree.ContinueStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.WithStatement) {
-                return this.parseWithStatement(<ESTree.WithStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.WhileStatement) {
-                return this.parseWhileStatement(<ESTree.WhileStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.DoWhileStatement) {
-                return this.parseDoWhileStatement(<ESTree.DoWhileStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.ForStatement) {
-                return this.parseForStatement(<ESTree.ForStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.ForInStatement) {
-                return this.parseForInStatement(<ESTree.ForInStatement>statement, currentNode);
-            }
-            
-            if (statement.type === ESTree.NodeType.ExpressionStatement) {
-                return this.parseExpressionStatement(<ESTree.ExpressionStatement>statement, currentNode);
-            }
-            
-            throw Error(`Encountered unsupported statement type '${statement.type}'`);
+            return parsingMethod(statement, currentNode);
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
