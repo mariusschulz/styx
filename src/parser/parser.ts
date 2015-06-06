@@ -5,6 +5,7 @@
 /// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
+/// <reference path="statements/switchParser.ts"/>
 
 namespace Styx {
     interface StatementTypeToParserMap {
@@ -62,6 +63,7 @@ namespace Styx {
                 [ESTree.NodeType.BreakStatement]: this.parseBreakStatement,
                 [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
                 [ESTree.NodeType.WithStatement]: this.parseWithStatement,
+                [ESTree.NodeType.SwitchStatement]: this.parseSwitchStatement,
                 [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
                 [ESTree.NodeType.ForStatement]: this.parseForStatement,
@@ -226,6 +228,13 @@ namespace Styx {
             let expressionNode = this.createNode().appendTo(currentNode, stringifiedExpression); 
             
             return this.parseStatement(withStatement.body, expressionNode);
+        }
+        
+        private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode): FlowNode {
+            let createNode = _.bind(this.createNode, this);
+            let switchParser = new Statements.SwitchParser(createNode);
+            
+            return switchParser.parseSwitchStatement(switchStatement, currentNode);
         }
         
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
