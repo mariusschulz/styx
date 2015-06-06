@@ -33,27 +33,27 @@ namespace Styx.Expressions.Stringifier {
     }
     
     function stringifyArrayExpression(arrayExpression: ESTree.ArrayExpression): string {
-        let arrayLiteral = "";        
-        let isFirst = true;
+        let stringifiedElements = "";        
+        let isFirstElement = true;
         let previousElementWasNull = false;
         
         for (let element of arrayExpression.elements) {
-            if (!isFirst && !previousElementWasNull) {
-                arrayLiteral += ",";
+            if (!isFirstElement && !previousElementWasNull) {
+                stringifiedElements += ",";
             }
             
             if (element === null) {
-                arrayLiteral += ",";
+                stringifiedElements += ",";
                 previousElementWasNull = true;
             } else {                
-                arrayLiteral += stringify(element);
+                stringifiedElements += stringify(element);
                 previousElementWasNull = false;
             }
             
-            isFirst = false;
+            isFirstElement = false;
         }
         
-        return `[${arrayLiteral}]`;
+        return `[${stringifiedElements}]`;
     }
     
     function stringifyAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression): string {
