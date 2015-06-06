@@ -67,7 +67,7 @@ module ESTree {
     export interface IfStatement extends Statement {
         test: Expression;
         consequent: Statement;
-        alternate?: Statement;
+        alternate: Statement;
     }
     
     export interface LabeledStatement extends Statement {
@@ -76,11 +76,11 @@ module ESTree {
     }
     
     export interface BreakStatement extends Statement {
-        label?: Identifier;
+        label: Identifier;
     }
     
     export interface ContinueStatement extends Statement {
-        label?: Identifier;
+        label: Identifier;
     }
     
     export interface WithStatement extends Statement {
@@ -99,9 +99,9 @@ module ESTree {
     }
     
     export interface ForStatement extends Statement {
-        init?: VariableDeclaration | Expression;
-        test?: Expression;
-        update?: Expression;
+        init: VariableDeclaration | Expression;
+        test: Expression;
+        update: Expression;
         body: Statement;
     }
     
@@ -124,7 +124,7 @@ module ESTree {
     
     export interface VariableDeclarator extends Node {
         id: Identifier;
-        init?: Expression;
+        init: Expression;
     }
     
     
@@ -209,6 +209,6 @@ module ESTree {
     }
     
     export interface Literal extends Node, Expression {
-        value?: string | boolean | number | RegExp;
+        value: string | boolean | number | RegExp;
     }
 }
