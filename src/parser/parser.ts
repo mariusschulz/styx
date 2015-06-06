@@ -26,11 +26,12 @@ namespace Styx {
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {
             let entryNode = this.createNode();
-            let flowGraph = new ControlFlowGraph(entryNode);
+            
+            this.parseStatements(program.body, entryNode);
     
-            this.parseStatements(program.body, flowGraph.entry);
-    
-            return flowGraph;
+            return {
+                entry: entryNode
+            };
         }
     
         private parseStatements(statements: ESTree.Statement[], currentNode: FlowNode): FlowNode {

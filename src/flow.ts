@@ -1,10 +1,6 @@
 namespace Styx {
-    export class ControlFlowGraph {
+    export interface ControlFlowGraph {
         entry: FlowNode;
-
-        constructor(entry: FlowNode) {
-            this.entry = entry;
-        }
     }
 
     export class FlowNode {
