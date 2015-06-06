@@ -1,6 +1,6 @@
 /// <reference path="../../estree.ts" />
 
-module Styx.Expressions.Stringifier {
+namespace Styx.Expressions.Stringifier {
     type StringificationFunction = (expression: ESTree.Expression) => string;
     
     interface ExpressionToStringMap {

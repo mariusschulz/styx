@@ -1,4 +1,4 @@
-module Styx {
+namespace Styx {
     export class ControlFlowGraph {
         entry: FlowNode;
 

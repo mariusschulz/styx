@@ -6,7 +6,7 @@
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
 
-module Styx {
+namespace Styx {
     export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         

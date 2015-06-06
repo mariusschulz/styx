@@ -1,4 +1,4 @@
-module Styx.Collections {
+namespace Styx.Collections {
     interface Predicate<T> {
         (element: T): boolean;
     }

@@ -1,6 +1,6 @@
 /// <reference path="../../estree.ts" />
 
-module Styx.Expressions.Negator {
+namespace Styx.Expressions.Negator {
     const equalityComparisonOperators = ["==", "===", "!=", "!=="];
     
     export function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {

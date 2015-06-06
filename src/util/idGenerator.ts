@@ -1,4 +1,4 @@
-module Styx.Util {
+namespace Styx.Util {
     export interface IdGenerator {
         makeNew: () => number;
     }

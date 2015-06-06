@@ -3,7 +3,7 @@
 /// <reference path="estree.ts"/>
 /// <reference path="flow.ts"/>
 
-module Styx {
+namespace Styx {
     export function parse(node: ESTree.Node): ControlFlowGraph {
         if (!_.isObject(node) || !node.type) {
             throw Error("Invalid node: 'type' property required");

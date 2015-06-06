@@ -1,7 +1,7 @@
 /// <reference path="../estree.ts" />
 /// <reference path="../flow.ts" />
 
-module Styx {
+namespace Styx {
     export interface EnclosingStatement {
         label?: string;
         continueTarget: FlowNode;
