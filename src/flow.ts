@@ -38,9 +38,9 @@ namespace Styx {
     }
     
     export const enum EdgeType {
-        Normal,
-        Epsilon,
-        Conditional,
-        AbruptCompletion
+        Normal = 0,
+        Epsilon = 1,
+        Conditional = 2,
+        AbruptCompletion = 3
     }
 }
