@@ -3,6 +3,12 @@ namespace Styx {
         entry: FlowNode;
     }
 
+    export interface FlowEdge {
+        target: FlowNode;
+        type: EdgeType;
+        label: string;
+    }
+
     export class FlowNode {
         id: number;
         outgoingEdges: FlowEdge[];
@@ -17,26 +23,17 @@ namespace Styx {
         }
 
         appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal): FlowNode {
-            let edge = new FlowEdge(this, edgeType, label);
-            node.addOutgoingEdge(edge);
+            node.addOutgoingEdge({
+                target: this,
+                type: edgeType,
+                label: label
+            });
 
             return this;
         }
         
         appendEpsilonEdgeTo(node: FlowNode): FlowNode {
             return this.appendTo(node, "", EdgeType.Epsilon);
-        }
-    }
-
-    export class FlowEdge {
-        target: FlowNode;
-        type: EdgeType;
-        label: string;
-
-        constructor(target: FlowNode, type: EdgeType, label: string) {
-            this.target = target;
-            this.type = type;
-            this.label = label;
         }
     }
     
