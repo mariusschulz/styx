@@ -231,10 +231,43 @@ namespace Styx {
         }
         
         private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode): FlowNode {
-            let createNode = _.bind(this.createNode, this);
-            let switchParser = new Statements.SwitchParser(createNode);
+            const switchExpression = "$switch";
             
-            return switchParser.parseSwitchStatement(switchStatement, currentNode);
+            let stringifiedDiscriminant = Expressions.Stringifier.stringify(switchStatement.discriminant);
+            let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
+            let evaluatedDiscriminantNode = this.createNode().appendTo(currentNode, exprRef);
+            
+            let finalNode = this.createNode(); 
+            
+            this.enclosingStatements.push({
+                breakTarget: finalNode,
+                continueTarget: null,
+                label: null
+            });
+            
+            let endOfPreviousCase: FlowNode = void 0;
+            
+            for (let switchCase of switchStatement.cases) {
+                let stringifiedTest = Expressions.Stringifier.stringify(switchCase.test);
+                let stringifiedComparison = `${switchExpression} === ${stringifiedTest}`;
+                
+                let caseBody = this.createNode()
+                    .appendTo(evaluatedDiscriminantNode, stringifiedComparison, EdgeType.Conditional);
+                
+                if (endOfPreviousCase) {
+                    caseBody.appendEpsilonEdgeTo(endOfPreviousCase);
+                }
+                
+                endOfPreviousCase = this.parseStatements(switchCase.consequent, caseBody);
+            }
+            
+            this.enclosingStatements.pop();
+            
+            if (endOfPreviousCase) {
+                finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
+            }
+            
+            return finalNode;
         }
         
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
