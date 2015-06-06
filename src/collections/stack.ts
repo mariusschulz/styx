@@ -1,8 +1,4 @@
 namespace Styx.Collections {
-    interface Predicate<T> {
-        (element: T): boolean;
-    }
-    
     export class Stack<T> {
         private elements: T[];
         
