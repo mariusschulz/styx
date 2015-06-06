@@ -111,6 +111,10 @@ module ESTree {
         body: Statement;
     }
     
+    export interface DebuggerStatement extends Statement {
+        
+    }
+    
     
     // Declarations
     

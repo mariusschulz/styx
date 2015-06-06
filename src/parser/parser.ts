@@ -48,7 +48,7 @@ namespace Styx {
         }
     
         private parseStatement(statement: ESTree.Statement, currentNode: FlowNode): FlowNode {
-            if (statement === null || statement.type === ESTree.NodeType.DebuggerStatement) {
+            if (statement === null) {
                 return currentNode;
             }
             
@@ -65,6 +65,7 @@ namespace Styx {
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
                 [ESTree.NodeType.ForStatement]: this.parseForInStatement,
                 [ESTree.NodeType.ForInStatement]: this.parseEmptyStatement,
+                [ESTree.NodeType.DebuggerStatement]: this.parseDebuggerStatement,
                 [ESTree.NodeType.ExpressionStatement]: this.parseExpressionStatement
             };
             
@@ -379,6 +380,10 @@ namespace Styx {
             }
             
             return finalNode;
+        }
+        
+        private parseDebuggerStatement(debuggerStatement: ESTree.DebuggerStatement, currentNode: FlowNode): FlowNode {
+            return currentNode;
         }
         
         private parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode): FlowNode {
