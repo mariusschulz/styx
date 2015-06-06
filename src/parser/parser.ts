@@ -63,8 +63,8 @@ namespace Styx {
                 [ESTree.NodeType.WithStatement]: this.parseWithStatement,
                 [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
-                [ESTree.NodeType.ForStatement]: this.parseForInStatement,
-                [ESTree.NodeType.ForInStatement]: this.parseEmptyStatement,
+                [ESTree.NodeType.ForStatement]: this.parseForStatement,
+                [ESTree.NodeType.ForInStatement]: this.parseForInStatement,
                 [ESTree.NodeType.DebuggerStatement]: this.parseDebuggerStatement,
                 [ESTree.NodeType.ExpressionStatement]: this.parseExpressionStatement
             };
