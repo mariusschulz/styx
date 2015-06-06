@@ -57,34 +57,34 @@ namespace Styx.Expressions.Stringifier {
     }
     
     function stringifyAssignmentExpression(assignmentExpression: ESTree.AssignmentExpression): string {
-        let leftString = stringify(assignmentExpression.left);
-        let rightString = stringify(assignmentExpression.right);
+        let stringifiedLeft = stringify(assignmentExpression.left);
+        let stringifiedRight = stringify(assignmentExpression.right);
         
-        return `${leftString} ${assignmentExpression.operator} ${rightString}`;
+        return `${stringifiedLeft} ${assignmentExpression.operator} ${stringifiedRight}`;
     }
     
     function stringifyBinaryExpression(binaryExpression: ESTree.BinaryExpression): string {
-        let leftString = stringify(binaryExpression.left);
-        let rightString = stringify(binaryExpression.right);
+        let stringifiedLeft = stringify(binaryExpression.left);
+        let stringifiedRight = stringify(binaryExpression.right);
         
         if (needsParenthesizing(binaryExpression.left)) {
-            leftString = parenthesize(leftString);
+            stringifiedLeft = parenthesize(stringifiedLeft);
         }
         
         if (needsParenthesizing(binaryExpression.right)) {
-            rightString = parenthesize(rightString);
+            stringifiedRight = parenthesize(stringifiedRight);
         }
         
-        return `${leftString} ${binaryExpression.operator} ${rightString}`;
+        return `${stringifiedLeft} ${binaryExpression.operator} ${stringifiedRight}`;
     }
     
     function stringifyCallExpression(callExpression: ESTree.CallExpression): string {        
-        let calleeString = stringify(callExpression.callee);
-        let argsString = callExpression.arguments
+        let stringifiedCallee = stringify(callExpression.callee);
+        let stringifiedArguments = callExpression.arguments
             .map(arg => stringify(arg))
             .join(", ");
         
-        return `${calleeString}(${argsString})`;
+        return `${stringifiedCallee}(${stringifiedArguments})`;
     }
     
     function stringifyIdentifier(identifier: ESTree.Identifier): string {
@@ -102,52 +102,52 @@ namespace Styx.Expressions.Stringifier {
     }
     
     function stringifyLogicalExpression(logicalExpression: ESTree.LogicalExpression): string {
-        let leftString = stringify(logicalExpression.left);
-        let rightString = stringify(logicalExpression.right);
+        let stringifiedLeft = stringify(logicalExpression.left);
+        let stringifiedRight = stringify(logicalExpression.right);
         
         if (needsParenthesizing(logicalExpression.left)) {
-            leftString = parenthesize(leftString);
+            stringifiedLeft = parenthesize(stringifiedLeft);
         }
         
         if (needsParenthesizing(logicalExpression.right)) {
-            rightString = parenthesize(rightString);
+            stringifiedRight = parenthesize(stringifiedRight);
         }
         
-        return `${leftString} ${logicalExpression.operator} ${rightString}`;
+        return `${stringifiedLeft} ${logicalExpression.operator} ${stringifiedRight}`;
     }
     
     function stringifyMemberExpression(memberExpression: ESTree.MemberExpression): string {
-        let objectString = stringify(memberExpression.object);
-        let propertyString = stringify(memberExpression.property);
+        let stringifiedObject = stringify(memberExpression.object);
+        let stringifiedProperty = stringify(memberExpression.property);
         
         return memberExpression.computed
-            ? `${objectString}[${propertyString}]`
-            : `${objectString}.${propertyString}`;
+            ? `${stringifiedObject}[${stringifiedProperty}]`
+            : `${stringifiedObject}.${stringifiedProperty}`;
     }
     
     function stringifyNewExpression(newExpression: ESTree.NewExpression): string {        
-        let callExpression = stringifyCallExpression(newExpression);
+        let stringifiedCall = stringifyCallExpression(newExpression);
         
-        return `new ${callExpression}`;
+        return `new ${stringifiedCall}`;
     }
     
     function stringifyObjectExpression(objectExpression: ESTree.ObjectExpression): string {
         let properties = objectExpression.properties.map(property => {
-            let key = stringify(property.key);
-            let value = stringify(property.value);
+            let stringifiedKey = stringify(property.key);
+            let stringifiedValue = stringify(property.value);
             
-            return `${key}: ${value}`;
+            return `${stringifiedKey}: ${stringifiedValue}`;
         }).join(", ");
         
         return `{ ${properties} }`;
     }
     
     function stringifySequenceExpression(sequenceExpression: ESTree.SequenceExpression): string {
-        let commaSeparatedExpressions = sequenceExpression.expressions
+        let stringifiedExpressions = sequenceExpression.expressions
             .map(Expressions.Stringifier.stringify)
             .join(", ");
         
-        return parenthesize(commaSeparatedExpressions);
+        return parenthesize(stringifiedExpressions);
     }
     
     function stringifyThisExpression(thisExpression: ESTree.ThisExpression): string {
