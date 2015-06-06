@@ -1,5 +1,5 @@
-interface Func<T> {
-    (): T;
+interface Func<TResult> {
+    (): TResult;
 }
 
 interface Predicate<T> {
