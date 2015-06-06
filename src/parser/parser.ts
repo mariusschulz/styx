@@ -75,7 +75,7 @@ namespace Styx {
                 throw Error(`Encountered unsupported statement type '${statement.type}'`);
             }
             
-            return parsingMethod(statement, currentNode);
+            return parsingMethod.call(this, statement, currentNode);
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
