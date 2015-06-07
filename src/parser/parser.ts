@@ -62,6 +62,7 @@ namespace Styx {
                 [ESTree.NodeType.BreakStatement]: this.parseBreakStatement,
                 [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
                 [ESTree.NodeType.WithStatement]: this.parseWithStatement,
+                [ESTree.NodeType.SwitchStatement]: this.parseSwitchStatement,
                 [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
                 [ESTree.NodeType.ForStatement]: this.parseForStatement,
@@ -118,6 +119,10 @@ namespace Styx {
                 this.enclosingStatements.pop();
                 
                 return finalNode;
+            }
+            
+            if (body.type === ESTree.NodeType.SwitchStatement) {
+                return this.parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, label);
             }
             
             if (body.type === ESTree.NodeType.WhileStatement) {
@@ -226,6 +231,48 @@ namespace Styx {
             let expressionNode = this.createNode().appendTo(currentNode, stringifiedExpression); 
             
             return this.parseStatement(withStatement.body, expressionNode);
+        }
+        
+        private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
+            const switchExpression = "$switch";
+            
+            let stringifiedDiscriminant = Expressions.Stringifier.stringify(switchStatement.discriminant);
+            let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
+            let evaluatedDiscriminantNode = this.createNode().appendTo(currentNode, exprRef);
+            
+            let finalNode = this.createNode(); 
+            
+            this.enclosingStatements.push({
+                breakTarget: finalNode,
+                continueTarget: null,
+                label: label
+            });
+            
+            let endOfPreviousCase: FlowNode = void 0;
+            
+            for (let switchCase of switchStatement.cases) {
+                let isDefaultCase = switchCase.test === null;
+                let caseEdgeLabel = isDefaultCase
+                    ? "<default>"
+                    : `${switchExpression} === ${Expressions.Stringifier.stringify(switchCase.test)}`;
+                
+                let caseBody = this.createNode()
+                    .appendTo(evaluatedDiscriminantNode, caseEdgeLabel, EdgeType.Conditional);
+                
+                if (endOfPreviousCase) {
+                    caseBody.appendEpsilonEdgeTo(endOfPreviousCase);
+                }
+                
+                endOfPreviousCase = this.parseStatements(switchCase.consequent, caseBody);
+            }
+            
+            this.enclosingStatements.pop();
+            
+            if (endOfPreviousCase) {
+                finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
+            }
+            
+            return finalNode;
         }
         
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
