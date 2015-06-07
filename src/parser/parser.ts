@@ -8,6 +8,7 @@
 
 namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
+    const negateTruthiness = Expressions.Negator.negateTruthiness;
     
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
@@ -155,7 +156,7 @@ namespace Styx {
         }
     
         private parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
-            let negatedTest = Expressions.Negator.negateTruthiness(ifStatement.test);
+            let negatedTest = negateTruthiness(ifStatement.test);
             
             let thenLabel = stringify(ifStatement.test);
             let elseLabel = stringify(negatedTest);
@@ -182,7 +183,7 @@ namespace Styx {
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
-            let negatedTest = Expressions.Negator.negateTruthiness(ifStatement.test);
+            let negatedTest = negateTruthiness(ifStatement.test);
             let elseLabel = stringify(negatedTest); 
             let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
@@ -281,7 +282,7 @@ namespace Styx {
             let truthyConditionLabel = stringify(truthyCondition);
             
             // Falsy test (exit loop)
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
+            let falsyCondition = negateTruthiness(truthyCondition);
             let falsyConditionLabel = stringify(falsyCondition);
             
             let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
@@ -311,7 +312,7 @@ namespace Styx {
             let truthyConditionLabel = stringify(truthyCondition);
             
             // Falsy test (exit loop)
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
+            let falsyCondition = negateTruthiness(truthyCondition);            
             let falsyConditionLabel = stringify(falsyCondition);
             
             let testNode = this.createNode();
@@ -350,7 +351,7 @@ namespace Styx {
                 // If the loop has a test expression,
                 // we need to add truthy and falsy edges
                 let truthyCondition = forStatement.test;
-                let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
+                let falsyCondition = negateTruthiness(truthyCondition);
                 
                 // Create edges labels
                 let truthyConditionLabel = stringify(truthyCondition);                
