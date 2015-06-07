@@ -7,6 +7,8 @@
 /// <reference path="expressions/stringifier.ts"/>
 
 namespace Styx {
+    const stringify = Expressions.Stringifier.stringify;
+    
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
     }
@@ -90,7 +92,7 @@ namespace Styx {
     
         private parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode): FlowNode {
             for (let declarator of declaration.declarations) {
-                let initString = Expressions.Stringifier.stringify(declarator.init);
+                let initString = stringify(declarator.init);
                 let edgeLabel = `${declarator.id.name} = ${initString}`;
                 currentNode = this.createNode().appendTo(currentNode, edgeLabel);
             }
@@ -154,10 +156,10 @@ namespace Styx {
     
         private parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             let truthyCondition = ifStatement.test;
-            let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
+            let truthyConditionLabel = stringify(truthyCondition);
             
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
-            let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+            let falsyConditionLabel = stringify(falsyCondition);
             
             let thenNode = this.createNode()
                 .appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
@@ -177,13 +179,13 @@ namespace Styx {
         private parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             // Then branch
             let thenCondition = ifStatement.test;
-            let thenLabel = Expressions.Stringifier.stringify(thenCondition);
+            let thenLabel = stringify(thenCondition);
             let thenNode = this.createNode().appendTo(currentNode, thenLabel, EdgeType.Conditional);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
             let elseCondition = Expressions.Negator.negateTruthiness(thenCondition);
-            let elseLabel = Expressions.Stringifier.stringify(elseCondition); 
+            let elseLabel = stringify(elseCondition); 
             let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
@@ -227,7 +229,7 @@ namespace Styx {
         }
         
         private parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode): FlowNode {
-            let stringifiedExpression = Expressions.Stringifier.stringify(withStatement.object);
+            let stringifiedExpression = stringify(withStatement.object);
             let expressionNode = this.createNode().appendTo(currentNode, stringifiedExpression); 
             
             return this.parseStatement(withStatement.body, expressionNode);
@@ -236,7 +238,7 @@ namespace Styx {
         private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
             const switchExpression = "$switch";
             
-            let stringifiedDiscriminant = Expressions.Stringifier.stringify(switchStatement.discriminant);
+            let stringifiedDiscriminant = stringify(switchStatement.discriminant);
             let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
             let evaluatedDiscriminantNode = this.createNode().appendTo(currentNode, exprRef);
             
@@ -254,7 +256,7 @@ namespace Styx {
                 let isDefaultCase = switchCase.test === null;
                 let caseEdgeLabel = isDefaultCase
                     ? "<default>"
-                    : `${switchExpression} === ${Expressions.Stringifier.stringify(switchCase.test)}`;
+                    : `${switchExpression} === ${stringify(switchCase.test)}`;
                 
                 let caseBody = this.createNode()
                     .appendTo(evaluatedDiscriminantNode, caseEdgeLabel, EdgeType.Conditional);
@@ -278,11 +280,11 @@ namespace Styx {
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
-            let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
+            let truthyConditionLabel = stringify(truthyCondition);
             
             // Falsy test (exit loop)
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
-            let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+            let falsyConditionLabel = stringify(falsyCondition);
             
             let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
             let finalNode = this.createNode();
@@ -308,11 +310,11 @@ namespace Styx {
         private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = doWhileStatement.test;
-            let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);
+            let truthyConditionLabel = stringify(truthyCondition);
             
             // Falsy test (exit loop)
             let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);            
-            let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+            let falsyConditionLabel = stringify(falsyCondition);
             
             let testNode = this.createNode();
             let finalNode = this.createNode();
@@ -353,8 +355,8 @@ namespace Styx {
                 let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
                 
                 // Create edges labels
-                let truthyConditionLabel = Expressions.Stringifier.stringify(truthyCondition);                
-                let falsyConditionLabel = Expressions.Stringifier.stringify(falsyCondition);
+                let truthyConditionLabel = stringify(truthyCondition);                
+                let falsyConditionLabel = stringify(falsyCondition);
                 
                 // Add truthy and falsy edges
                 beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel, EdgeType.Conditional)
@@ -399,7 +401,7 @@ namespace Styx {
         }
         
         private parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, label?: string): FlowNode {
-            let stringifiedRight = Expressions.Stringifier.stringify(forInStatement.right);
+            let stringifiedRight = stringify(forInStatement.right);
             
             let variableDeclarator = forInStatement.left.declarations[0];
             let variableName = variableDeclarator.id.name;
@@ -443,7 +445,7 @@ namespace Styx {
                 return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode);
             }
             
-            let expressionLabel = Expressions.Stringifier.stringify(expression);
+            let expressionLabel = stringify(expression);
             
             return this.createNode()
                 .appendTo(currentNode, expressionLabel);
