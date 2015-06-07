@@ -103,50 +103,44 @@ namespace Styx {
     
         private parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode): FlowNode {
             let body = labeledStatement.body;
-            let label = labeledStatement.label.name
+            let label = labeledStatement.label.name;
             
-            if (body.type === ESTree.NodeType.BlockStatement) {
-                let finalNode = this.createNode();
+            switch (body.type) {
+                case ESTree.NodeType.BlockStatement:
+                    let finalNode = this.createNode();
+                    
+                    let enclosingStatement: EnclosingStatement = {
+                        breakTarget: finalNode,
+                        continueTarget: null,
+                        label: label
+                    };
+                    
+                    this.enclosingStatements.push(enclosingStatement);
+                    let endOfStatementBodyNode = this.parseBlockStatement(<ESTree.BlockStatement>body, currentNode);
+                    this.enclosingStatements.pop();
+                                        
+                    return finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
                 
-                let enclosingStatement: EnclosingStatement = {
-                    breakTarget: finalNode,
-                    continueTarget: null,
-                    label: label
-                };
+                case ESTree.NodeType.SwitchStatement:
+                    return this.parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, label);
+                    
+                case ESTree.NodeType.WhileStatement:
+                    return this.parseWhileStatement(<ESTree.WhileStatement>body, currentNode, label);
                 
-                this.enclosingStatements.push(enclosingStatement);
+                case ESTree.NodeType.DoWhileStatement:
+                    return this.parseDoWhileStatement(<ESTree.DoWhileStatement>body, currentNode, label);
                 
-                let endOfStatementBodyNode = this.parseBlockStatement(<ESTree.BlockStatement>body, currentNode);
-                finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
+                case ESTree.NodeType.ForStatement:
+                    return this.parseForStatement(<ESTree.ForStatement>body, currentNode, label);
                 
-                this.enclosingStatements.pop();
-                
-                return finalNode;
+                case ESTree.NodeType.ForInStatement:
+                    return this.parseForInStatement(<ESTree.ForInStatement>body, currentNode, label);
+                    
+                default:
+                    // If we didn't encounter an enclosing statement,
+                    // the label is irrelevant for control flow and we thus don't track it.
+                    return this.parseStatement(body, currentNode);
             }
-            
-            if (body.type === ESTree.NodeType.SwitchStatement) {
-                return this.parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, label);
-            }
-            
-            if (body.type === ESTree.NodeType.WhileStatement) {
-                return this.parseWhileStatement(<ESTree.WhileStatement>body, currentNode, label);
-            }
-            
-            if (body.type === ESTree.NodeType.DoWhileStatement) {
-                return this.parseDoWhileStatement(<ESTree.DoWhileStatement>body, currentNode, label);
-            }
-            
-            if (body.type === ESTree.NodeType.ForStatement) {
-                return this.parseForStatement(<ESTree.ForStatement>body, currentNode, label);
-            }
-            
-            if (body.type === ESTree.NodeType.ForInStatement) {
-                return this.parseForInStatement(<ESTree.ForInStatement>body, currentNode, label);
-            }
-            
-            // If we didn't encounter an enclosing statement,
-            // the label is irrelevant for control flow and we thus don't track it.                
-            return this.parseStatement(body, currentNode);
         }
     
         private parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
