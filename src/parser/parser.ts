@@ -155,19 +155,18 @@ namespace Styx {
         }
     
         private parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
-            let truthyCondition = ifStatement.test;
-            let truthyConditionLabel = stringify(truthyCondition);
+            let negatedTest = Expressions.Negator.negateTruthiness(ifStatement.test);
             
-            let falsyCondition = Expressions.Negator.negateTruthiness(truthyCondition);
-            let falsyConditionLabel = stringify(falsyCondition);
+            let thenLabel = stringify(ifStatement.test);
+            let elseLabel = stringify(negatedTest);
             
             let thenNode = this.createNode()
-                .appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
+                .appendTo(currentNode, thenLabel, EdgeType.Conditional);
             
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             let finalNode = this.createNode()
-                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
+                .appendTo(currentNode, elseLabel, EdgeType.Conditional);
             
             if (endOfThenBranch) {
                 finalNode.appendEpsilonEdgeTo(endOfThenBranch);
@@ -178,14 +177,13 @@ namespace Styx {
     
         private parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             // Then branch
-            let thenCondition = ifStatement.test;
-            let thenLabel = stringify(thenCondition);
+            let thenLabel = stringify(ifStatement.test);
             let thenNode = this.createNode().appendTo(currentNode, thenLabel, EdgeType.Conditional);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
-            let elseCondition = Expressions.Negator.negateTruthiness(thenCondition);
-            let elseLabel = stringify(elseCondition); 
+            let negatedTest = Expressions.Negator.negateTruthiness(ifStatement.test);
+            let elseLabel = stringify(negatedTest); 
             let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
