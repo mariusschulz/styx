@@ -5,7 +5,6 @@
 /// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
-/// <reference path="statements/switchParser.ts"/>
 
 namespace Styx {
     interface StatementTypeToParserMap {
