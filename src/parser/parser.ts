@@ -251,11 +251,13 @@ namespace Styx {
             let endOfPreviousCase: FlowNode = void 0;
             
             for (let switchCase of switchStatement.cases) {
-                let stringifiedTest = Expressions.Stringifier.stringify(switchCase.test);
-                let stringifiedComparison = `${switchExpression} === ${stringifiedTest}`;
+                let isDefaultCase = switchCase.test === null;
+                let caseEdgeLabel = isDefaultCase
+                    ? "<default>"
+                    : `${switchExpression} === ${Expressions.Stringifier.stringify(switchCase.test)}`;
                 
                 let caseBody = this.createNode()
-                    .appendTo(evaluatedDiscriminantNode, stringifiedComparison, EdgeType.Conditional);
+                    .appendTo(evaluatedDiscriminantNode, caseEdgeLabel, EdgeType.Conditional);
                 
                 if (endOfPreviousCase) {
                     caseBody.appendEpsilonEdgeTo(endOfPreviousCase);
