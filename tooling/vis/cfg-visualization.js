@@ -41,7 +41,7 @@
         }
         
         return {
-            nodes: new vis.DataSet([{ id: 1, label: "1" }]),
+            nodes: new vis.DataSet([{ id: 1, label: "1", color: "#4CD964" }]),
             edges: new vis.DataSet([])
         };
     }
@@ -64,9 +64,12 @@
     }
     
     function addNodeAndEdges(node, nodes, edges) {
+        var isFinalNode = node.outgoingEdges.length === 0;
+        
         nodes.push({
             id: node.id,
-            label: node.label || node.id
+            label: node.label || node.id,
+            color: isFinalNode ? "#4CD964" : null
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
