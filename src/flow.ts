@@ -12,20 +12,25 @@ namespace Styx {
 
     export class FlowNode {
         id: number;
+        incomingEdges: FlowEdge[];
         outgoingEdges: FlowEdge[];
 
         constructor(id: number) {
             this.id = id;
+            this.incomingEdges = [];
             this.outgoingEdges = [];
         }
 
         appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal): FlowNode {
-            node.outgoingEdges.push({
+            let edge = {
                 source: node,
                 target: this,
                 type: edgeType,
                 label: label
-            });
+            };
+            
+            node.outgoingEdges.push(edge);
+            this.incomingEdges.push(edge);
 
             return this;
         }
