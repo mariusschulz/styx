@@ -20,7 +20,7 @@ namespace Styx {
         private idGenerator: Util.IdGenerator;
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
-        constructor(private program: ESTree.Program) {
+        constructor(program: ESTree.Program) {
             this.idGenerator = Util.createIdGenerator();
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
