@@ -33,7 +33,7 @@ namespace Styx.Passes {
                 node.outgoingEdges = [];
                 
                 // Recursively optimize
-                optimizeNode(incomingEdge.target, optimizedNodes);
+                optimizeNode(target, optimizedNodes);
             }
         }
         
