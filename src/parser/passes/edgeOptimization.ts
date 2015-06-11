@@ -14,7 +14,7 @@ namespace Styx.Passes {
         
         optimizedNodes.add(node.id);
         
-        let isTransitNode = node.incomingEdges.length === 1 && node.outgoingEdges.length; 
+        let isTransitNode = node.incomingEdges.length === 1 && node.outgoingEdges.length === 1; 
         let isEntryNode = node.id === 1;
         
         if (isTransitNode && !isEntryNode) {
