@@ -1,26 +1,44 @@
+/// <reference path="../../collections/set.ts" />
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
     export function optimizeEdges(graph: ControlFlowGraph) {
-        optimizeNode(graph.entry);
+        let optimizedNodes = new Collections.Set<number>();
+        optimizeNode(graph.entry, optimizedNodes);
     }
     
-    function optimizeNode(node: FlowNode) {
-        console.log(`Optimizing node ${node.id} ...`);
+    function optimizeNode(node: FlowNode, optimizedNodes: Collections.Set<number>) {
+        if (optimizedNodes.contains(node.id)) {
+            return;
+        }
         
-        if (node.incomingEdges.length === 1 && node.outgoingEdges.length === 1) {
-            let [incomingEdge] = node.incomingEdges;
-            let [outgoingEdge] = node.outgoingEdges;
+        optimizedNodes.add(node.id);
+        
+        let isTransitNode = node.incomingEdges.length === 1 && node.outgoingEdges.length; 
+        let isEntryNode = node.id === 1;
+        
+        if (isTransitNode && !isEntryNode) {
+            let outgoingEdge = node.outgoingEdges[0];
+            let target = outgoingEdge.target;
             
-            if (outgoingEdge.type === EdgeType.Epsilon) {
-                incomingEdge.target = outgoingEdge.target;
+            if (outgoingEdge.type === EdgeType.Epsilon && target.incomingEdges.length === 1) {
+                let incomingEdge = node.incomingEdges[0];
+                
+                // Redirect edge
+                incomingEdge.target = target;
+                target.incomingEdges = [incomingEdge];
+                
+                // Clear node
                 node.incomingEdges = [];
                 node.outgoingEdges = [];
+                
+                // Recursively optimize
+                optimizeNode(incomingEdge.target, optimizedNodes);
             }
         }
         
         for (let edge of node.outgoingEdges) {
-            optimizeNode(edge.target);
+            optimizeNode(edge.target, optimizedNodes);
         }
     }
 }
