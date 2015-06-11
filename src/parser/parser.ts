@@ -5,6 +5,7 @@
 /// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
+/// <reference path="passes/edgeOptimization.ts"/>
 
 namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
@@ -25,6 +26,7 @@ namespace Styx {
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
+            Passes.optimizeEdges(this.controlFlowGraph);
         }
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {

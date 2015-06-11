@@ -4,6 +4,7 @@ namespace Styx {
     }
 
     export interface FlowEdge {
+        source: FlowNode;
         target: FlowNode;
         type: EdgeType;
         label: string;
@@ -11,23 +12,25 @@ namespace Styx {
 
     export class FlowNode {
         id: number;
+        incomingEdges: FlowEdge[];
         outgoingEdges: FlowEdge[];
 
         constructor(id: number) {
             this.id = id;
+            this.incomingEdges = [];
             this.outgoingEdges = [];
         }
 
-        addOutgoingEdge(edge: FlowEdge) {
-            this.outgoingEdges.push(edge);
-        }
-
         appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal): FlowNode {
-            node.addOutgoingEdge({
+            let edge = {
+                source: node,
                 target: this,
                 type: edgeType,
                 label: label
-            });
+            };
+            
+            node.outgoingEdges.push(edge);
+            this.incomingEdges.push(edge);
 
             return this;
         }
