@@ -31,7 +31,7 @@ namespace Styx.Passes {
                      }
                 }
                 
-                if (!sourceAlreadyConnectedToTarget) {                
+                if (!sourceAlreadyConnectedToTarget) {
                     let incomingEdge = node.incomingEdges[0];
                     
                     // Redirect edge
@@ -41,10 +41,10 @@ namespace Styx.Passes {
                     // Clear node
                     node.incomingEdges = [];
                     node.outgoingEdges = [];
-                
-                    // Recursively optimize
-                    optimizeNode(target, optimizedNodes);
                 }
+                
+                // Recursively optimize
+                optimizeNode(target, optimizedNodes);
             }
         }
         
