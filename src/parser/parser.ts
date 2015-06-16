@@ -26,7 +26,7 @@ namespace Styx {
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
-            Passes.optimizeEdges(this.controlFlowGraph);
+            Passes.removeTransitNodes(this.controlFlowGraph);
         }
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {

@@ -2,7 +2,7 @@
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    export function optimizeEdges(graph: ControlFlowGraph) {
+    export function removeTransitNodes(graph: ControlFlowGraph) {
         let optimizedNodes = new Collections.Set<number>();
         optimizeNode(graph.entry, optimizedNodes);
     }
