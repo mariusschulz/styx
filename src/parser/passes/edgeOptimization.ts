@@ -30,29 +30,30 @@ namespace Styx.Passes {
     }
     
     function optimizeTransitNode(transitNode: FlowNode, optimizedNodes: Collections.Set<number>) {
-        let outgoingEdge = transitNode.outgoingEdges[0];
-        let target = outgoingEdge.target;
+        // Remember the transit node's original target
+        let originalTarget = transitNode.outgoingEdges[0].target;
         
-        // We only simplify transit nodes if their removal doesn't lead
-        // to a node being directly connected to another node by 2 edges
-        if (!isNodeConnectedToTarget(transitNode, target)) {
+        if (shouldTransitNodeBeFlattened(transitNode)) {
             mergeIncomingAndOutgoingEdgeOf(transitNode);
         }
         
-        // Recursively optimize
-        optimizeNode(target, optimizedNodes);
+        // Recursively optimize, starting with the original target
+        optimizeNode(originalTarget, optimizedNodes);
     }
     
-    function isNodeConnectedToTarget(node: FlowNode, target: FlowNode): boolean {
+    function shouldTransitNodeBeFlattened(node: FlowNode): boolean {
         let sourceId = node.incomingEdges[0].source.id;
+        let target = node.outgoingEdges[0].target;
         
         for (let incomingTargetEdges of target.incomingEdges) {
-             if (incomingTargetEdges.source.id === sourceId) {
-                 return true;
-             }
+            // We only simplify transit nodes if their removal doesn't lead
+            // to a node being directly connected to another node by 2 edges
+            if (incomingTargetEdges.source.id === sourceId) {
+                return false;
+            }
         }
         
-        return false;
+        return true;
     }
     
     function mergeIncomingAndOutgoingEdgeOf(transitNode: FlowNode) {
