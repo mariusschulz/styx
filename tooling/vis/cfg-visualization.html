@@ -43,6 +43,7 @@
             (function() {
                 var container = document.getElementById("graph");
                 var $input = $("#input");
+                var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
                 var previousCode;
                 
                 var update = function() {
@@ -52,10 +53,16 @@
                         return;
                     }
                     
+                    var options = {
+                        passes: {
+                            removeTransitNodes: $removeTransitNodesCheckbox.is(":checked")
+                        }
+                    };
+                    
                     previousCode = code;
                     sessionStorage.setItem("code", code);
                     
-                    window.cfgVisualization.renderControlFlowGraph(container, code);
+                    window.cfgVisualization.renderControlFlowGraph(container, code, options);
                 };
                 
                 var debouncedUpdate = _.debounce(update, 200);
