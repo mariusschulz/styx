@@ -45,7 +45,7 @@ namespace Styx.Expressions.Negator {
             type: ESTree.NodeType.BinaryExpression,
             operator: firstCharOfInvertedOperator + restOfInvertedOperator,
             left: binaryExpression.left,
-            right: binaryExpression.right            
+            right: binaryExpression.right
         };
     }
     
@@ -56,6 +56,8 @@ namespace Styx.Expressions.Negator {
         return {
             type: ESTree.NodeType.LogicalExpression,
             operator: invertedOperator,
+            
+            // Perform simplification according to De Morgan's laws
             left: negateTruthiness(logicalExpression.left),
             right: negateTruthiness(logicalExpression.right)
         };
