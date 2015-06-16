@@ -14,17 +14,19 @@ namespace Styx.Passes {
         
         optimizedNodes.add(node.id);
         
-        let hasSingleOutgoingEpsilonEdge = node.outgoingEdges.length === 1 &&
-            node.outgoingEdges[0].type === EdgeType.Epsilon;
-            
-        let isEntryNode = node.id === 1;
-        let isTransitNode = node.incomingEdges.length === 1 && hasSingleOutgoingEpsilonEdge; 
-        
         // We want to simplify transit nodes, but we never remove node #1
         // because it's the entry node of the entire control flow graph
         // and we don't want to mess up references to it
-        if (!isEntryNode && isTransitNode) {
-            optimizeTransitNode(node, optimizedNodes);
+        if (node.incomingEdges.length === 1 &&
+            node.outgoingEdges.length === 1 &&
+            node.id !== 1) {
+            let incomingEdge = node.incomingEdges[0];
+            let outgoingEdge = node.outgoingEdges[0];
+            
+            if (incomingEdge.type === EdgeType.Epsilon ||
+                outgoingEdge.type === EdgeType.Epsilon) {
+                optimizeTransitNode(node, optimizedNodes);
+            }
         }
         
         for (let edge of node.outgoingEdges) {
@@ -62,11 +64,21 @@ namespace Styx.Passes {
     function removeTransitNode(transitNode: FlowNode) {
         let incomingEdge = transitNode.incomingEdges[0];
         let outgoingEdge = transitNode.outgoingEdges[0];
+        
+        let source = incomingEdge.source;
         let target = outgoingEdge.target;
         
-        // Redirect edge
-        incomingEdge.target = target;
-        target.incomingEdges = [incomingEdge];
+        // Decide whether to keep the incoming or the outgoing edge.
+        // If both are epsilon edges, it doesn't matter which one to keep.
+        let survivingEdge = incomingEdge.type === EdgeType.Epsilon ? outgoingEdge : incomingEdge;
+        
+        // Redirect surviving edge
+        survivingEdge.source = source;
+        survivingEdge.target = target;
+        
+        // Make the surviving edge the only incoming/outgoing edge
+        source.outgoingEdges = [survivingEdge];
+        target.incomingEdges = [survivingEdge];
         
         // Clear node
         transitNode.incomingEdges = [];
