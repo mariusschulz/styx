@@ -48,11 +48,6 @@
                 
                 var update = function() {
                     var code = $input.val();
-                    
-                    if (code === previousCode) {
-                        return;
-                    }
-                    
                     var options = {
                         passes: {
                             removeTransitNodes: $removeTransitNodesCheckbox.is(":checked")
@@ -68,7 +63,13 @@
                 var debouncedUpdate = _.debounce(update, 200);
                 
                 $input.on("keydown", keydown);
-                $input.on("keyup", debouncedUpdate);
+                $input.on("keyup", function() {
+                    if ($input.val() !== previousCode) {
+                        debouncedUpdate();
+                    }
+                });
+                
+                $removeTransitNodesCheckbox.on("change", update);
                 
                 function keydown(e) {
                     if (e.keyCode === 9 /* tab */) {
