@@ -22,6 +22,8 @@ namespace Styx.Expressions.Negator {
             if (equalityComparisonOperators.indexOf(binaryExpression.operator) > -1) {
                 return invertEqualityComparisonOperator(binaryExpression);
             }
+        } else if (expression.type === ESTree.NodeType.LogicalExpression) {
+            return invertLogicalExpression(<ESTree.LogicalExpression>expression);
         }
         
         return wrapInUnaryNegationExpression(expression);
@@ -44,6 +46,18 @@ namespace Styx.Expressions.Negator {
             operator: firstCharOfInvertedOperator + restOfInvertedOperator,
             left: binaryExpression.left,
             right: binaryExpression.right            
+        };
+    }
+    
+    function invertLogicalExpression(logicalExpression: ESTree.LogicalExpression): ESTree.LogicalExpression {
+        // The only two logical operators are && and ||
+        let invertedOperator = logicalExpression.operator === "&&" ? "||" : "&&";
+        
+        return {
+            type: ESTree.NodeType.LogicalExpression,
+            operator: invertedOperator,
+            left: negateTruthiness(logicalExpression.left),
+            right: negateTruthiness(logicalExpression.right)
         };
     }
     
