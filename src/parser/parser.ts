@@ -5,7 +5,7 @@
 /// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
-/// <reference path="passes/edgeOptimization.ts"/>
+/// <reference path="passes/transitNodeRemoval.ts"/>
 
 namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
