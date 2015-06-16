@@ -33,17 +33,17 @@ namespace Styx.Passes {
         // Remember the transit node's original target
         let originalTarget = transitNode.outgoingEdges[0].target;
         
-        if (shouldTransitNodeBeFlattened(transitNode)) {
-            mergeIncomingAndOutgoingEdgeOf(transitNode);
+        if (shouldRemoveTransitNode(transitNode)) {
+            removeTransitNode(transitNode);
         }
         
         // Recursively optimize, starting with the original target
         optimizeNode(originalTarget, optimizedNodes);
     }
     
-    function shouldTransitNodeBeFlattened(node: FlowNode): boolean {
-        let sourceId = node.incomingEdges[0].source.id;
-        let target = node.outgoingEdges[0].target;
+    function shouldRemoveTransitNode(transitNode: FlowNode): boolean {
+        let sourceId = transitNode.incomingEdges[0].source.id;
+        let target = transitNode.outgoingEdges[0].target;
         
         for (let incomingTargetEdges of target.incomingEdges) {
             // We only simplify transit nodes if their removal doesn't lead
@@ -56,7 +56,7 @@ namespace Styx.Passes {
         return true;
     }
     
-    function mergeIncomingAndOutgoingEdgeOf(transitNode: FlowNode) {
+    function removeTransitNode(transitNode: FlowNode) {
         let incomingEdge = transitNode.incomingEdges[0];
         let outgoingEdge = transitNode.outgoingEdges[0];
         let target = outgoingEdge.target;
