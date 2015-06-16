@@ -232,6 +232,7 @@ namespace Styx {
         
         private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
             const switchExpression = "$switch";
+            const defaultExpression = "<default>";
             
             let stringifiedDiscriminant = stringify(switchStatement.discriminant);
             let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
@@ -246,12 +247,17 @@ namespace Styx {
             });
             
             let endOfPreviousCase: FlowNode = void 0;
+            let hasDefaultCase = false;
             
             for (let switchCase of switchStatement.cases) {
-                let isDefaultCase = switchCase.test === null;
-                let caseEdgeLabel = isDefaultCase
-                    ? "<default>"
-                    : `${switchExpression} === ${stringify(switchCase.test)}`;
+                let caseEdgeLabel: string;
+                
+                if (switchCase.test === null) {
+                    hasDefaultCase = true;
+                    caseEdgeLabel = defaultExpression;
+                } else {
+                    caseEdgeLabel = `${switchExpression} === ${stringify(switchCase.test)}`;
+                }
                 
                 let caseBody = this.createNode()
                     .appendTo(evaluatedDiscriminantNode, caseEdgeLabel, EdgeType.Conditional);
@@ -265,8 +271,24 @@ namespace Styx {
             
             this.enclosingStatements.pop();
             
-            if (endOfPreviousCase) {
-                finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
+            if (switchStatement.cases.length === 0) {
+                // If the switch statement doesn't have any cases,
+                // control flow continues regularly after evaluating the discriminant
+                finalNode.appendEpsilonEdgeTo(evaluatedDiscriminantNode);
+            } else {
+                if (endOfPreviousCase) {
+                    // If the last case didn't end with an abrupt completion,
+                    // connect it to the final node and resume normal control flow
+                    finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
+                }
+                
+                if (!hasDefaultCase) {
+                    // If the switch statement doesn't have a default case,
+                    // we don't know if it's exhaustive (it's probably not).
+                    // Thus, add a <default> edge to the discriminant node
+                    // that is taken when none of the cases match
+                    finalNode.appendTo(evaluatedDiscriminantNode, defaultExpression, EdgeType.Conditional);
+                }
             }
             
             return finalNode;
