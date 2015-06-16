@@ -265,7 +265,9 @@ namespace Styx {
             
             this.enclosingStatements.pop();
             
-            if (endOfPreviousCase) {
+            if (switchStatement.cases.length === 0) {
+                finalNode.appendEpsilonEdgeTo(evaluatedDiscriminantNode);
+            } else if (endOfPreviousCase) {
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
             }
             
