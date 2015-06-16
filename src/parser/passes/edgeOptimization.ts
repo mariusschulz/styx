@@ -33,6 +33,8 @@ namespace Styx.Passes {
         let outgoingEdge = node.outgoingEdges[0];
         let target = outgoingEdge.target;
         
+        // We only simplify transit nodes if their removal doesn't lead
+        // to a node being directly connected to another node by 2 edges
         if (!isNodeConnectedToTarget(node, target)) {
             mergeIncomingAndOutgoingEdgeOf(node);
         }
