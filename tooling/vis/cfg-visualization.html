@@ -7,8 +7,29 @@
     <body>
         <div class="container">
             <h1>Control Flow Graph Visualization</h1>
-            <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
-            <div id="graph"></div>
+            
+            <div class="col-md-9">
+                <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="well">
+                    <p>
+                        <strong>Optimization Passes</strong>
+                    </p>
+                    
+                    <div class="checkbox">
+                        <label for="transit-node-removal-pass">
+                            <input type="checkbox" id="transit-node-removal-pass" checked />
+                            Remove transit nodes
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-12">
+                <div id="graph"></div>
+            </div>
         </div>
 
         <script type="text/javascript" src="../../vendor/jquery.min.js"></script>
@@ -22,25 +43,33 @@
             (function() {
                 var container = document.getElementById("graph");
                 var $input = $("#input");
+                var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
                 var previousCode;
                 
                 var update = function() {
                     var code = $input.val();
-                    
-                    if (code === previousCode) {
-                        return;
-                    }
+                    var options = {
+                        passes: {
+                            removeTransitNodes: $removeTransitNodesCheckbox.is(":checked")
+                        }
+                    };
                     
                     previousCode = code;
                     sessionStorage.setItem("code", code);
                     
-                    window.cfgVisualization.renderControlFlowGraph(container, code);
+                    window.cfgVisualization.renderControlFlowGraph(container, code, options);
                 };
                 
                 var debouncedUpdate = _.debounce(update, 200);
                 
                 $input.on("keydown", keydown);
-                $input.on("keyup", debouncedUpdate);
+                $input.on("keyup", function() {
+                    if ($input.val() !== previousCode) {
+                        debouncedUpdate();
+                    }
+                });
+                
+                $removeTransitNodesCheckbox.on("change", update);
                 
                 function keydown(e) {
                     if (e.keyCode === 9 /* tab */) {

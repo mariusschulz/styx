@@ -21,12 +21,15 @@ namespace Styx {
         private idGenerator: Util.IdGenerator;
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
-        constructor(program: ESTree.Program) {
+        constructor(program: ESTree.Program, options: ParserOptions) {
             this.idGenerator = Util.createIdGenerator();
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
-            Passes.removeTransitNodes(this.controlFlowGraph);
+            
+            if (options.passes.removeTransitNodes) {
+                Passes.removeTransitNodes(this.controlFlowGraph);
+            }
         }
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {

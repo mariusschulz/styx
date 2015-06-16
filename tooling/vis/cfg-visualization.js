@@ -7,8 +7,8 @@
         renderControlFlowGraph: renderControlFlowGraph
     };
 
-    function renderControlFlowGraph(container, code) {
-        var options = {            
+    function renderControlFlowGraph(container, code, options) {
+        var visualizationOptions = {            
             width: "100%",
             height: "100%",
             
@@ -28,14 +28,14 @@
             }
         };
         
-        var graphData = computeGraphData(code);
+        var graphData = computeGraphData(code, options);
         
-        return new vis.Network(container, graphData, options);
+        return new vis.Network(container, graphData, visualizationOptions);
     }
 
-    function computeGraphData(code) {
+    function computeGraphData(code, options) {
         if (code) {
-            var cfg = Styx.parse(esprima.parse(code));
+            var cfg = Styx.parse(esprima.parse(code), options);
             
             return generateNodesAndEdges(cfg);            
         }
