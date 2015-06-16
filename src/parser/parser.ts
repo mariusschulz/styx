@@ -86,7 +86,7 @@ namespace Styx {
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
-            return this.createNode().appendTo(currentNode, "(empty)", EdgeType.Epsilon);
+            return this.createNode().appendTo(currentNode, "(empty)");
         }
         
         private parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode): FlowNode {
