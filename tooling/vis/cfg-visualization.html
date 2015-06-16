@@ -39,10 +39,40 @@
                 
                 var debouncedUpdate = _.debounce(update, 200);
                 
+                $input.on("keydown", keydown);
                 $input.on("keyup", debouncedUpdate);
+                
+                function keydown(e) {
+                    if (e.keyCode === 9 /* tab */) {
+                        e.preventDefault();
+                        
+                        var cursorPos = $input.prop("selectionStart");
+                        var input = $input.val();
+                        var textBefore = input.substring(0, cursorPos);
+                        var textAfter  = input.substring(cursorPos, input.length);
+                        
+                        $input.val(textBefore + "    " + textAfter);
+                        $input.setCaretPosition(cursorPos + 4);
+                    }
+                }
                 
                 $input.val(sessionStorage.getItem("code"));
                 update();
+                
+                $.fn.setCaretPosition = function(position) {
+                    return this.each(function() {
+                        if (this.setSelectionRange) {
+                            this.focus();
+                            this.setSelectionRange(position, position);
+                        } else if (this.createTextRange) {
+                            var range = this.createTextRange();
+                            range.collapse(true);
+                            range.moveEnd("character", position);
+                            range.moveStart("character", position);
+                            range.select();
+                        }
+                    });
+                };
             }());            
         </script>
     </body>
