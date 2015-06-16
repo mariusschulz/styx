@@ -20,6 +20,9 @@ namespace Styx.Passes {
         let isEntryNode = node.id === 1;
         let isTransitNode = node.incomingEdges.length === 1 && hasSingleOutgoingEpsilonEdge; 
         
+        // We want to simplify transit nodes, but we never remove node #1
+        // because it's the entry node of the entire control flow graph
+        // and we don't want to mess up references to it
         if (!isEntryNode && isTransitNode) {
             optimizeTransitNode(node, optimizedNodes);
         }
