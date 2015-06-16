@@ -4,7 +4,13 @@
 /// <reference path="flow.ts"/>
 
 namespace Styx {
-    export function parse(node: ESTree.Node): ControlFlowGraph {
+    export interface ParserOptions {
+        passes?: {
+            removeTransitNodes?: boolean
+        }
+    }
+    
+    export function parse(node: ESTree.Node, options?: ParserOptions): ControlFlowGraph {
         if (!_.isObject(node) || !node.type) {
             throw Error("Invalid node: 'type' property required");
         }
@@ -14,7 +20,7 @@ namespace Styx {
         }
 
         var program = <ESTree.Program>node;
-        var parser = new Parser(program);
+        var parser = new Parser(program, options);
                     
         return parser.controlFlowGraph;
     }
