@@ -22,23 +22,53 @@ namespace Styx.Passes {
     }
     
     function inspectEdge(edge: FlowEdge) {
-        if (edge.type !== EdgeType.Conditional) {
-            // We only deal with conditional edges in this pass 
+        if (edge.type !== EdgeType.Conditional || !isCompileTimeConstant(edge.data)) {
+            // We only deal with conditional edges that have a condition
+            // whose truthiness we can safely determine at compile-time 
             return;
         }
         
-        if (edge.data.type === ESTree.NodeType.Literal) {
-            let literal = <ESTree.Literal>edge.data;
+        if (isAlwaysTruthy(edge.data)) {
+            // Conditional edges with a constant truthy test are always taken;
+            // we can therefore turn them into simple epsilon edges
+            turnEdgeIntoEpsilonEdge(edge);
+        } else {
+            // Conditional edges with a constant falsy test are never taken;
+            // we thus remove them entirely
+            removeEdge(edge);
+        }
+    }
+    
+    function isCompileTimeConstant(expression: ESTree.Expression): boolean {
+        switch (expression.type) {
+            case ESTree.NodeType.Literal:
+                return true;
             
-            if (literal.value) {
-                // Conditional edges with a constant truthy test are always taken;
-                // we can therefore turn them into simple epsilon edges
-                turnEdgeIntoEpsilonEdge(edge);
-            } else {
-                // Conditional edges with a constant falsy test are never taken;
-                // we thus remove them entirely
-                removeEdge(edge);
-            }
+            case ESTree.NodeType.UnaryExpression:
+                let unaryExpression = <ESTree.UnaryExpression>expression;
+                return unaryExpression.operator === "!" && isCompileTimeConstant(unaryExpression.argument);
+            
+            default:
+                return false;
+        }
+    }
+    
+    function isAlwaysTruthy(expression: ESTree.Expression): boolean {
+        switch (expression.type) {
+            case ESTree.NodeType.Literal:
+                return !!(<ESTree.Literal>expression).value;
+            
+            case ESTree.NodeType.UnaryExpression:
+                let unaryExpression = <ESTree.UnaryExpression>expression;
+                
+                if (unaryExpression.operator !== "!") {
+                    throw Error("This branch shouldn't have been reached");
+                }
+                
+                return !isAlwaysTruthy(unaryExpression.argument);
+            
+            default:
+                throw Error("This case shouldn't have been reached");
         }
     }
     
