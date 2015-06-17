@@ -4,16 +4,16 @@
 
 namespace Styx.Passes {
     export function removeTransitNodes(graph: ControlFlowGraph) {
-        let optimizedNodes = new Collections.Set<number>();
-        optimizeNode(graph.entry, optimizedNodes);
+        let visitedNodes = new Collections.Set<number>();
+        optimizeNode(graph.entry, visitedNodes);
     }
     
-    function optimizeNode(node: FlowNode, optimizedNodes: Collections.Set<number>) {
-        if (optimizedNodes.contains(node.id)) {
+    function optimizeNode(node: FlowNode, visitedNodes: Collections.Set<number>) {
+        if (visitedNodes.contains(node.id)) {
             return;
         }
         
-        optimizedNodes.add(node.id);
+        visitedNodes.add(node.id);
         
         // We want to simplify transit nodes, but we never remove node #1
         // because it's the entry node of the entire control flow graph
@@ -26,16 +26,16 @@ namespace Styx.Passes {
             
             if (incomingEdge.type === EdgeType.Epsilon ||
                 outgoingEdge.type === EdgeType.Epsilon) {
-                optimizeTransitNode(node, optimizedNodes);
+                optimizeTransitNode(node, visitedNodes);
             }
         }
         
         for (let edge of node.outgoingEdges) {
-            optimizeNode(edge.target, optimizedNodes);
+            optimizeNode(edge.target, visitedNodes);
         }
     }
     
-    function optimizeTransitNode(transitNode: FlowNode, optimizedNodes: Collections.Set<number>) {
+    function optimizeTransitNode(transitNode: FlowNode, visitedNodes: Collections.Set<number>) {
         // Remember the transit node's original target
         let originalTarget = transitNode.outgoingEdges[0].target;
         
@@ -44,7 +44,7 @@ namespace Styx.Passes {
         }
         
         // Recursively optimize, starting with the original target
-        optimizeNode(originalTarget, optimizedNodes);
+        optimizeNode(originalTarget, visitedNodes);
     }
     
     function shouldRemoveTransitNode(transitNode: FlowNode): boolean {
