@@ -1,12 +1,12 @@
-/// <reference path="../estree.ts"/>
-/// <reference path="../flow.ts"/>
-/// <reference path="../util/idGenerator.ts"/>
-/// <reference path="../collections/stack.ts"/>
-/// <reference path="enclosingStatement.ts"/>
-/// <reference path="expressions/negator.ts"/>
-/// <reference path="expressions/stringifier.ts"/>
-/// <reference path="passes/constantConditionalEdgeRewriting.ts"/>
-/// <reference path="passes/transitNodeRemoval.ts"/>
+/// <reference path="../estree.ts" />
+/// <reference path="../flow.ts" />
+/// <reference path="../util/idGenerator.ts" />
+/// <reference path="../collections/stack.ts" />
+/// <reference path="enclosingStatement.ts" />
+/// <reference path="expressions/negator.ts" />
+/// <reference path="expressions/stringifier.ts" />
+/// <reference path="passes/constantConditionalEdgeRewriting.ts" />
+/// <reference path="passes/transitNodeRemoval.ts" />
 
 namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
