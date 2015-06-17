@@ -30,10 +30,12 @@ namespace Styx {
     }
     
     function combineOptionsWithDefaults(options: ParserOptions): ParserOptions {
+        let passes = options.passes;
+        
         return {
             passes: {
-                removeTransitNodes: options.passes && options.passes.removeTransitNodes,
-                rewriteConstantConditionalEdges: options.passes && options.passes.rewriteConstantConditionalEdges
+                removeTransitNodes: passes && passes.removeTransitNodes,
+                rewriteConstantConditionalEdges: passes && passes.rewriteConstantConditionalEdges
             }
         };
     }
