@@ -6,7 +6,8 @@
 namespace Styx {
     export interface ParserOptions {
         passes?: {
-            removeTransitNodes?: boolean
+            removeTransitNodes?: boolean,
+            rewriteConstantConditionalEdges?: boolean
         }
     }
     
@@ -28,7 +29,8 @@ namespace Styx {
     function combineOptionsWithDefaults(options: ParserOptions): ParserOptions {
         return {
             passes: {
-                removeTransitNodes: options.passes && options.passes.removeTransitNodes
+                removeTransitNodes: options.passes && options.passes.removeTransitNodes,
+                rewriteConstantConditionalEdges: options.passes && options.passes.rewriteConstantConditionalEdges
             }
         };
     }

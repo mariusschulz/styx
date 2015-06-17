@@ -5,6 +5,7 @@
 /// <reference path="enclosingStatement.ts"/>
 /// <reference path="expressions/negator.ts"/>
 /// <reference path="expressions/stringifier.ts"/>
+/// <reference path="passes/constantConditionalEdgeRewriting.ts"/>
 /// <reference path="passes/transitNodeRemoval.ts"/>
 
 namespace Styx {
@@ -26,6 +27,10 @@ namespace Styx {
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.controlFlowGraph = this.parseProgram(program);
+            
+            if (options.passes.rewriteConstantConditionalEdges) {
+                Passes.rewriteConstantConditionalEdges(this.controlFlowGraph);
+            }
             
             if (options.passes.removeTransitNodes) {
                 Passes.removeTransitNodes(this.controlFlowGraph);
