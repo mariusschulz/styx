@@ -5,10 +5,16 @@
 namespace Styx.Passes {
     export function rewriteConstantConditionalEdges(graph: ControlFlowGraph) {
         let visitedNodes = new Collections.Set<number>();
-        visitNode(graph.entry, visitedNodes);
+        let edgesToRemove: FlowEdge[] = [];
+        
+        visitNode(graph.entry, visitedNodes, edgesToRemove);
+        
+        for (let edge of edgesToRemove) {
+            removeEdge(edge);
+        }
     }
     
-    function visitNode(node: FlowNode, visitedNodes: Collections.Set<number>) {
+    function visitNode(node: FlowNode, visitedNodes: Collections.Set<number>, edgesToRemove: FlowEdge[]) {
         if (visitedNodes.contains(node.id)) {
             return;
         }
@@ -16,12 +22,12 @@ namespace Styx.Passes {
         visitedNodes.add(node.id);
         
         for (let edge of node.outgoingEdges) {
-            inspectEdge(edge);
-            visitNode(edge.target, visitedNodes);
+            inspectEdge(edge, edgesToRemove);
+            visitNode(edge.target, visitedNodes, edgesToRemove);
         }
     }
     
-    function inspectEdge(edge: FlowEdge) {
+    function inspectEdge(edge: FlowEdge, edgesToRemove: FlowEdge[]) {
         if (edge.type !== EdgeType.Conditional || !isCompileTimeConstant(edge.data)) {
             // We only deal with conditional edges that have a condition
             // whose truthiness we can safely determine at compile-time 
@@ -34,8 +40,8 @@ namespace Styx.Passes {
             turnEdgeIntoEpsilonEdge(edge);
         } else {
             // Conditional edges with a constant falsy test are never taken;
-            // we thus remove them entirely
-            removeEdge(edge);
+            // we thus remove this edge after walking the entire graph
+            edgesToRemove.push(edge);
         }
     }
     
