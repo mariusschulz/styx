@@ -1,4 +1,3 @@
-/// <reference path="../definitions/lodash.d.ts"/>
 /// <reference path="parser/parser.ts"/>
 /// <reference path="estree.ts"/>
 /// <reference path="flow.ts"/>
@@ -12,8 +11,8 @@ namespace Styx {
     }
     
     export function parse(node: ESTree.Node, options: ParserOptions = {}): ControlFlowGraph {
-        if (!_.isObject(node) || !node.type) {
-            throw Error("Invalid node: 'type' property required");
+        if (!isObject(node) || !node.type) {
+            throw Error("'node' must be an object with a 'type' property");
         }
 
         if (node.type !== ESTree.NodeType.Program) {
@@ -24,6 +23,10 @@ namespace Styx {
         var parser = new Parser(<ESTree.Program>node, combinedOptions);
                     
         return parser.controlFlowGraph;
+    }
+    
+    function isObject(value: any): boolean {
+        return typeof value === "object" && !!value;
     }
     
     function combineOptionsWithDefaults(options: ParserOptions): ParserOptions {
