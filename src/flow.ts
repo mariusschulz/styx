@@ -8,6 +8,7 @@ namespace Styx {
         target: FlowNode;
         type: EdgeType;
         label: string;
+        data: ESTree.Expression;
     }
 
     export class FlowNode {
@@ -21,18 +22,23 @@ namespace Styx {
             this.outgoingEdges = [];
         }
 
-        appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal): FlowNode {
-            let edge = {
+        appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal, edgeData: ESTree.Expression = null): FlowNode {
+            let edge: FlowEdge = {
                 source: node,
                 target: this,
                 type: edgeType,
-                label: label
+                label: label,
+                data: edgeData
             };
             
             node.outgoingEdges.push(edge);
             this.incomingEdges.push(edge);
 
             return this;
+        }
+        
+        appendConditionallyTo(node: FlowNode, label: string, condition: ESTree.Expression): FlowNode {
+            return this.appendTo(node, label, EdgeType.Conditional, condition);
         }
         
         appendEpsilonEdgeTo(node: FlowNode): FlowNode {

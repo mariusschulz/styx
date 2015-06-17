@@ -161,12 +161,12 @@ namespace Styx {
             let elseLabel = stringify(negatedTest);
             
             let thenNode = this.createNode()
-                .appendTo(currentNode, thenLabel, EdgeType.Conditional);
+                .appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
             
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             let finalNode = this.createNode()
-                .appendTo(currentNode, elseLabel, EdgeType.Conditional);
+                .appendConditionallyTo(currentNode, elseLabel, negatedTest);
             
             if (endOfThenBranch) {
                 finalNode.appendEpsilonEdgeTo(endOfThenBranch);
@@ -178,13 +178,13 @@ namespace Styx {
         private parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode): FlowNode {
             // Then branch
             let thenLabel = stringify(ifStatement.test);
-            let thenNode = this.createNode().appendTo(currentNode, thenLabel, EdgeType.Conditional);
+            let thenNode = this.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode);
             
             // Else branch
             let negatedTest = negateTruthiness(ifStatement.test);
             let elseLabel = stringify(negatedTest); 
-            let elseNode = this.createNode().appendTo(currentNode, elseLabel, EdgeType.Conditional);
+            let elseNode = this.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode);
             
             let finalNode = this.createNode();
@@ -254,16 +254,30 @@ namespace Styx {
             
             for (let switchCase of switchStatement.cases) {
                 let caseEdgeLabel: string;
+                let edgeCondition: ESTree.LogicalExpression;
                 
                 if (switchCase.test === null) {
                     hasDefaultCase = true;
                     caseEdgeLabel = defaultExpression;
+                    edgeCondition = null;
                 } else {
-                    caseEdgeLabel = `${switchExpression} === ${stringify(switchCase.test)}`;
+                    let switchIdentifier: ESTree.Identifier = {
+                        type: ESTree.NodeType.Identifier,
+                        name: switchExpression
+                    };
+                    
+                    edgeCondition = {
+                        type: ESTree.NodeType.LogicalExpression,
+                        left: switchIdentifier,
+                        right: switchCase.test,
+                        operator: "==="
+                    };
+                    
+                    caseEdgeLabel = stringify(edgeCondition);
                 }
                 
                 let caseBody = this.createNode()
-                    .appendTo(evaluatedDiscriminantNode, caseEdgeLabel, EdgeType.Conditional);
+                    .appendConditionallyTo(evaluatedDiscriminantNode, caseEdgeLabel, edgeCondition);
                 
                 if (endOfPreviousCase) {
                     caseBody.appendEpsilonEdgeTo(endOfPreviousCase);
@@ -290,7 +304,7 @@ namespace Styx {
                     // we don't know if it's exhaustive (it's probably not).
                     // Thus, add a <default> edge to the discriminant node
                     // that is taken when none of the cases match
-                    finalNode.appendTo(evaluatedDiscriminantNode, defaultExpression, EdgeType.Conditional);
+                    finalNode.appendConditionallyTo(evaluatedDiscriminantNode, defaultExpression, null);
                 }
             }
             
@@ -306,7 +320,7 @@ namespace Styx {
             let falsyCondition = negateTruthiness(truthyCondition);
             let falsyConditionLabel = stringify(falsyCondition);
             
-            let loopBodyNode = this.createNode().appendTo(currentNode, truthyConditionLabel, EdgeType.Conditional);
+            let loopBodyNode = this.createNode().appendConditionallyTo(currentNode, truthyConditionLabel, truthyCondition);
             let finalNode = this.createNode();
             
             this.enclosingStatements.push({
@@ -324,7 +338,7 @@ namespace Styx {
             this.enclosingStatements.pop();
             
             return finalNode
-                .appendTo(currentNode, falsyConditionLabel, EdgeType.Conditional);
+                .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition);
         }
         
         private parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, label?: string): FlowNode {
@@ -349,8 +363,8 @@ namespace Styx {
             
             this.enclosingStatements.pop();
             
-            currentNode.appendTo(testNode, truthyConditionLabel, EdgeType.Conditional);
-            finalNode.appendTo(testNode, falsyConditionLabel, EdgeType.Conditional);
+            currentNode.appendConditionallyTo(testNode, truthyConditionLabel, truthyCondition);
+            finalNode.appendConditionallyTo(testNode, falsyConditionLabel, falsyCondition);
             
             if (endOfLoopBodyNode) {
                 testNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
@@ -379,8 +393,8 @@ namespace Styx {
                 let falsyConditionLabel = stringify(falsyCondition);
                 
                 // Add truthy and falsy edges
-                beginOfLoopBodyNode.appendTo(testDecisionNode, truthyConditionLabel, EdgeType.Conditional)
-                finalNode.appendTo(testDecisionNode, falsyConditionLabel, EdgeType.Conditional);
+                beginOfLoopBodyNode.appendConditionallyTo(testDecisionNode, truthyConditionLabel, truthyCondition)
+                finalNode.appendConditionallyTo(testDecisionNode, falsyConditionLabel, falsyCondition);
             } else {
                 // If the loop doesn't have a test expression,
                 // the loop body starts unconditionally after the initialization
@@ -430,10 +444,10 @@ namespace Styx {
                 .appendTo(currentNode, stringifiedRight);
             
             let startOfLoopBody = this.createNode()
-                .appendTo(conditionNode, `${variableName} = <next>`, EdgeType.Conditional);
+                .appendConditionallyTo(conditionNode, `${variableName} = <next>`, forInStatement.right);
                 
             let finalNode = this.createNode()
-                .appendTo(conditionNode, "<no more>", EdgeType.Conditional);
+                .appendConditionallyTo(conditionNode, "<no more>", null);
             
             this.enclosingStatements.push({
                 breakTarget: finalNode,
