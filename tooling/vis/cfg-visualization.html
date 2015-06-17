@@ -64,7 +64,9 @@
                     };
                     
                     previousCode = code;
+                    
                     sessionStorage.setItem("code", code);
+                    sessionStorage.setItem("options", JSON.stringify(options));
                     
                     window.cfgVisualization.renderControlFlowGraph(container, code, options);
                 };
@@ -95,9 +97,6 @@
                     }
                 }
                 
-                $input.val(sessionStorage.getItem("code"));
-                update();
-                
                 $.fn.setCaretPosition = function(position) {
                     return this.each(function() {
                         if (this.setSelectionRange) {
@@ -112,6 +111,20 @@
                         }
                     });
                 };
+                
+                initializeFormFromSessionStorage();
+                
+                function initializeFormFromSessionStorage() {
+                    $input.val(sessionStorage.getItem("code"));
+                    
+                    var optionsString = sessionStorage.getItem("options") || "";
+                    var options = JSON.parse(optionsString);
+                    
+                    $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
+                    $rewriteConstantConditionalEdgesCheckbox.prop("checked", !!options.passes.rewriteConstantConditionalEdges);
+                    
+                    update();
+                }
             }());            
         </script>
     </body>
