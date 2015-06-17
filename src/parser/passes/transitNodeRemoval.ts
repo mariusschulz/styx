@@ -1,3 +1,4 @@
+/// <reference path="../../util/arrayUtil.ts" />
 /// <reference path="../../collections/set.ts" />
 /// <reference path="../../flow.ts" />
 
@@ -70,15 +71,25 @@ namespace Styx.Passes {
         
         // Decide whether to keep the incoming or the outgoing edge.
         // If both are epsilon edges, it doesn't matter which one to keep.
-        let survivingEdge = incomingEdge.type === EdgeType.Epsilon ? outgoingEdge : incomingEdge;
+        let [edgeToKeep, edgeToRemove] = incomingEdge.type === EdgeType.Epsilon
+            ? [outgoingEdge, incomingEdge]
+            : [incomingEdge, outgoingEdge];
         
         // Redirect surviving edge
-        survivingEdge.source = source;
-        survivingEdge.target = target;
+        edgeToKeep.source = source;
+        edgeToKeep.target = target;
         
-        // Make the surviving edge the only incoming/outgoing edge
-        source.outgoingEdges = [survivingEdge];
-        target.incomingEdges = [survivingEdge];
+        // Delete both edges from the source
+        Util.Arrays.removeElementFromArray(edgeToRemove, source.outgoingEdges);
+        Util.Arrays.removeElementFromArray(edgeToKeep, source.outgoingEdges);
+        
+        // Delete both edges from the target
+        Util.Arrays.removeElementFromArray(edgeToRemove, target.incomingEdges);
+        Util.Arrays.removeElementFromArray(edgeToKeep, target.incomingEdges);
+        
+        // Add the new edge to both source and target
+        source.outgoingEdges.push(edgeToKeep);
+        target.incomingEdges.push(edgeToKeep);
         
         // Clear node
         transitNode.incomingEdges = [];
