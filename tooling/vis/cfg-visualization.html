@@ -8,15 +8,22 @@
         <div class="container">
             <h1>Control Flow Graph Visualization</h1>
             
-            <div class="col-md-9">
+            <div class="col-md-8">
                 <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
             </div>
             
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="well">
                     <p>
                         <strong>Optimization Passes</strong>
                     </p>
+                    
+                    <div class="checkbox">
+                        <label for="constant-conditional-edge-rewriting-pass">
+                            <input type="checkbox" id="constant-conditional-edge-rewriting-pass" checked />
+                            Rewrite constant conditional edges
+                        </label>
+                    </div>
                     
                     <div class="checkbox">
                         <label for="transit-node-removal-pass">
@@ -44,18 +51,22 @@
                 var container = document.getElementById("graph");
                 var $input = $("#input");
                 var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
+                var $rewriteConstantConditionalEdgesCheckbox = $("#constant-conditional-edge-rewriting-pass");
                 var previousCode;
                 
                 var update = function() {
                     var code = $input.val();
                     var options = {
                         passes: {
-                            removeTransitNodes: $removeTransitNodesCheckbox.is(":checked")
+                            removeTransitNodes: $removeTransitNodesCheckbox.is(":checked"),
+                            rewriteConstantConditionalEdges: $rewriteConstantConditionalEdgesCheckbox.is(":checked")
                         }
                     };
                     
                     previousCode = code;
+                    
                     sessionStorage.setItem("code", code);
+                    sessionStorage.setItem("options", JSON.stringify(options));
                     
                     window.cfgVisualization.renderControlFlowGraph(container, code, options);
                 };
@@ -70,6 +81,7 @@
                 });
                 
                 $removeTransitNodesCheckbox.on("change", update);
+                $rewriteConstantConditionalEdgesCheckbox.on("change", update);
                 
                 function keydown(e) {
                     if (e.keyCode === 9 /* tab */) {
@@ -85,9 +97,6 @@
                     }
                 }
                 
-                $input.val(sessionStorage.getItem("code"));
-                update();
-                
                 $.fn.setCaretPosition = function(position) {
                     return this.each(function() {
                         if (this.setSelectionRange) {
@@ -102,6 +111,20 @@
                         }
                     });
                 };
+                
+                initializeFormFromSessionStorage();
+                
+                function initializeFormFromSessionStorage() {
+                    $input.val(sessionStorage.getItem("code"));
+                    
+                    var optionsString = sessionStorage.getItem("options") || "";
+                    var options = JSON.parse(optionsString);
+                    
+                    $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
+                    $rewriteConstantConditionalEdgesCheckbox.prop("checked", !!options.passes.rewriteConstantConditionalEdges);
+                    
+                    update();
+                }
             }());            
         </script>
     </body>
