@@ -1,35 +1,69 @@
+/// <reference path="../../definitions/knockout.d.ts" />
+
 (function() {
-    var container = $("#graph")[0];    
-    var $input = $("#input");    
-    var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
-    var $rewriteConstantConditionalEdgesCheckbox = $("#constant-conditional-edge-rewriting-pass");
+    var visualization = document.getElementById("visualization");
+    var container = document.getElementById("graph");
+    
+    var mainTabName = "<main>";
+    var viewModel = {
+        activeTab: ko.observable(mainTabName),
+        functions: [{ name: "foo" }, { name: "bar" }],
+        
+        passes: {
+            removeTransitNodes: ko.observable(true),
+            rewriteConstantConditionalEdges: ko.observable(true)
+        },
+        
+        selectTab: function(tabName) {
+            this.activeTab(tabName);
+        },
+        
+        selectMainTab: function() {
+            this.selectTab(mainTabName);
+        }
+    };
+    
+    viewModel.options = ko.computed(function() {
+        return {
+            passes: {
+                removeTransitNodes: viewModel.passes.removeTransitNodes(),
+                rewriteConstantConditionalEdges: viewModel.passes.rewriteConstantConditionalEdges()
+            }
+        };
+    });
+    
+    viewModel.options.subscribe(function(options) {
+        update();
+    });
+    
+    viewModel.isTabActive = function(tabName) {
+        return viewModel.activeTab() === tabName;
+    };
+       
+    viewModel.isMainTabActive = ko.computed(function() {
+        return viewModel.isTabActive(mainTabName);
+    });
+    
+    ko.applyBindings(viewModel, visualization);
     
     var sessionStorageKeys = {
         code: "code",
         options: "options"
     };
     
-    var previousCode;
-    
+    var previousCode;    
     var debouncedUpdate = _.debounce(update, 200);
     
-    $input.on("keydown", keydown);
-    $input.on("keyup", keyup);
-    
-    $removeTransitNodesCheckbox.on("change", update);
-    $rewriteConstantConditionalEdgesCheckbox.on("change", update);
+    var $input = $("#input")
+        .on("keydown", keydown)
+        .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
     update();
     
     function update() {
         var code = $input.val();
-        var options = {
-            passes: {
-                removeTransitNodes: $removeTransitNodesCheckbox.is(":checked"),
-                rewriteConstantConditionalEdges: $rewriteConstantConditionalEdgesCheckbox.is(":checked")
-            }
-        };
+        var options = viewModel.options();
         
         previousCode = code;
         
@@ -66,7 +100,7 @@
         var optionsString = sessionStorage.getItem(sessionStorageKeys.options) || "";
         var options = JSON.parse(optionsString);
         
-        $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
-        $rewriteConstantConditionalEdgesCheckbox.prop("checked", !!options.passes.rewriteConstantConditionalEdges);
+        viewModel.passes.removeTransitNodes(!!options.passes.removeTransitNodes);
+        viewModel.passes.rewriteConstantConditionalEdges(!!options.passes.rewriteConstantConditionalEdges);
     }
 }());
