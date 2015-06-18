@@ -79,8 +79,10 @@
         var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTab);
         window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
         
-        var functions = _.map(controlFlowGraph.functions, function(f) { return _.pick(f, "name"); });
-        viewModel.functions(functions);
+        if (activeTab === mainTabName) {
+            var functions = _.map(controlFlowGraph.functions, function(f) { return _.pick(f, "name"); });
+            viewModel.functions(functions);
+        }
     }
     
     function keydown(e) {
