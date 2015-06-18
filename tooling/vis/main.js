@@ -6,7 +6,7 @@
     
     var mainTabName = "<main>";
     var viewModel = {
-        activeTab: ko.observable(mainTabName),
+        activeTab: ko.observable(),
         functions: [{ name: "foo" }, { name: "bar" }],
         
         passes: {
@@ -32,10 +32,6 @@
         };
     });
     
-    viewModel.options.subscribe(function(options) {
-        update();
-    });
-    
     viewModel.isTabActive = function(tabName) {
         return viewModel.activeTab() === tabName;
     };
@@ -43,8 +39,6 @@
     viewModel.isMainTabActive = ko.computed(function() {
         return viewModel.isTabActive(mainTabName);
     });
-    
-    ko.applyBindings(viewModel, visualization);
     
     var sessionStorageKeys = {
         code: "code",
@@ -59,9 +53,21 @@
         .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
-    update();
+    
+    viewModel.options.subscribe(function(options) {
+        update();
+    });
+    
+    viewModel.activeTab.subscribe(function(tabName) {
+        update();
+    });
+    
+    viewModel.selectMainTab();
+    
+    ko.applyBindings(viewModel, visualization);
     
     function update() {
+        var activeTab = viewModel.activeTab();
         var code = $input.val();
         var options = viewModel.options();
         
@@ -70,7 +76,7 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        window.cfgVisualization.renderControlFlowGraph(container, code, options);
+        window.cfgVisualization.renderControlFlowGraph(container, code, options, activeTab);
     }
     
     function keydown(e) {
@@ -94,7 +100,7 @@
     }
     
     function initializeFormFromSessionStorage() {
-        var code = sessionStorage.getItem(sessionStorageKeys.code) || "";        
+        var code = sessionStorage.getItem(sessionStorageKeys.code) || "";
         $input.val(code);
         
         var optionsString = sessionStorage.getItem(sessionStorageKeys.options) || "";

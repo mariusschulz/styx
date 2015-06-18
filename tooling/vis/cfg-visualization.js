@@ -3,11 +3,13 @@
 /* global esprima */
 /* global vis */
 (function() {
+    var network;
+    
     window.cfgVisualization = {
         renderControlFlowGraph: renderControlFlowGraph
     };
 
-    function renderControlFlowGraph(container, code, options) {
+    function renderControlFlowGraph(container, code, options, activeTab) {
         var visualizationOptions = {            
             width: "100%",
             height: "100%",
@@ -28,16 +30,23 @@
             }
         };
         
-        var graphData = computeGraphData(code, options);
+        var graphData = computeGraphData(code, options, activeTab);
         
-        return new vis.Network(container, graphData, visualizationOptions);
+        if (network) {
+            network.destroy();
+        }
+            
+        network = new vis.Network(container, graphData, visualizationOptions);
+        
+        return network;
     }
 
-    function computeGraphData(code, options) {
+    function computeGraphData(code, options, activeTab) {
         if (code) {
-            var cfg = Styx.parse(esprima.parse(code), options);
+            var entireFlowGraph = Styx.parse(esprima.parse(code), options);
+            var selectedFlowGraph = _.findWhere(entireFlowGraph.functions, { name: activeTab }) || entireFlowGraph;
             
-            return generateNodesAndEdges(cfg);            
+            return generateNodesAndEdges(selectedFlowGraph);
         }
         
         return {
