@@ -7,7 +7,7 @@
     var mainTabName = "<main>";
     var viewModel = {
         activeTab: ko.observable(),
-        functions: [{ name: "foo" }, { name: "bar" }],
+        functions: ko.observableArray([]),
         
         passes: {
             removeTransitNodes: ko.observable(true),
@@ -76,7 +76,11 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        window.cfgVisualization.renderControlFlowGraph(container, code, options, activeTab);
+        var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTab);
+        window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
+        
+        var functions = _.map(controlFlowGraph.functions, function(f) { return _.pick(f, "name"); });
+        viewModel.functions(functions);
     }
     
     function keydown(e) {

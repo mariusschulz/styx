@@ -6,10 +6,11 @@
     var network;
     
     window.cfgVisualization = {
+        computeControlFlowGraph: computeGraphData,
         renderControlFlowGraph: renderControlFlowGraph
     };
 
-    function renderControlFlowGraph(container, code, options, activeTab) {
+    function renderControlFlowGraph(container, controlFlowGraph) {
         var visualizationOptions = {            
             width: "100%",
             height: "100%",
@@ -30,29 +31,22 @@
             }
         };
         
-        var graphData = computeGraphData(code, options, activeTab);
-        
         if (network) {
             network.destroy();
         }
-            
-        network = new vis.Network(container, graphData, visualizationOptions);
+        
+        var visGraph = generateNodesAndEdges(controlFlowGraph);
+        network = new vis.Network(container, visGraph, visualizationOptions);
         
         return network;
     }
 
-    function computeGraphData(code, options, activeTab) {
-        if (code) {
-            var entireFlowGraph = Styx.parse(esprima.parse(code), options);
-            var selectedFlowGraph = _.findWhere(entireFlowGraph.functions, { name: activeTab }) || entireFlowGraph;
-            
-            return generateNodesAndEdges(selectedFlowGraph);
-        }
+    function computeGraphData(code, options, activeTab) {        
+        var entireFlowGraph = Styx.parse(esprima.parse(code), options);
         
-        return {
-            nodes: new vis.DataSet([{ id: 1, label: "1", color: "#4CD964" }]),
-            edges: new vis.DataSet([])
-        };
+        return activeTab === "<main>"
+            ? entireFlowGraph
+            : _.findWhere(entireFlowGraph.functions, { name: activeTab });
     }
 
     function generateNodesAndEdges(cfg) {
