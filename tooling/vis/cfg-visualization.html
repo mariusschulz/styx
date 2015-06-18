@@ -8,34 +8,44 @@
         <div class="container">
             <h1>Control Flow Graph Visualization</h1>
             
-            <div class="col-md-8">
-                <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="well">
-                    <p>
-                        <strong>Optimization Passes</strong>
-                    </p>
-                    
-                    <div class="checkbox">
-                        <label for="constant-conditional-edge-rewriting-pass">
-                            <input type="checkbox" id="constant-conditional-edge-rewriting-pass" checked />
-                            Rewrite constant conditional edges
-                        </label>
-                    </div>
-                    
-                    <div class="checkbox">
-                        <label for="transit-node-removal-pass">
-                            <input type="checkbox" id="transit-node-removal-pass" checked />
-                            Remove transit nodes
-                        </label>
+            <div class="row">
+                <div class="col-md-8">
+                    <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="well">
+                        <p>
+                            <strong>Optimization Passes</strong>
+                        </p>
+                        
+                        <div class="checkbox">
+                            <label for="constant-conditional-edge-rewriting-pass">
+                                <input type="checkbox" id="constant-conditional-edge-rewriting-pass" checked />
+                                Rewrite constant conditional edges
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox">
+                            <label for="transit-node-removal-pass">
+                                <input type="checkbox" id="transit-node-removal-pass" checked />
+                                Remove transit nodes
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-12">
-                <div id="graph"></div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="list-group">
+                        <a href="" class="list-group-item active" data-bind="class: { active: false }">Main program</a>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div id="graph"></div>
+                </div>
             </div>
         </div>
 
@@ -43,89 +53,10 @@
         <script type="text/javascript" src="../../vendor/lodash.js"></script>
         <script type="text/javascript" src="../../vendor/esprima.js"></script>
         <script type="text/javascript" src="../../vendor/vis.min.js"></script>
+        <script type="text/javascript" src="../../vendor/knockout.js"></script>
         <script type="text/javascript" src="../../dist/styx.js"></script>
+        
         <script type="text/javascript" src="cfg-visualization.js"></script>
-
-        <script type="text/javascript">
-            (function() {
-                var container = document.getElementById("graph");
-                var $input = $("#input");
-                var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
-                var $rewriteConstantConditionalEdgesCheckbox = $("#constant-conditional-edge-rewriting-pass");
-                var previousCode;
-                
-                var update = function() {
-                    var code = $input.val();
-                    var options = {
-                        passes: {
-                            removeTransitNodes: $removeTransitNodesCheckbox.is(":checked"),
-                            rewriteConstantConditionalEdges: $rewriteConstantConditionalEdgesCheckbox.is(":checked")
-                        }
-                    };
-                    
-                    previousCode = code;
-                    
-                    sessionStorage.setItem("code", code);
-                    sessionStorage.setItem("options", JSON.stringify(options));
-                    
-                    window.cfgVisualization.renderControlFlowGraph(container, code, options);
-                };
-                
-                var debouncedUpdate = _.debounce(update, 200);
-                
-                $input.on("keydown", keydown);
-                $input.on("keyup", function() {
-                    if ($input.val() !== previousCode) {
-                        debouncedUpdate();
-                    }
-                });
-                
-                $removeTransitNodesCheckbox.on("change", update);
-                $rewriteConstantConditionalEdgesCheckbox.on("change", update);
-                
-                function keydown(e) {
-                    if (e.keyCode === 9 /* tab */) {
-                        e.preventDefault();
-                        
-                        var cursorPos = $input.prop("selectionStart");
-                        var input = $input.val();
-                        var textBefore = input.substring(0, cursorPos);
-                        var textAfter  = input.substring(cursorPos, input.length);
-                        
-                        $input.val(textBefore + "    " + textAfter);
-                        $input.setCaretPosition(cursorPos + 4);
-                    }
-                }
-                
-                $.fn.setCaretPosition = function(position) {
-                    return this.each(function() {
-                        if (this.setSelectionRange) {
-                            this.focus();
-                            this.setSelectionRange(position, position);
-                        } else if (this.createTextRange) {
-                            var range = this.createTextRange();
-                            range.collapse(true);
-                            range.moveEnd("character", position);
-                            range.moveStart("character", position);
-                            range.select();
-                        }
-                    });
-                };
-                
-                initializeFormFromSessionStorage();
-                
-                function initializeFormFromSessionStorage() {
-                    $input.val(sessionStorage.getItem("code"));
-                    
-                    var optionsString = sessionStorage.getItem("options") || "";
-                    var options = JSON.parse(optionsString);
-                    
-                    $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
-                    $rewriteConstantConditionalEdgesCheckbox.prop("checked", !!options.passes.rewriteConstantConditionalEdges);
-                    
-                    update();
-                }
-            }());            
-        </script>
+        <script type="text/javascript" src="main.js"></script>
     </body>
 </html>
