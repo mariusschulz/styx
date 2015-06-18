@@ -1,8 +1,13 @@
 namespace Styx {
     export interface ControlFlowGraph {
         entry: FlowNode;
+        functions: FlowFunction[]; 
     }
 
+    export interface FlowFunction {
+        entry: FlowNode;
+    }
+    
     export interface FlowEdge {
         source: FlowNode;
         target: FlowNode;
