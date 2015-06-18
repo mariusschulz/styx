@@ -21,10 +21,12 @@ namespace Styx {
         
         private idGenerator: Util.IdGenerator;
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
+        private functions: FlowFunction[];
         
         constructor(program: ESTree.Program, options: ParserOptions) {
             this.idGenerator = Util.createIdGenerator();
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
+            this.functions = [];
             
             this.controlFlowGraph = this.parseProgram(program);
             
@@ -43,7 +45,8 @@ namespace Styx {
             this.parseStatements(program.body, entryNode);
     
             return {
-                entry: entryNode
+                entry: entryNode,
+                functions: this.functions
             };
         }
     
@@ -67,6 +70,7 @@ namespace Styx {
             }
             
             let statementParsers: StatementTypeToParserMap = {
+                [ESTree.NodeType.FunctionDeclaration]: this.parseFunctionDeclaration,
                 [ESTree.NodeType.EmptyStatement]: this.parseEmptyStatement,
                 [ESTree.NodeType.BlockStatement]: this.parseBlockStatement,
                 [ESTree.NodeType.VariableDeclaration]: this.parseVariableDeclaration,
@@ -91,6 +95,18 @@ namespace Styx {
             }
             
             return parsingMethod.call(this, statement, currentNode);
+        }
+        
+        private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
+            let func: FlowFunction = {
+                entry: this.createNode()
+            };
+            
+            this.parseBlockStatement(functionDeclaration.body, func.entry);
+            
+            this.functions.push(func);
+            
+            return currentNode;
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
