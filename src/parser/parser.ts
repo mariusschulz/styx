@@ -99,7 +99,8 @@ namespace Styx {
         
         private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
             let func: FlowFunction = {
-                entry: this.createNode()
+                entry: this.createNode(),
+                name: functionDeclaration.id.name
             };
             
             this.parseBlockStatement(functionDeclaration.body, func.entry);

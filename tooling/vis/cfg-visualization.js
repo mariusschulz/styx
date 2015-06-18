@@ -3,11 +3,14 @@
 /* global esprima */
 /* global vis */
 (function() {
+    var network;
+    
     window.cfgVisualization = {
+        computeControlFlowGraph: computeGraphData,
         renderControlFlowGraph: renderControlFlowGraph
     };
 
-    function renderControlFlowGraph(container, code, options) {
+    function renderControlFlowGraph(container, controlFlowGraph) {
         var visualizationOptions = {            
             width: "100%",
             height: "100%",
@@ -28,22 +31,22 @@
             }
         };
         
-        var graphData = computeGraphData(code, options);
-        
-        return new vis.Network(container, graphData, visualizationOptions);
-    }
-
-    function computeGraphData(code, options) {
-        if (code) {
-            var cfg = Styx.parse(esprima.parse(code), options);
-            
-            return generateNodesAndEdges(cfg);            
+        if (network) {
+            network.destroy();
         }
         
-        return {
-            nodes: new vis.DataSet([{ id: 1, label: "1", color: "#4CD964" }]),
-            edges: new vis.DataSet([])
-        };
+        var visGraph = generateNodesAndEdges(controlFlowGraph);
+        network = new vis.Network(container, visGraph, visualizationOptions);
+        
+        return network;
+    }
+
+    function computeGraphData(code, options, activeTab) {        
+        var entireFlowGraph = Styx.parse(esprima.parse(code), options);
+        
+        return activeTab === "<main>"
+            ? entireFlowGraph
+            : _.findWhere(entireFlowGraph.functions, { name: activeTab });
     }
 
     function generateNodesAndEdges(cfg) {
