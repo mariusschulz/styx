@@ -20,6 +20,7 @@
     $rewriteConstantConditionalEdgesCheckbox.on("change", update);
     
     initializeFormFromSessionStorage();
+    update();
     
     function update() {
         var code = $input.val();
@@ -59,14 +60,13 @@
     }
     
     function initializeFormFromSessionStorage() {
-        $input.val(sessionStorage.getItem(sessionStorageKeys.code));
+        var code = sessionStorage.getItem(sessionStorageKeys.code) || "";        
+        $input.val(code);
         
         var optionsString = sessionStorage.getItem(sessionStorageKeys.options) || "";
         var options = JSON.parse(optionsString);
         
         $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
         $rewriteConstantConditionalEdgesCheckbox.prop("checked", !!options.passes.rewriteConstantConditionalEdges);
-        
-        update();
     }
 }());
