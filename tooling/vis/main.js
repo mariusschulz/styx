@@ -4,6 +4,11 @@
     var $removeTransitNodesCheckbox = $("#transit-node-removal-pass");
     var $rewriteConstantConditionalEdgesCheckbox = $("#constant-conditional-edge-rewriting-pass");
     
+    var sessionStorageKeys = {
+        code: "code",
+        options: "options"
+    };
+    
     var previousCode;
     
     var debouncedUpdate = _.debounce(update, 200);
@@ -27,8 +32,8 @@
         
         previousCode = code;
         
-        sessionStorage.setItem("code", code);
-        sessionStorage.setItem("options", JSON.stringify(options));
+        sessionStorage.setItem(sessionStorageKeys.code, code);
+        sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
         window.cfgVisualization.renderControlFlowGraph(container, code, options);
     }
@@ -54,9 +59,9 @@
     }
     
     function initializeFormFromSessionStorage() {
-        $input.val(sessionStorage.getItem("code"));
+        $input.val(sessionStorage.getItem(sessionStorageKeys.code));
         
-        var optionsString = sessionStorage.getItem("options") || "";
+        var optionsString = sessionStorage.getItem(sessionStorageKeys.options) || "";
         var options = JSON.parse(optionsString);
         
         $removeTransitNodesCheckbox.prop("checked", !!options.passes.removeTransitNodes);
