@@ -80,7 +80,11 @@
         window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
         
         if (activeTab === mainTabName) {
-            var functions = _.map(controlFlowGraph.functions, function(f) { return _.pick(f, "name"); });
+            var functions = _(controlFlowGraph.functions)
+                .map(function(f) { return _.pick(f, "name"); })
+                .sortBy("name")
+                .value();
+            
             viewModel.functions(functions);
         }
     }
