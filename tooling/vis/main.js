@@ -58,7 +58,7 @@
     parseAndVisualize();
     
     viewModel.options.subscribe(function(options) {
-        parseProgram();
+        parseAndVisualize();
     });
     
     viewModel.activeTabId.subscribe(function(tabId) {
