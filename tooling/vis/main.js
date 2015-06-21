@@ -80,11 +80,12 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTabId);
-        window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
+        var program = window.cfgVisualization.parseProgram(code, options);
+        var flowGraph = _.findWhere(program.functions, { id: activeTabId }) || program.flowGraph;       
+        window.cfgVisualization.renderControlFlowGraph(container, flowGraph);
         
         if (activeTabId === mainTabId) {
-            var functions = _(controlFlowGraph.functions)
+            var functions = _(program.functions)
                 .map(function(f) { return _.pick(f, "id", "name"); })
                 .sortBy("name")
                 .value();
