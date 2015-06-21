@@ -4,9 +4,15 @@
     var visualization = document.getElementById("visualization");
     var container = document.getElementById("graph");
     
+    var sessionStorageKeys = {
+        code: "code",
+        options: "options",
+        selectedTabId: "selectedTabId"
+    };
+    
     var mainTabId = 0;
     var viewModel = {
-        activeTabId: ko.observable(),
+        activeTabId: ko.observable(mainTabId),
         functions: ko.observableArray([]),
         
         passes: {
@@ -40,11 +46,6 @@
         return viewModel.isTabActive(mainTabId);
     });
     
-    var sessionStorageKeys = {
-        code: "code",
-        options: "options"
-    };
-    
     var previousCode;    
     var debouncedUpdate = _.debounce(update, 200);
     
@@ -53,18 +54,21 @@
         .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
+    update();
     
     viewModel.options.subscribe(function(options) {
         update();
     });
     
-    viewModel.activeTabId.subscribe(function(tabName) {
+    viewModel.activeTabId.subscribe(function(tabId) {
         update();
+        sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
     });
     
-    viewModel.selectMainTab();
-    
     ko.applyBindings(viewModel, visualization);
+    
+    var selectedTabId = +sessionStorage.getItem(sessionStorageKeys.selectedTabId) || 0;
+    viewModel.selectTab(selectedTabId);
     
     function update() {
         var activeTabId = viewModel.activeTabId();
