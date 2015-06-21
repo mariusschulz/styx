@@ -12,8 +12,9 @@
     
     var mainTabId = 0;
     var viewModel = {
-        activeTabId: ko.observable(mainTabId),
+        selectedFunctionId: ko.observable(mainTabId),
         functions: ko.observableArray([]),
+        program: ko.observable(),
         
         passes: {
             removeTransitNodes: ko.observable(true),
@@ -21,7 +22,7 @@
         },
         
         selectTab: function(tabId) {
-            viewModel.activeTabId(tabId);
+            viewModel.selectedFunctionId(tabId);
         },
         
         selectMainTab: function() {
@@ -38,8 +39,22 @@
         };
     });
     
-    viewModel.isTabActive = function(tabName) {
-        return viewModel.activeTabId() === tabName;
+    viewModel.actualFunctionId = ko.computed(function() {
+        var functionId = viewModel.selectedFunctionId();
+        var functions = viewModel.functions();
+        
+        var selectedFunction = _.findWhere(functions, { id: functionId });
+        
+        if (!selectedFunction) {
+            viewModel.selectedFunctionId(mainTabId);
+            return mainTabId;
+        }
+        
+        return functionId;
+    });
+    
+    viewModel.isTabActive = function(tabId) {
+        return viewModel.actualFunctionId() === tabId;
     };
        
     viewModel.isMainTabActive = ko.computed(function() {
@@ -47,21 +62,18 @@
     });
     
     var previousCode;    
-    var debouncedUpdate = _.debounce(update, 200);
+    var debouncedParseAndVisualize = _.debounce(parseAndVisualize, 200);
     
     var $input = $("#input")
         .on("keydown", keydown)
         .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
-    update();
+    parseAndVisualize();
     
-    viewModel.options.subscribe(function(options) {
-        update();
-    });
-    
-    viewModel.activeTabId.subscribe(function(tabId) {
-        update();
+    viewModel.options.subscribe(parseAndVisualize);    
+    viewModel.actualFunctionId.subscribe(function(tabId) {
+        visualizeFlowGraph();
         sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
     });
     
@@ -70,8 +82,12 @@
     var selectedTabId = +sessionStorage.getItem(sessionStorageKeys.selectedTabId) || 0;
     viewModel.selectTab(selectedTabId);
     
-    function update() {
-        var activeTabId = viewModel.activeTabId();
+    function parseAndVisualize() {
+        parseProgram();
+        visualizeFlowGraph();
+    }
+    
+    function parseProgram() {
         var code = $input.val();
         var options = viewModel.options();
         
@@ -80,17 +96,27 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTabId);
-        window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
+        var program = window.cfgVisualization.parseProgram(code, options);
+        viewModel.program(program);
         
-        if (activeTabId === mainTabId) {
-            var functions = _(controlFlowGraph.functions)
-                .map(function(f) { return _.pick(f, "id", "name"); })
-                .sortBy("name")
-                .value();
-            
-            viewModel.functions(functions);
-        }
+        var functions = _(program.functions)
+            .map(function(f) { return _.pick(f, "id", "name"); })
+            .sortBy("name")
+            .value();
+        
+        viewModel.functions(functions);
+    }
+    
+    function visualizeFlowGraph() {
+        var functionId = viewModel.actualFunctionId();
+        var program = viewModel.program();
+        
+        var selectedFunction = _.findWhere(program.functions, { id: functionId });
+        var flowGraph = selectedFunction
+            ? selectedFunction.flowGraph
+            : program.flowGraph;
+        
+        window.cfgVisualization.renderControlFlowGraph(container, flowGraph);
     }
     
     function keydown(e) {
@@ -109,7 +135,7 @@
     
     function keyup() {
         if ($input.val() !== previousCode) {
-            debouncedUpdate();
+            debouncedParseAndVisualize();
         }
     }
     

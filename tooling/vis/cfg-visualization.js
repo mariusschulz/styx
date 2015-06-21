@@ -7,9 +7,13 @@
     var fontFaces = "Consolas, Menlo, Monaco, monospace";
     
     window.cfgVisualization = {
-        computeControlFlowGraph: computeGraphData,
+        parseProgram: parseProgram,
         renderControlFlowGraph: renderControlFlowGraph
     };
+
+    function parseProgram(code, options) {        
+        return Styx.parse(esprima.parse(code), options);
+    }
 
     function renderControlFlowGraph(container, controlFlowGraph) {
         var visualizationOptions = {            
@@ -36,18 +40,10 @@
             network.destroy();
         }
         
-        var visGraph = generateNodesAndEdges(controlFlowGraph);
-        network = new vis.Network(container, visGraph, visualizationOptions);
-        
-        return network;
-    }
-
-    function computeGraphData(code, options, functionId) {        
-        var entireFlowGraph = Styx.parse(esprima.parse(code), options);
-        
-        return functionId === 0
-            ? entireFlowGraph
-            : _.findWhere(entireFlowGraph.functions, { id: functionId });
+        setTimeout(function() {
+            var visGraph = generateNodesAndEdges(controlFlowGraph);
+            network = new vis.Network(container, visGraph, visualizationOptions);
+        }, 0);
     }
 
     function generateNodesAndEdges(cfg) {

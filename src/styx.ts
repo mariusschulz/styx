@@ -10,7 +10,7 @@ namespace Styx {
         }
     }
     
-    export function parse(node: ESTree.Node, options?: ParserOptions): ControlFlowGraph {
+    export function parse(node: ESTree.Node, options?: ParserOptions): FlowProgram {
         if (!isObject(node) || !node.type) {
             throw Error("'node' must be an object with a 'type' property");
         }
@@ -22,7 +22,7 @@ namespace Styx {
         var combinedOptions = normalizeParserOptions(options || {});
         var parser = new Parser(<ESTree.Program>node, combinedOptions);
         
-        return parser.controlFlowGraph;
+        return parser.program;
     }
     
     function isObject(value: any): boolean {

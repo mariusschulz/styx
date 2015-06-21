@@ -17,35 +17,34 @@ namespace Styx {
     }
     
     export class Parser {
-        public controlFlowGraph: ControlFlowGraph;
+        public program: FlowProgram;
         
-        private nodeIdGenerator: Util.IdGenerator;
-        private functionIdGenerator: Util.IdGenerator;
-        
-        private enclosingStatements: Collections.Stack<EnclosingStatement>;
         private functions: FlowFunction[];
+        private enclosingStatements: Collections.Stack<EnclosingStatement>;
+        
+        private nodeIdGenerator = Util.createIdGenerator();
+        private functionIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions) {
-            this.nodeIdGenerator = Util.createIdGenerator();
-            this.functionIdGenerator = Util.createIdGenerator();
-            
-            this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             this.functions = [];
+            this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
-            this.controlFlowGraph = this.parseProgram(program);
-            
-            let graphs = [this.controlFlowGraph, ...this.functions];
-            Parser.runOptimizationPasses(graphs, options);
+            this.program = this.parseProgram(program, options);
         }
     
-        private parseProgram(program: ESTree.Program): ControlFlowGraph {
-            let entryNode = this.createNode();
-            entryNode.isEntryNode = true;
+        private parseProgram(program: ESTree.Program, options: ParserOptions): FlowProgram {
+            let flowGraph = { entry: this.createNode() };
+            flowGraph.entry.isEntryNode = true;
             
-            this.parseStatements(program.body, entryNode);
-    
+            this.parseStatements(program.body, flowGraph.entry);
+            
+            // Run optimization passes
+            let functionFlowGraphs = this.functions.map(func => func.flowGraph);
+            let flowGraphs = [flowGraph, ...functionFlowGraphs];
+            Parser.runOptimizationPasses(flowGraphs, options);
+            
             return {
-                entry: entryNode,
+                flowGraph,
                 functions: this.functions
             };
         }
@@ -102,12 +101,12 @@ namespace Styx {
             entryNode.isEntryNode = true;
             
             let func: FlowFunction = {
-                entry: entryNode,
                 id: this.functionIdGenerator.makeNew(),
-                name: functionDeclaration.id.name
+                name: functionDeclaration.id.name,
+                flowGraph: { entry: entryNode }
             };
             
-            this.parseBlockStatement(functionDeclaration.body, func.entry);
+            this.parseBlockStatement(functionDeclaration.body, entryNode);
             
             this.functions.push(func);
             
@@ -530,7 +529,7 @@ namespace Styx {
             }
         }
         
-        private static runOptimizationPasses(graphs: { entry: FlowNode }[], options: ParserOptions) {
+        private static runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
             for (let graph of graphs) {
                 if (options.passes.rewriteConstantConditionalEdges) {
                     Passes.rewriteConstantConditionalEdges(graph.entry);
