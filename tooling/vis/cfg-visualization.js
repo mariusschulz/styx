@@ -4,6 +4,7 @@
 /* global vis */
 (function() {
     var network;
+    var fontFaces = "Consolas, Menlo, Monaco, monospace";
     
     window.cfgVisualization = {
         computeControlFlowGraph: computeGraphData,
@@ -70,7 +71,10 @@
         nodes.push({
             id: node.id,
             label: node.label || node.id,
-            color: getNodeColor(node)
+            color: getNodeColor(node),
+            font: {
+                face: fontFaces
+            }
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
@@ -82,7 +86,8 @@
                 color: color,
                 font: {
                     background: "white",
-                    color: color
+                    color: color,
+                    face: fontFaces
                 },
                 arrows: "to"
             };
