@@ -88,13 +88,21 @@
             };
             
             edges.push(visEdge);
-        }); 
+        });
     }
     
     function getNodeColor(node) {
         var isFinalNode = node.outgoingEdges.length === 0;
         
-        return isFinalNode ? "#4CD964" : null;
+        if (isFinalNode) {
+            return "#4CD964";
+        }
+        
+        if (node.isEntryNode) {
+            return "#FFCC00";
+        }
+        
+        return "#97C2FC";
     }
     
     function getEdgeColor(edge) {
