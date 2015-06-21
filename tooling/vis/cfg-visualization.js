@@ -4,6 +4,7 @@
 /* global vis */
 (function() {
     var network;
+    var fontFaces = "Consolas, Menlo, Monaco, monospace";
     
     window.cfgVisualization = {
         computeControlFlowGraph: computeGraphData,
@@ -67,12 +68,13 @@
     }
     
     function addNodeAndEdges(node, nodes, edges) {
-        var isFinalNode = node.outgoingEdges.length === 0;
-        
         nodes.push({
             id: node.id,
             label: node.label || node.id,
-            color: isFinalNode ? "#4CD964" : null
+            color: getNodeColor(node),
+            font: {
+                face: fontFaces
+            }
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
@@ -84,13 +86,28 @@
                 color: color,
                 font: {
                     background: "white",
-                    color: color
+                    color: color,
+                    face: fontFaces
                 },
                 arrows: "to"
             };
             
             edges.push(visEdge);
-        }); 
+        });
+    }
+    
+    function getNodeColor(node) {
+        var isFinalNode = node.outgoingEdges.length === 0;
+        
+        if (isFinalNode) {
+            return "#4CD964";
+        }
+        
+        if (node.isEntryNode) {
+            return "#FFCC00";
+        }
+        
+        return "#97C2FC";
     }
     
     function getEdgeColor(edge) {
@@ -102,8 +119,7 @@
             case Styx.EdgeType.AbruptCompletion:
                 return "#FF2D55";
             default:
-                // null falls back to the default color
-                return null;
+                return "#2B7CE9";
         }
     }
     
