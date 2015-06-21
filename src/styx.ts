@@ -10,7 +10,7 @@ namespace Styx {
         }
     }
     
-    export function parse(node: ESTree.Node, options: ParserOptions = {}): ControlFlowGraph {
+    export function parse(node: ESTree.Node, options?: ParserOptions): ControlFlowGraph {
         if (!isObject(node) || !node.type) {
             throw Error("'node' must be an object with a 'type' property");
         }
@@ -19,9 +19,9 @@ namespace Styx {
             throw Error(`The node type '${node.type}' is not supported`);
         }
         
-        var combinedOptions = combineOptionsWithDefaults(options);
+        var combinedOptions = normalizeParserOptions(options || {});
         var parser = new Parser(<ESTree.Program>node, combinedOptions);
-                    
+        
         return parser.controlFlowGraph;
     }
     
@@ -29,13 +29,13 @@ namespace Styx {
         return typeof value === "object" && !!value;
     }
     
-    function combineOptionsWithDefaults(options: ParserOptions): ParserOptions {
+    function normalizeParserOptions(options: ParserOptions): ParserOptions {
         let passes = options.passes;
         
         return {
             passes: {
-                removeTransitNodes: passes && passes.removeTransitNodes,
-                rewriteConstantConditionalEdges: passes && passes.rewriteConstantConditionalEdges
+                removeTransitNodes: passes === true || passes && passes.removeTransitNodes,
+                rewriteConstantConditionalEdges: passes === true || passes && passes.rewriteConstantConditionalEdges
             }
         };
     }

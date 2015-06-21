@@ -109,10 +109,17 @@
         var code = sessionStorage.getItem(sessionStorageKeys.code) || "";
         $input.val(code);
         
-        var optionsString = sessionStorage.getItem(sessionStorageKeys.options) || "";
-        var options = JSON.parse(optionsString);
+        var optionsString = sessionStorage.getItem(sessionStorageKeys.options);
         
-        viewModel.passes.removeTransitNodes(!!options.passes.removeTransitNodes);
-        viewModel.passes.rewriteConstantConditionalEdges(!!options.passes.rewriteConstantConditionalEdges);
+        if (optionsString) {
+            var options = JSON.parse(optionsString) || {};
+            var passes = options.passes || {};
+            
+            viewModel.passes.removeTransitNodes(passes.removeTransitNodes);
+            viewModel.passes.rewriteConstantConditionalEdges(passes.rewriteConstantConditionalEdges);            
+        } else {
+            viewModel.passes.removeTransitNodes(true);
+            viewModel.passes.rewriteConstantConditionalEdges(true);
+        }
     }
 }());
