@@ -3,11 +3,11 @@
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    export function rewriteConstantConditionalEdges(graph: ControlFlowGraph) {
+    export function rewriteConstantConditionalEdges(graphEntry: FlowNode) {
         let visitedNodes = new Collections.Set<number>();
         let edgesToRemove: FlowEdge[] = [];
         
-        visitNode(graph.entry, visitedNodes, edgesToRemove);
+        visitNode(graphEntry, visitedNodes, edgesToRemove);
         
         for (let edge of edgesToRemove) {
             removeEdge(edge);

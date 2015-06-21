@@ -34,13 +34,8 @@ namespace Styx {
             
             this.controlFlowGraph = this.parseProgram(program);
             
-            if (options.passes.rewriteConstantConditionalEdges) {
-                Passes.rewriteConstantConditionalEdges(this.controlFlowGraph);
-            }
-            
-            if (options.passes.removeTransitNodes) {
-                Passes.removeTransitNodes(this.controlFlowGraph);
-            }
+            let graphs = [this.controlFlowGraph, ...this.functions];
+            Parser.runOptimizationPasses(graphs, options);
         }
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {
@@ -528,6 +523,18 @@ namespace Styx {
                     
                 default:
                     return false;
+            }
+        }
+        
+        private static runOptimizationPasses(graphs: { entry: FlowNode }[], options: ParserOptions) {
+            for (let graph of graphs) {
+                if (options.passes.rewriteConstantConditionalEdges) {
+                    Passes.rewriteConstantConditionalEdges(graph.entry);
+                }
+                
+                if (options.passes.removeTransitNodes) {
+                    Passes.removeTransitNodes(graph.entry);
+                }
             }
         }
         
