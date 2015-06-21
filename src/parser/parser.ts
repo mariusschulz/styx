@@ -29,24 +29,22 @@ namespace Styx {
             this.functions = [];
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
-            this.program = this.parseProgram(program);
-            
-            let graphs = [
-                this.program.flowGraph,
-                ...this.functions.map(func => func.flowGraph)
-            ];
-            
-            Parser.runOptimizationPasses(graphs, options);
+            this.program = this.parseProgram(program, options);
         }
     
-        private parseProgram(program: ESTree.Program): FlowProgram {
+        private parseProgram(program: ESTree.Program, options: ParserOptions): FlowProgram {
             let flowGraph = { entry: this.createNode() };
             flowGraph.entry.isEntryNode = true;
             
             this.parseStatements(program.body, flowGraph.entry);
             
+            // Run optimization passes
+            let functionFlowGraphs = this.functions.map(func => func.flowGraph);            
+            let flowGraphs = [flowGraph, ...functionFlowGraphs];
+            Parser.runOptimizationPasses(flowGraphs, options);
+            
             return {
-                flowGraph: flowGraph,
+                flowGraph,
                 functions: this.functions
             };
         }
