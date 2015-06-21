@@ -114,8 +114,7 @@
             case Styx.EdgeType.AbruptCompletion:
                 return "#FF2D55";
             default:
-                // null falls back to the default color
-                return null;
+                return "#2B7CE9";
         }
     }
     
