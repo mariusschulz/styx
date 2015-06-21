@@ -22,13 +22,10 @@ namespace Styx {
         private functions: FlowFunction[];
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
-        private nodeIdGenerator: Util.IdGenerator;
-        private functionIdGenerator: Util.IdGenerator;
+        private nodeIdGenerator = Util.createIdGenerator();
+        private functionIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions) {
-            this.nodeIdGenerator = Util.createIdGenerator();
-            this.functionIdGenerator = Util.createIdGenerator();
-            
             this.functions = [];
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
