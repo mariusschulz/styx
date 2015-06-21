@@ -67,12 +67,10 @@
     }
     
     function addNodeAndEdges(node, nodes, edges) {
-        var isFinalNode = node.outgoingEdges.length === 0;
-        
         nodes.push({
             id: node.id,
             label: node.label || node.id,
-            color: isFinalNode ? "#4CD964" : null
+            color: getNodeColor(node)
         });
         
         _.each(node.outgoingEdges, function(outgoingEdge) {
@@ -91,6 +89,12 @@
             
             edges.push(visEdge);
         }); 
+    }
+    
+    function getNodeColor(node) {
+        var isFinalNode = node.outgoingEdges.length === 0;
+        
+        return isFinalNode ? "#4CD964" : null;
     }
     
     function getEdgeColor(edge) {
