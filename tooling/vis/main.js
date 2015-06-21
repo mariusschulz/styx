@@ -12,7 +12,7 @@
     
     var mainTabId = 0;
     var viewModel = {
-        activeTabId: ko.observable(mainTabId),
+        selectedFunctionId: ko.observable(mainTabId),
         functions: ko.observableArray([]),
         program: ko.observable(),
         
@@ -22,7 +22,7 @@
         },
         
         selectTab: function(tabId) {
-            viewModel.activeTabId(tabId);
+            viewModel.selectedFunctionId(tabId);
         },
         
         selectMainTab: function() {
@@ -39,8 +39,22 @@
         };
     });
     
-    viewModel.isTabActive = function(tabName) {
-        return viewModel.activeTabId() === tabName;
+    viewModel.actualFunctionId = ko.computed(function() {
+        var functionId = viewModel.selectedFunctionId();
+        var functions = viewModel.functions();
+        
+        var selectedFunction = _.findWhere(functions, { id: functionId });
+        
+        if (!selectedFunction) {
+            viewModel.selectedFunctionId(mainTabId);
+            return mainTabId;
+        }
+        
+        return functionId;
+    });
+    
+    viewModel.isTabActive = function(tabId) {
+        return viewModel.actualFunctionId() === tabId;
     };
        
     viewModel.isMainTabActive = ko.computed(function() {
@@ -58,7 +72,7 @@
     parseAndVisualize();
     
     viewModel.options.subscribe(parseAndVisualize);    
-    viewModel.activeTabId.subscribe(function(tabId) {
+    viewModel.actualFunctionId.subscribe(function(tabId) {
         visualizeFlowGraph();
         sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
     });
@@ -94,10 +108,10 @@
     }
     
     function visualizeFlowGraph() {
-        var activeTabId = viewModel.activeTabId();
+        var functionId = viewModel.actualFunctionId();
         var program = viewModel.program();
         
-        var selectedFunction = _.findWhere(program.functions, { id: activeTabId });
+        var selectedFunction = _.findWhere(program.functions, { id: functionId });
         var flowGraph = selectedFunction
             ? selectedFunction.flowGraph
             : program.flowGraph;
