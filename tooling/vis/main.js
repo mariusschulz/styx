@@ -47,21 +47,21 @@
     });
     
     var previousCode;    
-    var debouncedUpdate = _.debounce(update, 200);
+    var debouncedUpdate = _.debounce(parseProgram, 200);
     
     var $input = $("#input")
         .on("keydown", keydown)
         .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
-    update();
+    parseProgram();
     
     viewModel.options.subscribe(function(options) {
-        update();
+        parseProgram();
     });
     
     viewModel.activeTabId.subscribe(function(tabId) {
-        update();
+        parseProgram();
         sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
     });
     
@@ -70,7 +70,7 @@
     var selectedTabId = +sessionStorage.getItem(sessionStorageKeys.selectedTabId) || 0;
     viewModel.selectTab(selectedTabId);
     
-    function update() {
+    function parseProgram() {
         var activeTabId = viewModel.activeTabId();
         var code = $input.val();
         var options = viewModel.options();
