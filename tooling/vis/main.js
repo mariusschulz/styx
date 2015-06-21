@@ -57,10 +57,7 @@
     initializeFormFromSessionStorage();
     parseAndVisualize();
     
-    viewModel.options.subscribe(function(options) {
-        parseAndVisualize();
-    });
-    
+    viewModel.options.subscribe(parseAndVisualize);    
     viewModel.activeTabId.subscribe(function(tabId) {
         visualizeFlowGraph();
         sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
