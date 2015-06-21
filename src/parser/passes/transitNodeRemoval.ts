@@ -3,9 +3,9 @@
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    export function removeTransitNodes(graph: ControlFlowGraph) {
+    export function removeTransitNodes(graphEntry: FlowNode) {
         let visitedNodes = new Collections.Set<number>();
-        optimizeNode(graph.entry, visitedNodes);
+        optimizeNode(graphEntry, visitedNodes);
     }
     
     function optimizeNode(node: FlowNode, visitedNodes: Collections.Set<number>) {
@@ -15,12 +15,12 @@ namespace Styx.Passes {
         
         visitedNodes.add(node.id);
         
-        // We want to simplify transit nodes, but we never remove node #1
-        // because it's the entry node of the entire control flow graph
-        // and we don't want to mess up references to it
+        // We want to simplify transit nodes, but we never remove
+        // the entry node of a control flow graph
+        // because we don't want to mess up references to it
         if (node.incomingEdges.length === 1 &&
             node.outgoingEdges.length === 1 &&
-            node.id !== 1) {
+            !node.isEntryNode) {
             let incomingEdge = node.incomingEdges[0];
             let outgoingEdge = node.outgoingEdges[0];
             

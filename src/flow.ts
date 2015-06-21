@@ -1,8 +1,15 @@
 namespace Styx {
     export interface ControlFlowGraph {
         entry: FlowNode;
+        functions: FlowFunction[]; 
     }
 
+    export interface FlowFunction {
+        entry: FlowNode;
+        id: number;
+        name: string;
+    }
+    
     export interface FlowEdge {
         source: FlowNode;
         target: FlowNode;
@@ -13,11 +20,13 @@ namespace Styx {
 
     export class FlowNode {
         id: number;
+        isEntryNode: boolean;
         incomingEdges: FlowEdge[];
         outgoingEdges: FlowEdge[];
 
         constructor(id: number) {
             this.id = id;
+            this.isEntryNode = false;
             this.incomingEdges = [];
             this.outgoingEdges = [];
         }

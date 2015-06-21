@@ -19,31 +19,34 @@ namespace Styx {
     export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         
-        private idGenerator: Util.IdGenerator;
+        private nodeIdGenerator: Util.IdGenerator;
+        private functionIdGenerator: Util.IdGenerator;
+        
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
+        private functions: FlowFunction[];
         
         constructor(program: ESTree.Program, options: ParserOptions) {
-            this.idGenerator = Util.createIdGenerator();
+            this.nodeIdGenerator = Util.createIdGenerator();
+            this.functionIdGenerator = Util.createIdGenerator();
+            
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
+            this.functions = [];
             
             this.controlFlowGraph = this.parseProgram(program);
             
-            if (options.passes.rewriteConstantConditionalEdges) {
-                Passes.rewriteConstantConditionalEdges(this.controlFlowGraph);
-            }
-            
-            if (options.passes.removeTransitNodes) {
-                Passes.removeTransitNodes(this.controlFlowGraph);
-            }
+            let graphs = [this.controlFlowGraph, ...this.functions];
+            Parser.runOptimizationPasses(graphs, options);
         }
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {
             let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
             
             this.parseStatements(program.body, entryNode);
     
             return {
-                entry: entryNode
+                entry: entryNode,
+                functions: this.functions
             };
         }
     
@@ -67,6 +70,7 @@ namespace Styx {
             }
             
             let statementParsers: StatementTypeToParserMap = {
+                [ESTree.NodeType.FunctionDeclaration]: this.parseFunctionDeclaration,
                 [ESTree.NodeType.EmptyStatement]: this.parseEmptyStatement,
                 [ESTree.NodeType.BlockStatement]: this.parseBlockStatement,
                 [ESTree.NodeType.VariableDeclaration]: this.parseVariableDeclaration,
@@ -91,6 +95,23 @@ namespace Styx {
             }
             
             return parsingMethod.call(this, statement, currentNode);
+        }
+        
+        private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
+            let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
+            
+            let func: FlowFunction = {
+                entry: entryNode,
+                id: this.functionIdGenerator.makeNew(),
+                name: functionDeclaration.id.name
+            };
+            
+            this.parseBlockStatement(functionDeclaration.body, func.entry);
+            
+            this.functions.push(func);
+            
+            return currentNode;
         }
         
         private parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode): FlowNode {
@@ -509,8 +530,20 @@ namespace Styx {
             }
         }
         
+        private static runOptimizationPasses(graphs: { entry: FlowNode }[], options: ParserOptions) {
+            for (let graph of graphs) {
+                if (options.passes.rewriteConstantConditionalEdges) {
+                    Passes.rewriteConstantConditionalEdges(graph.entry);
+                }
+                
+                if (options.passes.removeTransitNodes) {
+                    Passes.removeTransitNodes(graph.entry);
+                }
+            }
+        }
+        
         private createNode(): FlowNode {
-            return new FlowNode(this.idGenerator.makeNew());
+            return new FlowNode(this.nodeIdGenerator.makeNew());
         }
     }
 }
