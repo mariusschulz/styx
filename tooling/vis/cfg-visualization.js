@@ -40,10 +40,10 @@
             network.destroy();
         }
         
-        var visGraph = generateNodesAndEdges(controlFlowGraph);
-        network = new vis.Network(container, visGraph, visualizationOptions);
-        
-        return network;
+        setTimeout(function() {
+            var visGraph = generateNodesAndEdges(controlFlowGraph);
+            network = new vis.Network(container, visGraph, visualizationOptions);
+        }, 0);
     }
 
     function generateNodesAndEdges(cfg) {
