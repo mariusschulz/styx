@@ -14,6 +14,7 @@
     var viewModel = {
         activeTabId: ko.observable(mainTabId),
         functions: ko.observableArray([]),
+        program: ko.observable(),
         
         passes: {
             removeTransitNodes: ko.observable(true),
@@ -47,21 +48,21 @@
     });
     
     var previousCode;    
-    var debouncedUpdate = _.debounce(parseProgram, 200);
+    var debouncedParseAndVisualize = _.debounce(parseAndVisualize, 200);
     
     var $input = $("#input")
         .on("keydown", keydown)
         .on("keyup", keyup);
     
     initializeFormFromSessionStorage();
-    parseProgram();
+    parseAndVisualize();
     
     viewModel.options.subscribe(function(options) {
         parseProgram();
     });
     
     viewModel.activeTabId.subscribe(function(tabId) {
-        parseProgram();
+        visualizeFlowGraph();
         sessionStorage.setItem(sessionStorageKeys.selectedTabId, tabId);
     });
     
@@ -70,8 +71,12 @@
     var selectedTabId = +sessionStorage.getItem(sessionStorageKeys.selectedTabId) || 0;
     viewModel.selectTab(selectedTabId);
     
+    function parseAndVisualize() {
+        parseProgram();
+        visualizeFlowGraph();
+    }
+    
     function parseProgram() {
-        var activeTabId = viewModel.activeTabId();
         var code = $input.val();
         var options = viewModel.options();
         
@@ -81,17 +86,24 @@
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
         var program = window.cfgVisualization.parseProgram(code, options);
-        var flowGraph = _.findWhere(program.functions, { id: activeTabId }) || program.flowGraph;       
-        window.cfgVisualization.renderControlFlowGraph(container, flowGraph);
+        viewModel.program(program);
         
-        if (activeTabId === mainTabId) {
-            var functions = _(program.functions)
-                .map(function(f) { return _.pick(f, "id", "name"); })
-                .sortBy("name")
-                .value();
-            
-            viewModel.functions(functions);
-        }
+        var functions = _(program.functions)
+            .map(function(f) { return _.pick(f, "id", "name"); })
+            .sortBy("name")
+            .value();
+        
+        viewModel.functions(functions);
+    }
+    
+    function visualizeFlowGraph() {
+        var activeTabId = viewModel.activeTabId();
+        var program = viewModel.program();
+        
+        var functionFlowGraph = _.findWhere(program.functions, { id: activeTabId });
+        var flowGraph = functionFlowGraph || program.flowGraph;
+        
+        window.cfgVisualization.renderControlFlowGraph(container, flowGraph);
     }
     
     function keydown(e) {
@@ -110,7 +122,7 @@
     
     function keyup() {
         if ($input.val() !== previousCode) {
-            debouncedUpdate();
+            debouncedParseAndVisualize();
         }
     }
     
