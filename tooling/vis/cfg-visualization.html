@@ -49,7 +49,7 @@
                         
                         <div class="list-group">
                             <div data-bind="foreach: functions">
-                                <a href="#" class="list-group-item" data-bind="text: name, click: function(data) { $parent.selectTab(data.name) }, css: { active: $parent.isTabActive(name) }"></a>
+                                <a href="#" class="list-group-item" data-bind="text: name, click: function(data) { $parent.selectTab(data.id) }, css: { active: $parent.isTabActive(id) }"></a>
                             </div>
                         </div>
                     </div>

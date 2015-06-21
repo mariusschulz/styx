@@ -41,12 +41,12 @@
         return network;
     }
 
-    function computeGraphData(code, options, activeTab) {        
+    function computeGraphData(code, options, functionId) {        
         var entireFlowGraph = Styx.parse(esprima.parse(code), options);
         
-        return activeTab === "<main>"
+        return functionId === 0
             ? entireFlowGraph
-            : _.findWhere(entireFlowGraph.functions, { name: activeTab });
+            : _.findWhere(entireFlowGraph.functions, { id: functionId });
     }
 
     function generateNodesAndEdges(cfg) {

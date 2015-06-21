@@ -4,9 +4,9 @@
     var visualization = document.getElementById("visualization");
     var container = document.getElementById("graph");
     
-    var mainTabName = "<main>";
+    var mainTabId = 0;
     var viewModel = {
-        activeTab: ko.observable(),
+        activeTabId: ko.observable(),
         functions: ko.observableArray([]),
         
         passes: {
@@ -14,12 +14,12 @@
             rewriteConstantConditionalEdges: ko.observable(true)
         },
         
-        selectTab: function(tabName) {
-            this.activeTab(tabName);
+        selectTab: function(tabId) {
+            viewModel.activeTabId(tabId);
         },
         
         selectMainTab: function() {
-            this.selectTab(mainTabName);
+            viewModel.selectTab(mainTabId);
         }
     };
     
@@ -33,11 +33,11 @@
     });
     
     viewModel.isTabActive = function(tabName) {
-        return viewModel.activeTab() === tabName;
+        return viewModel.activeTabId() === tabName;
     };
        
     viewModel.isMainTabActive = ko.computed(function() {
-        return viewModel.isTabActive(mainTabName);
+        return viewModel.isTabActive(mainTabId);
     });
     
     var sessionStorageKeys = {
@@ -58,7 +58,7 @@
         update();
     });
     
-    viewModel.activeTab.subscribe(function(tabName) {
+    viewModel.activeTabId.subscribe(function(tabName) {
         update();
     });
     
@@ -67,7 +67,7 @@
     ko.applyBindings(viewModel, visualization);
     
     function update() {
-        var activeTab = viewModel.activeTab();
+        var activeTabId = viewModel.activeTabId();
         var code = $input.val();
         var options = viewModel.options();
         
@@ -76,12 +76,12 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTab);
+        var controlFlowGraph = window.cfgVisualization.computeControlFlowGraph(code, options, activeTabId);
         window.cfgVisualization.renderControlFlowGraph(container, controlFlowGraph);
         
-        if (activeTab === mainTabName) {
+        if (activeTabId === mainTabId) {
             var functions = _(controlFlowGraph.functions)
-                .map(function(f) { return _.pick(f, "name"); })
+                .map(function(f) { return _.pick(f, "id", "name"); })
                 .sortBy("name")
                 .value();
             

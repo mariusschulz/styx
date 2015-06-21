@@ -6,6 +6,7 @@ namespace Styx {
 
     export interface FlowFunction {
         entry: FlowNode;
+        id: number;
         name: string;
     }
     

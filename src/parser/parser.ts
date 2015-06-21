@@ -19,12 +19,16 @@ namespace Styx {
     export class Parser {
         public controlFlowGraph: ControlFlowGraph;
         
-        private idGenerator: Util.IdGenerator;
+        private nodeIdGenerator: Util.IdGenerator;
+        private functionIdGenerator: Util.IdGenerator;
+        
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         private functions: FlowFunction[];
         
         constructor(program: ESTree.Program, options: ParserOptions) {
-            this.idGenerator = Util.createIdGenerator();
+            this.nodeIdGenerator = Util.createIdGenerator();
+            this.functionIdGenerator = Util.createIdGenerator();
+            
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             this.functions = [];
             
@@ -100,6 +104,7 @@ namespace Styx {
         private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
             let func: FlowFunction = {
                 entry: this.createNode(),
+                id: this.functionIdGenerator.makeNew(),
                 name: functionDeclaration.id.name
             };
             
@@ -527,7 +532,7 @@ namespace Styx {
         }
         
         private createNode(): FlowNode {
-            return new FlowNode(this.idGenerator.makeNew());
+            return new FlowNode(this.nodeIdGenerator.makeNew());
         }
     }
 }
