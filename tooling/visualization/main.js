@@ -1,5 +1,3 @@
-/// <reference path="../../definitions/knockout.d.ts" />
-
 (function() {
     var visualization = document.getElementById("visualization");
     var container = document.getElementById("graph");
