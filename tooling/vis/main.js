@@ -97,8 +97,10 @@
         var activeTabId = viewModel.activeTabId();
         var program = viewModel.program();
         
-        var functionFlowGraph = _.findWhere(program.functions, { id: activeTabId });
-        var flowGraph = functionFlowGraph || program.flowGraph;
+        var selectedFunction = _.findWhere(program.functions, { id: activeTabId });
+        var flowGraph = selectedFunction
+            ? selectedFunction.flowGraph
+            : program.flowGraph;
         
         window.cfgVisualization.renderControlFlowGraph(container, flowGraph);
     }

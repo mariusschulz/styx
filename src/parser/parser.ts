@@ -39,7 +39,7 @@ namespace Styx {
             this.parseStatements(program.body, flowGraph.entry);
             
             // Run optimization passes
-            let functionFlowGraphs = this.functions.map(func => func.flowGraph);            
+            let functionFlowGraphs = this.functions.map(func => func.flowGraph);
             let flowGraphs = [flowGraph, ...functionFlowGraphs];
             Parser.runOptimizationPasses(flowGraphs, options);
             
@@ -101,12 +101,12 @@ namespace Styx {
             entryNode.isEntryNode = true;
             
             let func: FlowFunction = {
-                entry: entryNode,
                 id: this.functionIdGenerator.makeNew(),
-                name: functionDeclaration.id.name
+                name: functionDeclaration.id.name,
+                flowGraph: { entry: entryNode }
             };
             
-            this.parseBlockStatement(functionDeclaration.body, func.entry);
+            this.parseBlockStatement(functionDeclaration.body, entryNode);
             
             this.functions.push(func);
             
