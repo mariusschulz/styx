@@ -20,11 +20,13 @@ namespace Styx {
 
     export class FlowNode {
         id: number;
+        isEntryNode: boolean;
         incomingEdges: FlowEdge[];
         outgoingEdges: FlowEdge[];
 
         constructor(id: number) {
             this.id = id;
+            this.isEntryNode = false;
             this.incomingEdges = [];
             this.outgoingEdges = [];
         }

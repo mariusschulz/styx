@@ -40,6 +40,7 @@ namespace Styx {
     
         private parseProgram(program: ESTree.Program): ControlFlowGraph {
             let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
             
             this.parseStatements(program.body, entryNode);
     
@@ -97,8 +98,11 @@ namespace Styx {
         }
         
         private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
+            let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
+            
             let func: FlowFunction = {
-                entry: this.createNode(),
+                entry: entryNode,
                 id: this.functionIdGenerator.makeNew(),
                 name: functionDeclaration.id.name
             };
