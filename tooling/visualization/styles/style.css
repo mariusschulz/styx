@@ -21,3 +21,11 @@ label {
     -ms-user-select: none;
     user-select: none;
 }
+
+.margin-top-md {
+    margin-top: 20px;
+}
+
+.no-margin-bottom {
+    margin-bottom: 0;
+}

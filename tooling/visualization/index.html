@@ -40,18 +40,26 @@
             
             <div class="row">
                 <div class="col-md-3">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item" data-bind="click: selectMainTab, css: { active: isMainTabActive }">
-                            Main program
-                        </a>
-                    </div>
-                    
-                    <div data-bind="visible: functions().length" style="display: none">
-                        <strong>Functions</strong>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <strong>Control Flow Graphs</strong>
+                        </div>
                         
-                        <div class="list-group">
-                            <div data-bind="foreach: functions">
-                                <a href="#" class="list-group-item" data-bind="text: name, click: function(data) { $parent.selectTab(data.id) }, css: { active: $parent.isTabActive(id) }"></a>
+                        <div class="panel-body">
+                            <div class="list-group no-margin-bottom">
+                                <a href="#" class="list-group-item" data-bind="click: selectMainTab, css: { active: isMainTabActive }">
+                                    Main program
+                                </a>
+                            </div>
+                            
+                            <div data-bind="visible: functions().length" class="margin-top-md" style="display: none">
+                                <strong>Functions</strong>
+                                
+                                <div class="list-group no-margin-bottom">
+                                    <div data-bind="foreach: functions">
+                                        <a href="#" class="list-group-item" data-bind="text: name, click: function(data) { $parent.selectTab(data.id) }, css: { active: $parent.isTabActive(id) }"></a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
