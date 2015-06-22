@@ -14,23 +14,25 @@
                 </div>
                 
                 <div class="col-md-4">
-                    <div class="well">
-                        <p>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
                             <strong>Optimization Passes</strong>
-                        </p>
-                        
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" data-bind="checked: passes.rewriteConstantConditionalEdges" />
-                                Rewrite constant conditional edges
-                            </label>
                         </div>
                         
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" data-bind="checked: passes.removeTransitNodes" />
-                                Remove transit nodes
-                            </label>
+                        <div class="panel-body">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked: passes.rewriteConstantConditionalEdges" />
+                                    Rewrite constant conditional edges
+                                </label>
+                            </div>
+                            
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked: passes.removeTransitNodes" />
+                                    Remove transit nodes
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
