@@ -39,18 +39,18 @@ namespace Styx {
             entryNode.isEntryNode = true;
             
             let successExitNode = this.createNode();
-            let flowGraph = { entry: entryNode, successExit: successExitNode };
+            let programFlowGraph = { entry: entryNode, successExit: successExitNode };
             
             let finalNode = this.parseStatements(program.body, entryNode);
             successExitNode.appendEpsilonEdgeTo(finalNode);
             
             // Run optimization passes
             let functionFlowGraphs = this.functions.map(func => func.flowGraph);
-            let flowGraphs = [flowGraph, ...functionFlowGraphs];
+            let flowGraphs = [programFlowGraph, ...functionFlowGraphs];
             Parser.runOptimizationPasses(flowGraphs, options);
             
             return {
-                flowGraph,
+                flowGraph: programFlowGraph,
                 functions: this.functions
             };
         }
