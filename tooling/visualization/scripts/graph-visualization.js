@@ -93,17 +93,14 @@
     }
     
     function getNodeColor(node) {
-        var isFinalNode = node.outgoingEdges.length === 0;
-        
-        if (isFinalNode) {
-            return "#4CD964";
+        switch (node.type) {
+            case Styx.NodeType.Entry:
+                return "#FFCC00";
+            case Styx.NodeType.Exit:
+                return "#4CD964";
+            default:
+                return "#97C2FC";
         }
-        
-        if (node.isEntryNode) {
-            return "#FFCC00";
-        }
-        
-        return "#97C2FC";
     }
     
     function getEdgeColor(edge) {

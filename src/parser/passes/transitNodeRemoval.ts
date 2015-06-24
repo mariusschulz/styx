@@ -20,7 +20,7 @@ namespace Styx.Passes {
         // because we don't want to mess up references to it
         if (node.incomingEdges.length === 1 &&
             node.outgoingEdges.length === 1 &&
-            !node.isEntryNode) {
+            node.type !== NodeType.Entry) {
             let incomingEdge = node.incomingEdges[0];
             let outgoingEdge = node.outgoingEdges[0];
             

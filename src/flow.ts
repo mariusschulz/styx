@@ -25,13 +25,13 @@ namespace Styx {
 
     export class FlowNode {
         id: number;
-        isEntryNode: boolean;
+        type: NodeType;
         incomingEdges: FlowEdge[];
         outgoingEdges: FlowEdge[];
 
-        constructor(id: number) {
+        constructor(id: number, type: NodeType) {
             this.id = id;
-            this.isEntryNode = false;
+            this.type = type;
             this.incomingEdges = [];
             this.outgoingEdges = [];
         }
@@ -58,6 +58,12 @@ namespace Styx {
         appendEpsilonEdgeTo(node: FlowNode): FlowNode {
             return this.appendTo(node, "", EdgeType.Epsilon);
         }
+    }
+    
+    export const enum NodeType {
+        Normal = 0,
+        Entry = 1,
+        Exit = 2
     }
     
     export const enum EdgeType {

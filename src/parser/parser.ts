@@ -35,10 +35,9 @@ namespace Styx {
         }
     
         private parseProgram(program: ESTree.Program, options: ParserOptions): FlowProgram {
-            let entryNode = this.createNode();
-            entryNode.isEntryNode = true;
+            let entryNode = this.createNode(NodeType.Entry);
+            let successExitNode = this.createNode(NodeType.Exit);
             
-            let successExitNode = this.createNode();
             let programFlowGraph = { entry: entryNode, successExit: successExitNode };
             
             let finalNode = this.parseStatements(program.body, entryNode);
@@ -104,10 +103,8 @@ namespace Styx {
         }
         
         private parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode): FlowNode {
-            let entryNode = this.createNode();
-            entryNode.isEntryNode = true;
-            
-            let successExitNode = this.createNode();
+            let entryNode = this.createNode(NodeType.Entry);
+            let successExitNode = this.createNode(NodeType.Exit);
             
             let func: FlowFunction = {
                 id: this.functionIdGenerator.makeNew(),
@@ -576,8 +573,10 @@ namespace Styx {
             }
         }
         
-        private createNode(): FlowNode {
-            return new FlowNode(this.nodeIdGenerator.makeNew());
+        private createNode(type: NodeType = NodeType.Normal): FlowNode {
+            let id = this.nodeIdGenerator.makeNew();
+            
+            return new FlowNode(id, type);
         }
     }
 }
