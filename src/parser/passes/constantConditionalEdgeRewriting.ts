@@ -28,7 +28,7 @@ namespace Styx.Passes {
     }
     
     function inspectEdge(edge: FlowEdge, edgesToRemove: FlowEdge[]) {
-        if (edge.type !== EdgeType.Conditional || !isCompileTimeConstant(edge.data)) {
+        if (edge.type !== EdgeType.Conditional || edge.data == null || !isCompileTimeConstant(edge.data)) {
             // We only deal with conditional edges that have a condition
             // whose truthiness we can safely determine at compile-time 
             return;
