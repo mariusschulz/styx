@@ -1,3 +1,5 @@
+/* global $ */
+
 (function() {
     $.fn.setCaretPosition = function(position) {
         return this.each(function() {

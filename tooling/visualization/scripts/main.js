@@ -1,3 +1,6 @@
+/* global $ */
+/* global ko */
+
 (function() {
     var visualization = document.getElementById("visualization");
     var container = document.getElementById("graph");
