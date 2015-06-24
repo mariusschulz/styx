@@ -80,6 +80,7 @@
     });
     
     ko.applyBindings(viewModel, visualization);
+    $(visualization).removeClass("fading--faded-out");
     
     var selectedTabId = +sessionStorage.getItem(sessionStorageKeys.selectedTabId) || 0;
     viewModel.selectTab(selectedTabId);
