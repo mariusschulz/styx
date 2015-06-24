@@ -556,6 +556,7 @@ namespace Styx {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
                 case ESTree.NodeType.ContinueStatement:
+                case ESTree.NodeType.ReturnStatement:
                     return true;
                     
                 default:
