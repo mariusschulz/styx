@@ -20,6 +20,7 @@ namespace Styx {
         public program: FlowProgram;
         
         private functions: FlowFunction[];
+        private currentFunction: FlowFunction;
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         private nodeIdGenerator = Util.createIdGenerator();
@@ -27,6 +28,7 @@ namespace Styx {
         
         constructor(program: ESTree.Program, options: ParserOptions) {
             this.functions = [];
+            this.currentFunction = null;
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.program = this.parseProgram(program, options);
@@ -113,9 +115,13 @@ namespace Styx {
                 flowGraph: { entry: entryNode, successExit: successExitNode }
             };
             
-            this.parseBlockStatement(functionDeclaration.body, entryNode);
+            let previousFunction = this.currentFunction;
+            this.currentFunction = func;
             
+            this.parseBlockStatement(functionDeclaration.body, entryNode);            
             this.functions.push(func);
+            
+            this.currentFunction = previousFunction;
             
             return currentNode;
         }
@@ -344,6 +350,8 @@ namespace Styx {
         }
         
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
+            console.log(this.currentFunction)
+            
             return null;
         }
         
