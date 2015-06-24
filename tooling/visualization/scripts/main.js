@@ -16,6 +16,7 @@
         selectedFunctionId: ko.observable(mainTabId),
         functions: ko.observableArray([]),
         program: ko.observable(),
+        error: ko.observable(null),
         
         passes: {
             removeTransitNodes: ko.observable(true),
@@ -97,15 +98,21 @@
         sessionStorage.setItem(sessionStorageKeys.code, code);
         sessionStorage.setItem(sessionStorageKeys.options, JSON.stringify(options));
         
-        var program = window.cfgVisualization.parseProgram(code, options);
-        viewModel.program(program);
+        try {
+            viewModel.error(null);
         
-        var functions = _(program.functions)
-            .map(function(f) { return _.pick(f, "id", "name"); })
-            .sortBy("name")
-            .value();
-        
-        viewModel.functions(functions);
+            var program = window.cfgVisualization.parseProgram(code, options);
+            viewModel.program(program);
+            
+            var functions = _(program.functions)
+                .map(function(f) { return _.pick(f, "id", "name"); })
+                .sortBy("name")
+                .value();
+            
+            viewModel.functions(functions);
+        } catch (e) {
+            viewModel.error(e);
+        }
     }
     
     function visualizeFlowGraph() {

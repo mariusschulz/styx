@@ -66,7 +66,10 @@
                 </div>
                 
                 <div class="col-md-9">
-                    <div id="graph"></div>
+                    <div id="graph" data-bind="visible: !error()"></div>
+                    
+                    <div data-bind="visible: !!error(), text: error()" class="alert alert-danger">
+                    </div>
                 </div>
             </div>
         </div>
