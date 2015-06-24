@@ -79,6 +79,7 @@ namespace Styx {
                 [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
                 [ESTree.NodeType.WithStatement]: this.parseWithStatement,
                 [ESTree.NodeType.SwitchStatement]: this.parseSwitchStatement,
+                [ESTree.NodeType.ReturnStatement]: this.parseReturnStatement,
                 [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
                 [ESTree.NodeType.ForStatement]: this.parseForStatement,
@@ -334,6 +335,10 @@ namespace Styx {
             }
             
             return finalNode;
+        }
+        
+        private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
+            return null;
         }
         
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
