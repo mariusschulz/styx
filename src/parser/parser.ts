@@ -20,6 +20,7 @@ namespace Styx {
         public program: FlowProgram;
         
         private functions: FlowFunction[];
+        private currentFunction: FlowFunction;
         private enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         private nodeIdGenerator = Util.createIdGenerator();
@@ -27,24 +28,29 @@ namespace Styx {
         
         constructor(program: ESTree.Program, options: ParserOptions) {
             this.functions = [];
+            this.currentFunction = null;
             this.enclosingStatements = new Collections.Stack<EnclosingStatement>();
             
             this.program = this.parseProgram(program, options);
         }
     
         private parseProgram(program: ESTree.Program, options: ParserOptions): FlowProgram {
-            let flowGraph = { entry: this.createNode() };
-            flowGraph.entry.isEntryNode = true;
+            let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
             
-            this.parseStatements(program.body, flowGraph.entry);
+            let successExitNode = this.createNode();
+            let programFlowGraph = { entry: entryNode, successExit: successExitNode };
+            
+            let finalNode = this.parseStatements(program.body, entryNode);
+            successExitNode.appendEpsilonEdgeTo(finalNode);
             
             // Run optimization passes
             let functionFlowGraphs = this.functions.map(func => func.flowGraph);
-            let flowGraphs = [flowGraph, ...functionFlowGraphs];
+            let flowGraphs = [programFlowGraph, ...functionFlowGraphs];
             Parser.runOptimizationPasses(flowGraphs, options);
             
             return {
-                flowGraph,
+                flowGraph: programFlowGraph,
                 functions: this.functions
             };
         }
@@ -79,6 +85,7 @@ namespace Styx {
                 [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
                 [ESTree.NodeType.WithStatement]: this.parseWithStatement,
                 [ESTree.NodeType.SwitchStatement]: this.parseSwitchStatement,
+                [ESTree.NodeType.ReturnStatement]: this.parseReturnStatement,
                 [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
                 [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
                 [ESTree.NodeType.ForStatement]: this.parseForStatement,
@@ -100,15 +107,33 @@ namespace Styx {
             let entryNode = this.createNode();
             entryNode.isEntryNode = true;
             
+            let successExitNode = this.createNode();
+            
             let func: FlowFunction = {
                 id: this.functionIdGenerator.makeNew(),
                 name: functionDeclaration.id.name,
-                flowGraph: { entry: entryNode }
+                flowGraph: { entry: entryNode, successExit: successExitNode }
             };
             
-            this.parseBlockStatement(functionDeclaration.body, entryNode);
+            let previousFunction = this.currentFunction;
+            this.currentFunction = func;
+            
+            let finalNode = this.parseBlockStatement(functionDeclaration.body, entryNode);
+            
+            if (finalNode) {
+                // If we reached this point, the function didn't end with an explicit return statement.
+                // Thus, an implicit "undefined" is returned.
+                let undefinedReturnValue: ESTree.Identifier = {
+                    type: ESTree.NodeType.Identifier,
+                    name: "undefined"
+                };
+                
+                func.flowGraph.successExit
+                    .appendTo(finalNode, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
+            }
             
             this.functions.push(func);
+            this.currentFunction = previousFunction;
             
             return currentNode;
         }
@@ -336,6 +361,15 @@ namespace Styx {
             return finalNode;
         }
         
+        private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
+            let returnLabel = "return " + stringify(returnStatement.argument);
+            
+            this.currentFunction.flowGraph.successExit
+                .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+            
+            return null;
+        }
+        
         private parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, label?: string): FlowNode {
             // Truthy test (enter loop)
             let truthyCondition = whileStatement.test;
@@ -522,6 +556,7 @@ namespace Styx {
             switch (statement.type) {
                 case ESTree.NodeType.BreakStatement:
                 case ESTree.NodeType.ContinueStatement:
+                case ESTree.NodeType.ReturnStatement:
                     return true;
                     
                 default:

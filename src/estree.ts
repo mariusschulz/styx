@@ -23,6 +23,7 @@ module ESTree {
         static NewExpression = "NewExpression";
         static ObjectExpression = "ObjectExpression";
         static Program = "Program";
+        static ReturnStatement = "ReturnStatement";
         static SequenceExpression = "SequenceExpression";
         static SwitchStatement = "SwitchStatement";
         static ThisExpression = "ThisExpression";
@@ -102,6 +103,10 @@ module ESTree {
     export interface SwitchStatement extends Statement {
         discriminant: Expression;
         cases: SwitchCase[];        
+    }
+    
+    export interface ReturnStatement extends Statement {
+        argument: Expression;
     }
     
     export interface WhileStatement extends Statement {
