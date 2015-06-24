@@ -25,6 +25,7 @@ namespace Styx {
         
         private nodeIdGenerator = Util.createIdGenerator();
         private functionIdGenerator = Util.createIdGenerator();
+        private variableNameIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions) {
             this.functions = [];
@@ -281,7 +282,7 @@ namespace Styx {
         }
         
         private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
-            const switchExpression = "$switch";
+            const switchExpression = this.createTemporaryLocalVariableName();
             const defaultExpression = "<default>";
             
             let stringifiedDiscriminant = stringify(switchStatement.discriminant);
@@ -571,6 +572,12 @@ namespace Styx {
                     Passes.removeTransitNodes(graph.entry);
                 }
             }
+        }
+        
+        private createTemporaryLocalVariableName(): string {
+            let id = this.variableNameIdGenerator.makeNew();
+            
+            return `$temp${id}$`;
         }
         
         private createNode(type: NodeType = NodeType.Normal): FlowNode {
