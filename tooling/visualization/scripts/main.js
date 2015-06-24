@@ -2,7 +2,10 @@
 /* global ko */
 
 (function() {
-    var visualization = document.getElementById("visualization");
+    var $visualization = $("#visualization");
+    $visualization.removeClass("fading--faded-out");
+    
+    var visualization = $visualization[0];
     var container = document.getElementById("graph");
     
     var sessionStorageKeys = {
@@ -118,6 +121,10 @@
     function visualizeFlowGraph() {
         var functionId = viewModel.actualFunctionId();
         var program = viewModel.program();
+        
+        if (!program) {
+            return;
+        }
         
         var selectedFunction = _.findWhere(program.functions, { id: functionId });
         var flowGraph = selectedFunction

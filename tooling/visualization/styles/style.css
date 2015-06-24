@@ -1,22 +1,38 @@
+html {
+    overflow-y: scroll;
+}
+
 body {
-    background: whitesmoke;
+    padding-bottom: 20px;
+    background: url("../images/background.png");
+}
+
+.header-bar {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    background: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
 }
 
 #graph {
-    height: 650px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: white;
+    height: 500px;
 }
 
 .code-input {
-    margin-bottom: 20px;
     font-family: Consolas, Menlo, Monaco, monospace;
     font-size: 16px;
+    max-width: 100%;
+    padding: 10px 12px;
+}
+
+.code-input:focus {
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    border: 1px solid #ccc;
 }
 
 label,
-.panel {
+.panel,
+.header-bar {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -29,4 +45,21 @@ label,
 
 .no-margin-bottom {
     margin-bottom: 0;
+}
+
+@media screen and (min-width: 992px) {
+    .no-padding-md {    
+        padding: 0;
+    }
+}
+
+.fading {
+    -webkit-transition: opacity 0.5s ease;
+    -moz-transition: opacity 0.5s ease;
+    -ms-transition: opacity 0.5s ease;
+    transition: opacity 0.5s ease;
+}
+
+.fading--faded-out {
+    opacity: 0;
 }

@@ -5,15 +5,18 @@
         <link rel="stylesheet" type="text/css" href="styles/style.css">                      
     </head>    
     <body>
-        <div class="container" id="visualization">
-            <h1>Control Flow Graph Visualization</h1>
-            
-            <div class="row">
-                <div class="col-md-8">
-                    <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
+        <header>
+            <div class="header-bar">
+                <div class="container">
+                    <div class="navbar-brand">Styx</div>
+                    <div class="navbar-text">Control Flow Graph Visualization</div>
                 </div>
-                
-                <div class="col-md-4">
+            </div>
+        </header>
+            
+        <div id="visualization" class="container fading fading--faded-out">
+            <div class="row">
+                <div class="col-md-3 no-padding-md">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <strong>Optimization Passes</strong>
@@ -36,10 +39,22 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="col-md-9">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <strong>JavaScript Code</strong>
+                        </div>
+                        
+                        <div class="panel-body">
+                            <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="8"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-3 no-padding-md">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <strong>Control Flow Graphs</strong>
@@ -66,9 +81,17 @@
                 </div>
                 
                 <div class="col-md-9">
-                    <div id="graph" data-bind="visible: !error()"></div>
-                    
-                    <div data-bind="visible: !!error(), text: error()" class="alert alert-danger">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <strong>Control Flow Graph</strong>
+                        </div>
+                        
+                        <div class="panel-body">
+                            <div id="graph" data-bind="visible: !error()"></div>
+                            
+                            <div data-bind="visible: !!error(), text: error()" class="alert alert-danger no-margin-bottom">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
