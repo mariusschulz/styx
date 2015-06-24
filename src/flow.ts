@@ -60,6 +60,12 @@ namespace Styx {
         }
     }
     
+    export const enum NodeType {
+        Normal = 0,
+        Entry = 1,
+        Exit = 2
+    }
+    
     export const enum EdgeType {
         Normal = 0,
         Epsilon = 1,
