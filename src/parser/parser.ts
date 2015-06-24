@@ -352,6 +352,11 @@ namespace Styx {
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
             console.log(this.currentFunction)
             
+            let returnLabel = "return " + stringify(returnStatement.argument);
+            
+            this.currentFunction.flowGraph.successExit
+                .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+            
             return null;
         }
         
