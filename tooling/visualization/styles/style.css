@@ -17,9 +17,8 @@ body {
 }
 
 .code-input {
-    margin-bottom: 20px;
     font-family: Consolas, Menlo, Monaco, monospace;
-    font-size: 16px;
+    font-size: 16px;    
 }
 
 label,
@@ -37,4 +36,8 @@ label,
 
 .no-margin-bottom {
     margin-bottom: 0;
+}
+
+.no-padding {
+    padding: 0;
 }
