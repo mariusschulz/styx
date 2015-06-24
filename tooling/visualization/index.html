@@ -81,9 +81,17 @@
                 </div>
                 
                 <div class="col-md-9">
-                    <div id="graph" data-bind="visible: !error()"></div>
-                    
-                    <div data-bind="visible: !!error(), text: error()" class="alert alert-danger">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <strong>Control Flow Graph</strong>
+                        </div>
+                        
+                        <div class="panel-body">
+                            <div id="graph" data-bind="visible: !error()"></div>
+                            
+                            <div data-bind="visible: !!error(), text: error()" class="alert alert-danger no-margin-bottom">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

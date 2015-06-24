@@ -122,6 +122,10 @@
         var functionId = viewModel.actualFunctionId();
         var program = viewModel.program();
         
+        if (!program) {
+            return;
+        }
+        
         var selectedFunction = _.findWhere(program.functions, { id: functionId });
         var flowGraph = selectedFunction
             ? selectedFunction.flowGraph
