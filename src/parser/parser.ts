@@ -33,10 +33,14 @@ namespace Styx {
         }
     
         private parseProgram(program: ESTree.Program, options: ParserOptions): FlowProgram {
-            let flowGraph = { entry: this.createNode() };
-            flowGraph.entry.isEntryNode = true;
+            let entryNode = this.createNode();
+            entryNode.isEntryNode = true;
             
-            this.parseStatements(program.body, flowGraph.entry);
+            let successExitNode = this.createNode();
+            let flowGraph = { entry: entryNode, successExit: successExitNode };
+            
+            let finalNode = this.parseStatements(program.body, entryNode);
+            successExitNode.appendEpsilonEdgeTo(finalNode);
             
             // Run optimization passes
             let functionFlowGraphs = this.functions.map(func => func.flowGraph);
@@ -101,10 +105,12 @@ namespace Styx {
             let entryNode = this.createNode();
             entryNode.isEntryNode = true;
             
+            let successExitNode = this.createNode();
+            
             let func: FlowFunction = {
                 id: this.functionIdGenerator.makeNew(),
                 name: functionDeclaration.id.name,
-                flowGraph: { entry: entryNode }
+                flowGraph: { entry: entryNode, successExit: successExitNode }
             };
             
             this.parseBlockStatement(functionDeclaration.body, entryNode);
