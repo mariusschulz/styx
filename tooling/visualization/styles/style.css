@@ -15,7 +15,8 @@ body {
     font-size: 16px;
 }
 
-label {
+label,
+.panel {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
