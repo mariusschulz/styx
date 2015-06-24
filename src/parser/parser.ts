@@ -118,9 +118,21 @@ namespace Styx {
             let previousFunction = this.currentFunction;
             this.currentFunction = func;
             
-            this.parseBlockStatement(functionDeclaration.body, entryNode);            
-            this.functions.push(func);
+            let finalNode = this.parseBlockStatement(functionDeclaration.body, entryNode);
             
+            if (finalNode) {
+                // If we reached this point, the function didn't end with an explicit return statement.
+                // Thus, an implicit "undefined" is returned.
+                let undefinedReturnValue: ESTree.Identifier = {
+                    type: ESTree.NodeType.Identifier,
+                    name: "undefined"
+                };
+                
+                func.flowGraph.successExit
+                    .appendTo(finalNode, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
+            }
+            
+            this.functions.push(func);
             this.currentFunction = previousFunction;
             
             return currentNode;
@@ -350,8 +362,6 @@ namespace Styx {
         }
         
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
-            console.log(this.currentFunction)
-            
             let returnLabel = "return " + stringify(returnStatement.argument);
             
             this.currentFunction.flowGraph.successExit
