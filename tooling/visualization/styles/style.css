@@ -39,6 +39,8 @@ label,
     margin-bottom: 0;
 }
 
-.no-padding {
-    padding: 0;
+@media screen and (min-width: 992px) {
+    .no-padding-md {    
+        padding: 0;
+    }
 }
