@@ -299,38 +299,48 @@ namespace Styx {
             
             let currentCaseNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
+            let defaultClause: ESTree.SwitchCase;
             
             for (let switchCase of switchStatement.cases) {
-                let switchIdentifier: ESTree.Identifier = {
-                    type: ESTree.NodeType.Identifier,
-                    name: switchExpression
-                };
+                if (switchCase.test === null) {
+                    // We found a default clause. We'll deal with it later,
+                    // therefore store it and continue.
+                    defaultClause = switchCase;
+                    continue;
+                }
                 
                 let truthyCondition = {
                     type: ESTree.NodeType.BinaryExpression,
-                    left: switchIdentifier,
+                    left: { type: ESTree.NodeType.Identifier, name: switchExpression },
                     right: switchCase.test,
                     operator: "==="
                 };
-                
                 let falsyCondition = negateTruthiness(truthyCondition);  
                 
-                let truthyEdgeLabel = stringify(truthyCondition);
-                let falsyEdgeLabel = stringify(falsyCondition);
-                
                 let caseBody = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, truthyEdgeLabel, truthyCondition);
+                    .appendConditionallyTo(currentCaseNode, stringify(truthyCondition), truthyCondition);
                 
                 if (endOfPreviousCaseBody) {
-                    // We reached the end of the case through normal control flow;
-                    // thus, there was no 'break' statement at the end. Fallthrough!
+                    // We reached the end of the case through normal control flow,
+                    // which means there was no 'break' statement at the end.
+                    // We therefore fall through from the previous case!
                     caseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
                 }
                 
                 endOfPreviousCaseBody = this.parseStatements(switchCase.consequent, caseBody);
                 
                 currentCaseNode = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, falsyEdgeLabel, falsyCondition);
+                    .appendConditionallyTo(currentCaseNode, stringify(falsyCondition), falsyCondition);
+            }
+            
+            if (defaultClause) {
+                if (endOfPreviousCaseBody) {
+                    currentCaseNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                }
+                
+                endOfPreviousCaseBody = this.parseStatements(defaultClause.consequent, currentCaseNode);
+            } else {
+                finalNode.appendEpsilonEdgeTo(currentCaseNode);
             }
             
             if (endOfPreviousCaseBody) {
@@ -339,68 +349,7 @@ namespace Styx {
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
             }
             
-            finalNode.appendEpsilonEdgeTo(currentCaseNode);
-            
-            // let endOfPreviousCase: FlowNode = void 0;
-            // let hasDefaultCase = false;
-            
-            // for (let switchCase of switchStatement.cases) {
-            //     let caseEdgeLabel: string;
-            //     let edgeCondition: ESTree.LogicalExpression;
-                
-            //     let switchIdentifier: ESTree.Identifier = {
-            //         type: ESTree.NodeType.Identifier,
-            //         name: switchExpression
-            //     };
-                
-            //     edgeCondition = {
-            //         type: ESTree.NodeType.LogicalExpression,
-            //         left: switchIdentifier,
-            //         right: switchCase.test,
-            //         operator: "==="
-            //     };
-                
-            //     caseEdgeLabel = stringify(edgeCondition);
-                
-            //     // if (switchCase.test === null) {
-            //     //     hasDefaultCase = true;
-            //     //     caseEdgeLabel = defaultExpression;
-            //     //     edgeCondition = null;
-            //     // } else {
-                    
-            //     // }
-                
-            //     let caseBody = this.createNode()
-            //         .appendConditionallyTo(evaluatedDiscriminantNode, caseEdgeLabel, edgeCondition);
-                
-            //     if (endOfPreviousCase) {
-            //         caseBody.appendEpsilonEdgeTo(endOfPreviousCase);
-            //     }
-                
-            //     endOfPreviousCase = this.parseStatements(switchCase.consequent, caseBody);
-            // }
-            
             this.enclosingStatements.pop();
-            
-            // if (switchStatement.cases.length === 0) {
-            //     // If the switch statement doesn't have any cases,
-            //     // control flow continues regularly after evaluating the discriminant
-            //     finalNode.appendEpsilonEdgeTo(evaluatedDiscriminantNode);
-            // } else {
-            //     if (endOfPreviousCase) {
-            //         // If the last case didn't end with an abrupt completion,
-            //         // connect it to the final node and resume normal control flow
-            //         finalNode.appendEpsilonEdgeTo(endOfPreviousCase);
-            //     }
-                
-            //     if (!hasDefaultCase) {
-            //         // If the switch statement doesn't have a default case,
-            //         // we don't know if it's exhaustive (it's probably not).
-            //         // Thus, add a <default> edge to the discriminant node
-            //         // that is taken when none of the cases match
-            //         finalNode.appendConditionallyTo(evaluatedDiscriminantNode, defaultExpression, null);
-            //     }
-            // }
             
             return finalNode;
         }
