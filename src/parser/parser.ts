@@ -12,6 +12,12 @@ namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
     const negateTruthiness = Expressions.Negator.negateTruthiness;
     
+    interface CaseBlock {
+        caseClausesA: ESTree.SwitchCase[];
+        defaultCase: ESTree.SwitchCase;
+        caseClausesB: ESTree.SwitchCase[];
+    }
+    
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
     }
@@ -296,61 +302,85 @@ namespace Styx {
                 label: label
             });
             
-            let currentCaseNode = evaluatedDiscriminantNode;
-            let endOfPreviousCaseBody: FlowNode = null;
-            let defaultClause: ESTree.SwitchCase = null;
+            let { caseClausesA, defaultCase, caseClausesB } = Parser.partitionCases(switchStatement.cases);
+            let caseClauses = [...caseClausesA, ...caseClausesB];
             
-            for (let switchCase of switchStatement.cases) {
-                if (switchCase.test === null) {
-                    // We found a default clause. We'll deal with it later,
-                    // therefore store it and continue.
-                    defaultClause = switchCase;
-                    continue;
-                }
-                
+            let stillSearchingNode = evaluatedDiscriminantNode;
+            let endOfPreviousCaseBody: FlowNode = null;
+            let firstNodeOfClauseListB: FlowNode = null;
+            
+            for (let caseClause of caseClauses) {
                 let truthyCondition = {
                     type: ESTree.NodeType.BinaryExpression,
                     left: { type: ESTree.NodeType.Identifier, name: switchExpression },
-                    right: switchCase.test,
+                    right: caseClause.test,
                     operator: "==="
                 };
-                let falsyCondition = negateTruthiness(truthyCondition);  
                 
-                let caseBody = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, stringify(truthyCondition), truthyCondition);
+                let beginOfCaseBody = this.createNode()
+                    .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
+                
+                if (caseClause === caseClausesB[0]) {
+                    firstNodeOfClauseListB = beginOfCaseBody;
+                }
                 
                 if (endOfPreviousCaseBody) {
                     // We reached the end of the case through normal control flow,
                     // which means there was no 'break' statement at the end.
                     // We therefore fall through from the previous case!
-                    caseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                    beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
                 }
                 
-                endOfPreviousCaseBody = this.parseStatements(switchCase.consequent, caseBody);
+                endOfPreviousCaseBody = this.parseStatements(caseClause.consequent, beginOfCaseBody);
                 
-                currentCaseNode = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, stringify(falsyCondition), falsyCondition);
-            }
-            
-            if (defaultClause) {
-                if (endOfPreviousCaseBody) {
-                    currentCaseNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
-                }
-                
-                endOfPreviousCaseBody = this.parseStatements(defaultClause.consequent, currentCaseNode);
-            } else {
-                finalNode.appendEpsilonEdgeTo(currentCaseNode);
+                let falsyCondition = negateTruthiness(truthyCondition);  
+                stillSearchingNode = this.createNode()
+                    .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
             }
             
             if (endOfPreviousCaseBody) {
                 // If the last case didn't end with an abrupt completion,
-                // connect it to the final node and resume normal control flow
+                // connect it to the final node and resume normal control flow.
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+            }
+            
+            if (defaultCase) {
+                let endOfDefaultCaseBody = this.parseStatements(defaultCase.consequent, stillSearchingNode);
+                
+                if (endOfDefaultCaseBody) {
+                    let nodeAfterDefaultCase = firstNodeOfClauseListB || finalNode;
+                    nodeAfterDefaultCase.appendEpsilonEdgeTo(endOfDefaultCaseBody);
+                }
+            } else {
+                // If there's no default case, the switch statements isn't necessarily exhaustive.
+                // Therefore, if no match is found, no clause's statement list is executed
+                // and control flow resumes normally after the switch statement.
+                finalNode.appendEpsilonEdgeTo(stillSearchingNode);
             }
             
             this.enclosingStatements.pop();
             
             return finalNode;
+        }
+        
+        private static partitionCases(cases: ESTree.SwitchCase[]): CaseBlock {
+            let caseClausesA: ESTree.SwitchCase[] = [];
+            let defaultCase: ESTree.SwitchCase = null;
+            let caseClausesB: ESTree.SwitchCase[] = [];
+            
+            let isInCaseClausesA = true;
+            
+            for (let switchCase of cases) {
+                if (switchCase.test === null) {
+                    // We found the default case
+                    defaultCase = switchCase;
+                    isInCaseClausesA = false;
+                } else {
+                    (isInCaseClausesA ? caseClausesA : caseClausesB).push(switchCase);
+                }
+            }
+            
+            return { caseClausesA, defaultCase, caseClausesB };
         }
         
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
