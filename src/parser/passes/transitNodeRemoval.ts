@@ -15,12 +15,11 @@ namespace Styx.Passes {
         
         visitedNodes.add(node.id);
         
-        // We want to simplify transit nodes, but we never remove
-        // the entry node of a control flow graph
-        // because we don't want to mess up references to it
+        // We want to simplify transit nodes, but we only ever remove normal nodes
+        // because we don't want to mess up references to entry or exit nodes
         if (node.incomingEdges.length === 1 &&
             node.outgoingEdges.length === 1 &&
-            node.type !== NodeType.Entry) {
+            node.type === NodeType.Normal) {
             let incomingEdge = node.incomingEdges[0];
             let outgoingEdge = node.outgoingEdges[0];
             
