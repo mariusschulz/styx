@@ -283,7 +283,6 @@ namespace Styx {
         
         private parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, label?: string): FlowNode {
             const switchExpression = this.createTemporaryLocalVariableName();
-            const defaultExpression = "<default>";
             
             let stringifiedDiscriminant = stringify(switchStatement.discriminant);
             let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
