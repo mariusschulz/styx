@@ -12,7 +12,11 @@ namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
     const negateTruthiness = Expressions.Negator.negateTruthiness;
     
-    type CaseBlock = [ESTree.SwitchCase[], ESTree.SwitchCase, ESTree.SwitchCase[]];
+    interface CaseBlock {
+        caseClausesA: ESTree.SwitchCase[];
+        defaultCase: ESTree.SwitchCase;
+        caseClausesB: ESTree.SwitchCase[];
+    }
     
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
@@ -298,7 +302,7 @@ namespace Styx {
                 label: label
             });
             
-            let [caseClausesA, defaultCase, caseClausesB] = Parser.partitionCases(switchStatement.cases);
+            let { caseClausesA, defaultCase, caseClausesB } = Parser.partitionCases(switchStatement.cases);
             let caseClauses = [...caseClausesA, ...caseClausesB];
             
             let stillSearchingNode = evaluatedDiscriminantNode;
@@ -414,23 +418,23 @@ namespace Styx {
         }
         
         private static partitionCases(cases: ESTree.SwitchCase[]): CaseBlock {
-            let caseListA: ESTree.SwitchCase[] = [];
+            let caseClausesA: ESTree.SwitchCase[] = [];
             let defaultCase: ESTree.SwitchCase = null;
-            let caseListB: ESTree.SwitchCase[] = [];
+            let caseClausesB: ESTree.SwitchCase[] = [];
             
-            let isInCaseListA = true;
+            let isInCaseClausesA = true;
             
             for (let switchCase of cases) {
                 if (switchCase.test === null) {
                     // We found the default case
                     defaultCase = switchCase;
-                    isInCaseListA = false;
+                    isInCaseClausesA = false;
                 } else {
-                    (isInCaseListA ? caseListA : caseListB).push(switchCase);
+                    (isInCaseClausesA ? caseClausesA : caseClausesB).push(switchCase);
                 }
             }
             
-            return [caseListA, defaultCase, caseListB];
+            return { caseClausesA, defaultCase, caseClausesB };
         }
         
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
