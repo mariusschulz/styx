@@ -335,7 +335,9 @@ namespace Styx {
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
             }
             
-            if (!defaultCase) {
+            if (defaultCase) {
+                
+            } else {
                 // If there's no default case, the switch statements isn't necessarily exhaustive.
                 // Therefore, if no match is found, no case clause's statement list is executed
                 // and control flow resumes normally after the switch statement.
