@@ -296,15 +296,22 @@ namespace Styx {
                 label: label
             });
             
-            let currentCaseNode = evaluatedDiscriminantNode;
+            let noMatchingCaseFoundNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
+            
             let defaultClause: ESTree.SwitchCase = null;
+            let beginOfDefaultBody: FlowNode = null;
             
             for (let switchCase of switchStatement.cases) {
                 if (switchCase.test === null) {
                     // We found a default clause. We'll deal with it later,
                     // therefore store it and continue.
                     defaultClause = switchCase;
+                    beginOfDefaultBody = this.createNode();
+                    
+                    if (endOfPreviousCaseBody) {
+                        beginOfDefaultBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                    }
                     continue;
                 }
                 
@@ -314,32 +321,33 @@ namespace Styx {
                     right: switchCase.test,
                     operator: "==="
                 };
-                let falsyCondition = negateTruthiness(truthyCondition);  
                 
-                let caseBody = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, stringify(truthyCondition), truthyCondition);
+                let beginOfCaseBody = this.createNode()
+                    .appendConditionallyTo(noMatchingCaseFoundNode, stringify(truthyCondition), truthyCondition);
                 
                 if (endOfPreviousCaseBody) {
                     // We reached the end of the case through normal control flow,
                     // which means there was no 'break' statement at the end.
                     // We therefore fall through from the previous case!
-                    caseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                    beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
                 }
                 
-                endOfPreviousCaseBody = this.parseStatements(switchCase.consequent, caseBody);
+                endOfPreviousCaseBody = this.parseStatements(switchCase.consequent, beginOfCaseBody);
                 
-                currentCaseNode = this.createNode()
-                    .appendConditionallyTo(currentCaseNode, stringify(falsyCondition), falsyCondition);
+                let falsyCondition = negateTruthiness(truthyCondition);  
+                noMatchingCaseFoundNode = this.createNode()
+                    .appendConditionallyTo(noMatchingCaseFoundNode, stringify(falsyCondition), falsyCondition);
             }
             
             if (defaultClause) {
                 if (endOfPreviousCaseBody) {
-                    currentCaseNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                 //   noMatchingCaseFoundNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
                 }
                 
-                endOfPreviousCaseBody = this.parseStatements(defaultClause.consequent, currentCaseNode);
+                beginOfDefaultBody.appendEpsilonEdgeTo(noMatchingCaseFoundNode);
+                endOfPreviousCaseBody = this.parseStatements(defaultClause.consequent, beginOfDefaultBody);
             } else {
-                finalNode.appendEpsilonEdgeTo(currentCaseNode);
+                finalNode.appendEpsilonEdgeTo(noMatchingCaseFoundNode);
             }
             
             if (endOfPreviousCaseBody) {
