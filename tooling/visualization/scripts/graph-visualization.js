@@ -16,7 +16,7 @@
     }
 
     function renderControlFlowGraph(container, controlFlowGraph) {
-        var visualizationOptions = {            
+        var visualizationOptions = {
             width: "100%",
             height: "100%",
             
