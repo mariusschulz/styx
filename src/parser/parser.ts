@@ -307,6 +307,7 @@ namespace Styx {
             
             let stillSearchingNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
+            let firstNodeOfClauseListB: FlowNode = null;
             
             for (let caseClause of caseClauses) {
                 let truthyCondition = {
@@ -318,6 +319,10 @@ namespace Styx {
                 
                 let beginOfCaseBody = this.createNode()
                     .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
+                
+                if (caseClause === caseClausesB[0]) {
+                    firstNodeOfClauseListB = beginOfCaseBody;
+                }
                 
                 if (endOfPreviousCaseBody) {
                     // We reached the end of the case through normal control flow,
@@ -340,7 +345,12 @@ namespace Styx {
             }
             
             if (defaultCase) {
+                let endOfDefaultCaseBody = this.parseStatements(defaultCase.consequent, stillSearchingNode);
                 
+                if (endOfDefaultCaseBody) {
+                    let nodeAfterDefaultCase = firstNodeOfClauseListB || finalNode;
+                    nodeAfterDefaultCase.appendEpsilonEdgeTo(endOfDefaultCaseBody);
+                }
             } else {
                 // If there's no default case, the switch statements isn't necessarily exhaustive.
                 // Therefore, if no match is found, no clause's statement list is executed
