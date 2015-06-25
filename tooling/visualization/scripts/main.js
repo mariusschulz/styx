@@ -149,7 +149,7 @@
     }
     
     function keyup() {
-        if ($input.val() !== previousCode) {
+        if ($.trim($input.val()) !== $.trim(previousCode)) {
             debouncedParseAndVisualize();
         }
     }
