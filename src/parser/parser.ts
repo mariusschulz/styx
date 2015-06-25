@@ -299,15 +299,46 @@ namespace Styx {
             });
             
             let [caseClausesA, defaultCase, caseClausesB] = Parser.partitionCases(switchStatement.cases);
+            let caseClauses = [...caseClausesA, ...caseClausesB];
             
-            
-            
-            
-            
-            
-            
-            let noMatchingCaseFoundNode = evaluatedDiscriminantNode;
+            let stillSearchingNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
+            
+            for (let caseClause of caseClauses) {
+                let truthyCondition = {
+                    type: ESTree.NodeType.BinaryExpression,
+                    left: { type: ESTree.NodeType.Identifier, name: switchExpression },
+                    right: caseClause.test,
+                    operator: "==="
+                };
+                
+                let beginOfCaseBody = this.createNode()
+                    .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
+                
+                if (endOfPreviousCaseBody) {
+                    // We reached the end of the case through normal control flow,
+                    // which means there was no 'break' statement at the end.
+                    // We therefore fall through from the previous case!
+                    beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                }
+                
+                endOfPreviousCaseBody = this.parseStatements(caseClause.consequent, beginOfCaseBody);
+                
+                let falsyCondition = negateTruthiness(truthyCondition);  
+                stillSearchingNode = this.createNode()
+                    .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
+            }
+            
+            this.enclosingStatements.pop();
+            
+            return finalNode;
+            
+            
+            
+            
+            
+            
+            
             
             let defaultClause: ESTree.SwitchCase = null;
             let beginOfDefaultBody: FlowNode = null;
@@ -333,7 +364,7 @@ namespace Styx {
                 };
                 
                 let beginOfCaseBody = this.createNode()
-                    .appendConditionallyTo(noMatchingCaseFoundNode, stringify(truthyCondition), truthyCondition);
+                    .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
                 
                 if (endOfPreviousCaseBody) {
                     // We reached the end of the case through normal control flow,
@@ -345,8 +376,8 @@ namespace Styx {
                 endOfPreviousCaseBody = this.parseStatements(switchCase.consequent, beginOfCaseBody);
                 
                 let falsyCondition = negateTruthiness(truthyCondition);  
-                noMatchingCaseFoundNode = this.createNode()
-                    .appendConditionallyTo(noMatchingCaseFoundNode, stringify(falsyCondition), falsyCondition);
+                stillSearchingNode = this.createNode()
+                    .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
             }
             
             if (defaultClause) {
@@ -354,10 +385,10 @@ namespace Styx {
                  //   noMatchingCaseFoundNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
                 }
                 
-                beginOfDefaultBody.appendEpsilonEdgeTo(noMatchingCaseFoundNode);
+                beginOfDefaultBody.appendEpsilonEdgeTo(stillSearchingNode);
                 endOfPreviousCaseBody = this.parseStatements(defaultClause.consequent, beginOfDefaultBody);
             } else {
-                finalNode.appendEpsilonEdgeTo(noMatchingCaseFoundNode);
+                finalNode.appendEpsilonEdgeTo(stillSearchingNode);
             }
             
             if (endOfPreviousCaseBody) {
@@ -365,24 +396,6 @@ namespace Styx {
                 // connect it to the final node and resume normal control flow
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
             }
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            this.enclosingStatements.pop();
-            
-            return finalNode;
         }
         
         private static partitionCases(cases: ESTree.SwitchCase[]): CaseBlock {
