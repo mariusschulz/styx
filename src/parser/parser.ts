@@ -331,8 +331,15 @@ namespace Styx {
             
             if (endOfPreviousCaseBody) {
                 // If the last case didn't end with an abrupt completion,
-                // connect it to the final node and resume normal control flow
+                // connect it to the final node and resume normal control flow.
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+            }
+            
+            if (!defaultCase) {
+                // If there's no default case, the switch statements isn't necessarily exhaustive.
+                // Therefore, if no match is found, no case clause's statement list is executed
+                // and control flow resumes normally after the switch statement.
+                finalNode.appendEpsilonEdgeTo(stillSearchingNode);
             }
             
             this.enclosingStatements.pop();
