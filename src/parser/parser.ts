@@ -329,6 +329,12 @@ namespace Styx {
                     .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
             }
             
+            if (endOfPreviousCaseBody) {
+                // If the last case didn't end with an abrupt completion,
+                // connect it to the final node and resume normal control flow
+                finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+            }
+            
             this.enclosingStatements.pop();
             
             return finalNode;
