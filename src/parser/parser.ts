@@ -12,6 +12,8 @@ namespace Styx {
     const stringify = Expressions.Stringifier.stringify;
     const negateTruthiness = Expressions.Negator.negateTruthiness;
     
+    type CaseBlock = [ESTree.SwitchCase[], ESTree.SwitchCase, ESTree.SwitchCase[]];
+    
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
     }
@@ -296,6 +298,14 @@ namespace Styx {
                 label: label
             });
             
+            let [caseClausesA, defaultCase, caseClausesB] = Parser.partitionCases(switchStatement.cases);
+            
+            
+            
+            
+            
+            
+            
             let noMatchingCaseFoundNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
             
@@ -356,9 +366,43 @@ namespace Styx {
                 finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
             }
             
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             this.enclosingStatements.pop();
             
             return finalNode;
+        }
+        
+        private static partitionCases(cases: ESTree.SwitchCase[]): CaseBlock {
+            let caseListA: ESTree.SwitchCase[] = [];
+            let defaultCase: ESTree.SwitchCase = null;
+            let caseListB: ESTree.SwitchCase[] = [];
+            
+            let isInCaseListA = true;
+            
+            for (let switchCase of cases) {
+                if (switchCase.test === null) {
+                    // We found the default case
+                    defaultCase = switchCase;
+                    isInCaseListA = false;
+                } else {
+                    (isInCaseListA ? caseListA : caseListB).push(switchCase);
+                }
+            }
+            
+            return [caseListA, defaultCase, caseListB];
         }
         
         private parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode): FlowNode {
