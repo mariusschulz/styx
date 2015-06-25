@@ -299,7 +299,7 @@ namespace Styx {
             
             let currentCaseNode = evaluatedDiscriminantNode;
             let endOfPreviousCaseBody: FlowNode = null;
-            let defaultClause: ESTree.SwitchCase;
+            let defaultClause: ESTree.SwitchCase = null;
             
             for (let switchCase of switchStatement.cases) {
                 if (switchCase.test === null) {
