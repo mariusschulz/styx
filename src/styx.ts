@@ -10,7 +10,7 @@ namespace Styx {
         }
     }
     
-    export function parse(node: ESTree.Node, options?: ParserOptions): FlowProgram {
+    export function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
         if (!isObject(node) || !node.type) {
             throw Error("'node' must be an object with a 'type' property");
         }
@@ -19,10 +19,9 @@ namespace Styx {
             throw Error(`The node type '${node.type}' is not supported`);
         }
         
-        var combinedOptions = normalizeParserOptions(options || {});
-        var parser = new Parser(<ESTree.Program>node, combinedOptions);
+        var options = normalizeParserOptions(options || {});
         
-        return parser.program;
+        return Parser.parse(node, options);
     }
     
     function isObject(value: any): boolean {
