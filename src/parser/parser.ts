@@ -33,9 +33,15 @@ namespace Styx.Parser {
     }
     
     export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
-        let context = createParsingContext();
+        let context = createParsingContext();        
+        let parsedProgram = parseProgram(program, options, context);
         
-        return parseProgram(program, options, context);
+        // Run optimization passes
+        let functionFlowGraphs = context.functions.map(func => func.flowGraph);
+        let flowGraphs = [parsedProgram.flowGraph, ...functionFlowGraphs];
+        runOptimizationPasses(flowGraphs, options);
+        
+        return parsedProgram;
     }
     
     function createParsingContext(): ParsingContext {
@@ -71,11 +77,6 @@ namespace Styx.Parser {
         
         let finalNode = parseStatements(program.body, entryNode, context);
         successExitNode.appendEpsilonEdgeTo(finalNode);
-        
-        // Run optimization passes
-        let functionFlowGraphs = context.functions.map(func => func.flowGraph);
-        let flowGraphs = [programFlowGraph, ...functionFlowGraphs];
-        runOptimizationPasses(flowGraphs, options);
         
         return {
             flowGraph: programFlowGraph,
