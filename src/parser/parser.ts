@@ -8,7 +8,7 @@
 /// <reference path="passes/constantConditionalEdgeRewriting.ts" />
 /// <reference path="passes/transitNodeRemoval.ts" />
 
-namespace Styx {
+namespace Styx.Parser {
     const stringify = Expressions.Stringifier.stringify;
     const negateTruthiness = Expressions.Negator.negateTruthiness;
     
@@ -20,6 +20,10 @@ namespace Styx {
     
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode) => FlowNode;
+    }
+    
+    export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
+        return new Parser(program, options).program;
     }
     
     export class Parser {
