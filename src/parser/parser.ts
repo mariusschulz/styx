@@ -129,7 +129,7 @@ namespace Styx.Parser {
             throw Error(`Encountered unsupported statement type '${statement.type}'`);
         }
         
-        return parsingMethod.call(this, statement, currentNode, context);
+        return parsingMethod(statement, currentNode, context);
     }
     
     function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
