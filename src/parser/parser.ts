@@ -22,6 +22,10 @@ namespace Styx.Parser {
         functions: FlowFunction[];
         currentFunction: FlowFunction;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
+        
+        createTemporaryLocalVariableName(): string;
+        createNode(type?: NodeType): FlowNode;
+        createFunctionId(): number;
     }
     
     interface StatementTypeToParserMap {
@@ -29,31 +33,47 @@ namespace Styx.Parser {
     }
     
     export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
-        let context: ParsingContext = {
-            functions: [],
-            currentFunction: null,
-            enclosingStatements: new Collections.Stack<EnclosingStatement>()
-        };
-        
+        let context = createParsingContext();
         let parser = new Parser(program, options, context);
         
         return parser.program;
     }
     
+    function createParsingContext(): ParsingContext {
+        let nodeIdGenerator = Util.createIdGenerator();
+        let functionIdGenerator = Util.createIdGenerator();
+        let variableNameIdGenerator = Util.createIdGenerator();
+        
+        return {
+            functions: [],
+            currentFunction: null,
+            enclosingStatements: new Collections.Stack<EnclosingStatement>(),
+            
+            createTemporaryLocalVariableName: function() {
+                return "$$temp" + variableNameIdGenerator.makeNew();
+            },
+            
+            createNode: function(type = NodeType.Normal) {
+                let id = nodeIdGenerator.makeNew();
+                return new FlowNode(id, type);
+            },
+            
+            createFunctionId: function() {
+                return functionIdGenerator.makeNew();
+            }
+        };
+    }
+    
     export class Parser {
         public program: FlowProgram;
-        
-        private nodeIdGenerator = Util.createIdGenerator();
-        private functionIdGenerator = Util.createIdGenerator();
-        private variableNameIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions, context: ParsingContext) {
             this.program = this.parseProgram(program, options, context);
         }
     
         parseProgram(program: ESTree.Program, options: ParserOptions, context: ParsingContext): FlowProgram {
-            let entryNode = this.createNode(NodeType.Entry);
-            let successExitNode = this.createNode(NodeType.Exit);
+            let entryNode = context.createNode(NodeType.Entry);
+            let successExitNode = context.createNode(NodeType.Exit);
             
             let programFlowGraph = { entry: entryNode, successExit: successExitNode };
             
@@ -120,11 +140,11 @@ namespace Styx.Parser {
         }
         
         parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
-            let entryNode = this.createNode(NodeType.Entry);
-            let successExitNode = this.createNode(NodeType.Exit);
+            let entryNode = context.createNode(NodeType.Entry);
+            let successExitNode = context.createNode(NodeType.Exit);
             
             let func: FlowFunction = {
-                id: this.functionIdGenerator.makeNew(),
+                id: context.createFunctionId(),
                 name: functionDeclaration.id.name,
                 flowGraph: { entry: entryNode, successExit: successExitNode }
             };
@@ -153,7 +173,7 @@ namespace Styx.Parser {
         }
         
         parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-            return this.createNode().appendTo(currentNode, "(empty)");
+            return context.createNode().appendTo(currentNode, "(empty)");
         }
         
         parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
@@ -164,7 +184,7 @@ namespace Styx.Parser {
             for (let declarator of declaration.declarations) {
                 let initString = stringify(declarator.init);
                 let edgeLabel = `${declarator.id.name} = ${initString}`;
-                currentNode = this.createNode().appendTo(currentNode, edgeLabel);
+                currentNode = context.createNode().appendTo(currentNode, edgeLabel);
             }
     
             return currentNode;
@@ -176,7 +196,7 @@ namespace Styx.Parser {
             
             switch (body.type) {
                 case ESTree.NodeType.BlockStatement:
-                    let finalNode = this.createNode();
+                    let finalNode = context.createNode();
                     
                     let enclosingStatement: EnclosingStatement = {
                         breakTarget: finalNode,
@@ -224,12 +244,12 @@ namespace Styx.Parser {
             let thenLabel = stringify(ifStatement.test);
             let elseLabel = stringify(negatedTest);
             
-            let thenNode = this.createNode()
+            let thenNode = context.createNode()
                 .appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
             
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode, context);
             
-            let finalNode = this.createNode()
+            let finalNode = context.createNode()
                 .appendConditionallyTo(currentNode, elseLabel, negatedTest);
             
             if (endOfThenBranch) {
@@ -242,16 +262,16 @@ namespace Styx.Parser {
         parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
             // Then branch
             let thenLabel = stringify(ifStatement.test);
-            let thenNode = this.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
+            let thenNode = context.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
             let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode, context);
             
             // Else branch
             let negatedTest = negateTruthiness(ifStatement.test);
             let elseLabel = stringify(negatedTest); 
-            let elseNode = this.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
+            let elseNode = context.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
             let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode, context);
             
-            let finalNode = this.createNode();
+            let finalNode = context.createNode();
             
             if (endOfThenBranch) {
                 finalNode.appendEpsilonEdgeTo(endOfThenBranch);
@@ -292,19 +312,19 @@ namespace Styx.Parser {
         
         parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
             let stringifiedExpression = stringify(withStatement.object);
-            let expressionNode = this.createNode().appendTo(currentNode, stringifiedExpression); 
+            let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression); 
             
             return this.parseStatement(withStatement.body, expressionNode, context);
         }
         
         parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
-            const switchExpression = this.createTemporaryLocalVariableName();
+            const switchExpression = context.createTemporaryLocalVariableName();
             
             let stringifiedDiscriminant = stringify(switchStatement.discriminant);
             let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
-            let evaluatedDiscriminantNode = this.createNode().appendTo(currentNode, exprRef);
+            let evaluatedDiscriminantNode = context.createNode().appendTo(currentNode, exprRef);
             
-            let finalNode = this.createNode(); 
+            let finalNode = context.createNode(); 
             
             context.enclosingStatements.push({
                 breakTarget: finalNode,
@@ -327,7 +347,7 @@ namespace Styx.Parser {
                     operator: "==="
                 };
                 
-                let beginOfCaseBody = this.createNode()
+                let beginOfCaseBody = context.createNode()
                     .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
                 
                 if (caseClause === caseClausesB[0]) {
@@ -344,7 +364,7 @@ namespace Styx.Parser {
                 endOfPreviousCaseBody = this.parseStatements(caseClause.consequent, beginOfCaseBody, context);
                 
                 let falsyCondition = negateTruthiness(truthyCondition);  
-                stillSearchingNode = this.createNode()
+                stillSearchingNode = context.createNode()
                     .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
             }
             
@@ -411,8 +431,8 @@ namespace Styx.Parser {
             let falsyCondition = negateTruthiness(truthyCondition);
             let falsyConditionLabel = stringify(falsyCondition);
             
-            let loopBodyNode = this.createNode().appendConditionallyTo(currentNode, truthyConditionLabel, truthyCondition);
-            let finalNode = this.createNode();
+            let loopBodyNode = context.createNode().appendConditionallyTo(currentNode, truthyConditionLabel, truthyCondition);
+            let finalNode = context.createNode();
             
             context.enclosingStatements.push({
                 continueTarget: currentNode,
@@ -441,8 +461,8 @@ namespace Styx.Parser {
             let falsyCondition = negateTruthiness(truthyCondition);            
             let falsyConditionLabel = stringify(falsyCondition);
             
-            let testNode = this.createNode();
-            let finalNode = this.createNode();
+            let testNode = context.createNode();
+            let finalNode = context.createNode();
             
             context.enclosingStatements.push({
                 continueTarget: testNode,
@@ -469,9 +489,9 @@ namespace Styx.Parser {
             let testDecisionNode = this.parseStatement(forStatement.init, currentNode, context);
             
             // Create nodes for loop cornerstones
-            let beginOfLoopBodyNode = this.createNode();
-            let updateNode = this.createNode();
-            let finalNode = this.createNode();
+            let beginOfLoopBodyNode = context.createNode();
+            let updateNode = context.createNode();
+            let finalNode = context.createNode();
             
             if (forStatement.test) {
                 // If the loop has a test expression,
@@ -528,13 +548,13 @@ namespace Styx.Parser {
             let variableDeclarator = forInStatement.left.declarations[0];
             let variableName = variableDeclarator.id.name;
             
-            let conditionNode = this.createNode()
+            let conditionNode = context.createNode()
                 .appendTo(currentNode, stringifiedRight);
             
-            let startOfLoopBody = this.createNode()
+            let startOfLoopBody = context.createNode()
                 .appendConditionallyTo(conditionNode, `${variableName} = <next>`, forInStatement.right);
                 
-            let finalNode = this.createNode()
+            let finalNode = context.createNode()
                 .appendConditionallyTo(conditionNode, "<no more>", null);
             
             context.enclosingStatements.push({
@@ -569,7 +589,7 @@ namespace Styx.Parser {
             
             let expressionLabel = stringify(expression);
             
-            return this.createNode()
+            return context.createNode()
                 .appendTo(currentNode, expressionLabel);
         }
         
@@ -603,18 +623,6 @@ namespace Styx.Parser {
                     Passes.removeTransitNodes(graph.entry);
                 }
             }
-        }
-        
-        createTemporaryLocalVariableName(): string {
-            let id = this.variableNameIdGenerator.makeNew();
-            
-            return `$$temp${id}`;
-        }
-        
-        createNode(type: NodeType = NodeType.Normal): FlowNode {
-            let id = this.nodeIdGenerator.makeNew();
-            
-            return new FlowNode(id, type);
         }
     }
 }
