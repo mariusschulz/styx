@@ -1,11 +1,11 @@
 import * as ESTree from "estree";
 
 export interface ParserOptions {
-        passes?: {
-            removeTransitNodes?: boolean,
-            rewriteConstantConditionalEdges?: boolean
-        }
+    passes?: {
+        removeTransitNodes?: boolean,
+        rewriteConstantConditionalEdges?: boolean
     }
+}
     
 export interface FlowProgram {
     flowGraph: ControlFlowGraph;
