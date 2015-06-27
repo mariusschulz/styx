@@ -69,7 +69,7 @@ namespace Styx.Parser {
         
         let programFlowGraph = { entry: entryNode, successExit: successExitNode };
         
-        let finalNode = this.parseStatements(program.body, entryNode, context);
+        let finalNode = parseStatements(program.body, entryNode, context);
         successExitNode.appendEpsilonEdgeTo(finalNode);
         
         // Run optimization passes
@@ -85,7 +85,7 @@ namespace Styx.Parser {
 
     function parseStatements(statements: ESTree.Statement[], currentNode: FlowNode, context: ParsingContext): FlowNode {
         for (let statement of statements) {
-            currentNode = this.parseStatement(statement, currentNode, context);
+            currentNode = parseStatement(statement, currentNode, context);
             
             if (isAbruptCompletion(statement)) {
                 // If we encounter an abrupt completion, normal control flow is interrupted
@@ -103,23 +103,23 @@ namespace Styx.Parser {
         }
         
         let statementParsers: StatementTypeToParserMap = {
-            [ESTree.NodeType.FunctionDeclaration]: this.parseFunctionDeclaration,
-            [ESTree.NodeType.EmptyStatement]: this.parseEmptyStatement,
-            [ESTree.NodeType.BlockStatement]: this.parseBlockStatement,
-            [ESTree.NodeType.VariableDeclaration]: this.parseVariableDeclaration,
-            [ESTree.NodeType.IfStatement]: this.parseIfStatement,
-            [ESTree.NodeType.LabeledStatement]: this.parseLabeledStatement,
-            [ESTree.NodeType.BreakStatement]: this.parseBreakStatement,
-            [ESTree.NodeType.ContinueStatement]: this.parseContinueStatement,
-            [ESTree.NodeType.WithStatement]: this.parseWithStatement,
-            [ESTree.NodeType.SwitchStatement]: this.parseSwitchStatement,
-            [ESTree.NodeType.ReturnStatement]: this.parseReturnStatement,
-            [ESTree.NodeType.WhileStatement]: this.parseWhileStatement,
-            [ESTree.NodeType.DoWhileStatement]: this.parseDoWhileStatement,
-            [ESTree.NodeType.ForStatement]: this.parseForStatement,
-            [ESTree.NodeType.ForInStatement]: this.parseForInStatement,
-            [ESTree.NodeType.DebuggerStatement]: this.parseDebuggerStatement,
-            [ESTree.NodeType.ExpressionStatement]: this.parseExpressionStatement
+            [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
+            [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
+            [ESTree.NodeType.BlockStatement]: parseBlockStatement,
+            [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
+            [ESTree.NodeType.IfStatement]: parseIfStatement,
+            [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
+            [ESTree.NodeType.BreakStatement]: parseBreakStatement,
+            [ESTree.NodeType.ContinueStatement]: parseContinueStatement,
+            [ESTree.NodeType.WithStatement]: parseWithStatement,
+            [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
+            [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
+            [ESTree.NodeType.WhileStatement]: parseWhileStatement,
+            [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
+            [ESTree.NodeType.ForStatement]: parseForStatement,
+            [ESTree.NodeType.ForInStatement]: parseForInStatement,
+            [ESTree.NodeType.DebuggerStatement]: parseDebuggerStatement,
+            [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement
         };
         
         let parsingMethod = statementParsers[statement.type];
@@ -144,7 +144,7 @@ namespace Styx.Parser {
         let previousFunction = context.currentFunction;
         context.currentFunction = func;
         
-        let finalNode = this.parseBlockStatement(functionDeclaration.body, entryNode, context);
+        let finalNode = parseBlockStatement(functionDeclaration.body, entryNode, context);
         
         if (finalNode) {
             // If we reached this point, the function didn't end with an explicit return statement.
@@ -169,7 +169,7 @@ namespace Styx.Parser {
     }
     
     function parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        return this.parseStatements(blockStatement.body, currentNode, context);
+        return parseStatements(blockStatement.body, currentNode, context);
     }
 
     function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): FlowNode {
@@ -197,37 +197,37 @@ namespace Styx.Parser {
                 };
                 
                 context.enclosingStatements.push(enclosingStatement);
-                let endOfStatementBodyNode = this.parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
+                let endOfStatementBodyNode = parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
                 context.enclosingStatements.pop();
                                     
                 return finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
             
             case ESTree.NodeType.SwitchStatement:
-                return this.parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, context, label);
+                return parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, context, label);
                 
             case ESTree.NodeType.WhileStatement:
-                return this.parseWhileStatement(<ESTree.WhileStatement>body, currentNode, context, label);
+                return parseWhileStatement(<ESTree.WhileStatement>body, currentNode, context, label);
             
             case ESTree.NodeType.DoWhileStatement:
-                return this.parseDoWhileStatement(<ESTree.DoWhileStatement>body, currentNode, context, label);
+                return parseDoWhileStatement(<ESTree.DoWhileStatement>body, currentNode, context, label);
             
             case ESTree.NodeType.ForStatement:
-                return this.parseForStatement(<ESTree.ForStatement>body, currentNode, context, label);
+                return parseForStatement(<ESTree.ForStatement>body, currentNode, context, label);
             
             case ESTree.NodeType.ForInStatement:
-                return this.parseForInStatement(<ESTree.ForInStatement>body, currentNode, context, label);
+                return parseForInStatement(<ESTree.ForInStatement>body, currentNode, context, label);
                 
             default:
                 // If we didn't encounter an enclosing statement,
                 // the label is irrelevant for control flow and we thus don't track it.
-                return this.parseStatement(body, currentNode, context);
+                return parseStatement(body, currentNode, context);
         }
     }
 
     function parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
         return ifStatement.alternate === null
-            ? this.parseSimpleIfStatement(ifStatement, currentNode, context)
-            : this.parseIfElseStatement(ifStatement, currentNode, context);
+            ? parseSimpleIfStatement(ifStatement, currentNode, context)
+            : parseIfElseStatement(ifStatement, currentNode, context);
     }
 
     function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
@@ -239,7 +239,7 @@ namespace Styx.Parser {
         let thenNode = context.createNode()
             .appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
         
-        let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode, context);
+        let endOfThenBranch = parseStatement(ifStatement.consequent, thenNode, context);
         
         let finalNode = context.createNode()
             .appendConditionallyTo(currentNode, elseLabel, negatedTest);
@@ -255,13 +255,13 @@ namespace Styx.Parser {
         // Then branch
         let thenLabel = stringify(ifStatement.test);
         let thenNode = context.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
-        let endOfThenBranch = this.parseStatement(ifStatement.consequent, thenNode, context);
+        let endOfThenBranch = parseStatement(ifStatement.consequent, thenNode, context);
         
         // Else branch
         let negatedTest = negateTruthiness(ifStatement.test);
         let elseLabel = stringify(negatedTest); 
         let elseNode = context.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
-        let endOfElseBranch = this.parseStatement(ifStatement.alternate, elseNode, context);
+        let endOfElseBranch = parseStatement(ifStatement.alternate, elseNode, context);
         
         let finalNode = context.createNode();
         
@@ -306,7 +306,7 @@ namespace Styx.Parser {
         let stringifiedExpression = stringify(withStatement.object);
         let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression); 
         
-        return this.parseStatement(withStatement.body, expressionNode, context);
+        return parseStatement(withStatement.body, expressionNode, context);
     }
     
     function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
@@ -353,7 +353,7 @@ namespace Styx.Parser {
                 beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
             }
             
-            endOfPreviousCaseBody = this.parseStatements(caseClause.consequent, beginOfCaseBody, context);
+            endOfPreviousCaseBody = parseStatements(caseClause.consequent, beginOfCaseBody, context);
             
             let falsyCondition = negateTruthiness(truthyCondition);  
             stillSearchingNode = context.createNode()
@@ -367,7 +367,7 @@ namespace Styx.Parser {
         }
         
         if (defaultCase) {
-            let endOfDefaultCaseBody = this.parseStatements(defaultCase.consequent, stillSearchingNode, context);
+            let endOfDefaultCaseBody = parseStatements(defaultCase.consequent, stillSearchingNode, context);
             
             if (endOfDefaultCaseBody) {
                 let nodeAfterDefaultCase = firstNodeOfClauseListB || finalNode;
@@ -432,7 +432,7 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = this.parseStatement(whileStatement.body, loopBodyNode, context);
+        let endOfLoopBodyNode = parseStatement(whileStatement.body, loopBodyNode, context);
         
         if (endOfLoopBodyNode) {
             currentNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
@@ -462,7 +462,7 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = this.parseStatement(doWhileStatement.body, currentNode, context);
+        let endOfLoopBodyNode = parseStatement(doWhileStatement.body, currentNode, context);
         
         context.enclosingStatements.pop();
         
@@ -478,7 +478,7 @@ namespace Styx.Parser {
     
     function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
         // Parse initialization
-        let testDecisionNode = this.parseStatement(forStatement.init, currentNode, context);
+        let testDecisionNode = parseStatement(forStatement.init, currentNode, context);
         
         // Create nodes for loop cornerstones
         let beginOfLoopBodyNode = context.createNode();
@@ -510,14 +510,14 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = this.parseStatement(forStatement.body, beginOfLoopBodyNode, context);
+        let endOfLoopBodyNode = parseStatement(forStatement.body, beginOfLoopBodyNode, context);
         
         context.enclosingStatements.pop();
         
         if (forStatement.update) {
             // If the loop has an update expression,
             // parse it and append it to the end of the loop body
-            let endOfUpdateNode = this.parseExpression(forStatement.update, updateNode, context);
+            let endOfUpdateNode = parseExpression(forStatement.update, updateNode, context);
             testDecisionNode.appendEpsilonEdgeTo(endOfUpdateNode);                                   
         } else {
             // If the loop doesn't have an update expression,
@@ -555,7 +555,7 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBody = this.parseStatement(forInStatement.body, startOfLoopBody, context);
+        let endOfLoopBody = parseStatement(forInStatement.body, startOfLoopBody, context);
         
         context.enclosingStatements.pop();
         
@@ -571,12 +571,12 @@ namespace Styx.Parser {
     }
     
     function parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        return this.parseExpression(expressionStatement.expression, currentNode, context);
+        return parseExpression(expressionStatement.expression, currentNode, context);
     }
     
     function parseExpression(expression: ESTree.Expression, currentNode: FlowNode, context: ParsingContext): FlowNode {
         if (expression.type === ESTree.NodeType.SequenceExpression) {
-            return this.parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode, context);
+            return parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode, context);
         }
         
         let expressionLabel = stringify(expression);
@@ -587,7 +587,7 @@ namespace Styx.Parser {
     
     function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, context: ParsingContext): FlowNode {
         for (let expression of sequenceExpression.expressions) {
-            currentNode = this.parseExpression(expression, currentNode, context);
+            currentNode = parseExpression(expression, currentNode, context);
         }
         
         return currentNode;
