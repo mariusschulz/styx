@@ -6,6 +6,6 @@
         "module": "commonjs"
     },
     "files": [
-        "styx.ts"
+        "index.ts"
     ]
 }

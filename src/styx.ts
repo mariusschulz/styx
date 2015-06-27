@@ -2,7 +2,10 @@ import * as ESTree from "./estree";
 import { FlowProgram, ParserOptions } from "./flow";
 import * as Parser from "./parser/parser";
 
-export function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
+export { parse };
+export * from "./flow";
+
+function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
     if (!isObject(node) || !node.type) {
         throw Error("'node' must be an object with a 'type' property");
     }
