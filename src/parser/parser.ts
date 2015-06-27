@@ -43,15 +43,11 @@ namespace Styx.Parser {
     export class Parser {
         public program: FlowProgram;
         
-        private currentFunction: FlowFunction;
-        
         private nodeIdGenerator = Util.createIdGenerator();
         private functionIdGenerator = Util.createIdGenerator();
         private variableNameIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions, context: ParsingContext) {
-            this.currentFunction = null;
-            
             this.program = this.parseProgram(program, options, context);
         }
     
@@ -133,8 +129,8 @@ namespace Styx.Parser {
                 flowGraph: { entry: entryNode, successExit: successExitNode }
             };
             
-            let previousFunction = this.currentFunction;
-            this.currentFunction = func;
+            let previousFunction = context.currentFunction;
+            context.currentFunction = func;
             
             let finalNode = this.parseBlockStatement(functionDeclaration.body, entryNode, context);
             
@@ -151,7 +147,7 @@ namespace Styx.Parser {
             }
             
             context.functions.push(func);
-            this.currentFunction = previousFunction;
+            context.currentFunction = previousFunction;
             
             return currentNode;
         }
@@ -400,7 +396,7 @@ namespace Styx.Parser {
         parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
             let returnLabel = "return " + stringify(returnStatement.argument);
             
-            this.currentFunction.flowGraph.successExit
+            context.currentFunction.flowGraph.successExit
                 .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
             
             return null;
