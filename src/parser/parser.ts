@@ -43,7 +43,6 @@ namespace Styx.Parser {
     export class Parser {
         public program: FlowProgram;
         
-        private functions: FlowFunction[];
         private currentFunction: FlowFunction;
         
         private nodeIdGenerator = Util.createIdGenerator();
@@ -51,7 +50,6 @@ namespace Styx.Parser {
         private variableNameIdGenerator = Util.createIdGenerator();
         
         constructor(program: ESTree.Program, options: ParserOptions, context: ParsingContext) {
-            this.functions = [];
             this.currentFunction = null;
             
             this.program = this.parseProgram(program, options, context);
@@ -67,13 +65,13 @@ namespace Styx.Parser {
             successExitNode.appendEpsilonEdgeTo(finalNode);
             
             // Run optimization passes
-            let functionFlowGraphs = this.functions.map(func => func.flowGraph);
+            let functionFlowGraphs = context.functions.map(func => func.flowGraph);
             let flowGraphs = [programFlowGraph, ...functionFlowGraphs];
             Parser.runOptimizationPasses(flowGraphs, options);
             
             return {
                 flowGraph: programFlowGraph,
-                functions: this.functions
+                functions: context.functions
             };
         }
     
@@ -152,7 +150,7 @@ namespace Styx.Parser {
                     .appendTo(finalNode, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
             }
             
-            this.functions.push(func);
+            context.functions.push(func);
             this.currentFunction = previousFunction;
             
             return currentNode;
