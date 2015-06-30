@@ -1,3 +1,3 @@
 import * as Styx from "./styx";
 
-window["Styx"] = Styx;
+(<any>window).Styx = Styx;
