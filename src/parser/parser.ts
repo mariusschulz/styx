@@ -4,7 +4,7 @@ import { stringify } from "./expressions/stringifier";
 import * as Passes from "./passes/index";
 
 import { Stack } from "./../collections/stack";
-import * as Util from "./../util/index";
+import { IdGenerator } from "./../util/idGenerator";
 
 import * as ESTree from "./../estree";
 import {
@@ -52,9 +52,9 @@ export function parse(program: ESTree.Program, options: ParserOptions): FlowProg
 }
 
 function createParsingContext(): ParsingContext {
-    let nodeIdGenerator = Util.createIdGenerator();
-    let functionIdGenerator = Util.createIdGenerator();
-    let variableNameIdGenerator = Util.createIdGenerator();
+    let nodeIdGenerator = IdGenerator.create();
+    let functionIdGenerator = IdGenerator.create();
+    let variableNameIdGenerator = IdGenerator.create();
     
     return {
         functions: [],
@@ -62,16 +62,16 @@ function createParsingContext(): ParsingContext {
         enclosingStatements: new Stack<EnclosingStatement>(),
         
         createTemporaryLocalVariableName: function() {
-            return "$$temp" + variableNameIdGenerator.makeNew();
+            return "$$temp" + variableNameIdGenerator.generateId();
         },
         
         createNode: function(type = NodeType.Normal) {
-            let id = nodeIdGenerator.makeNew();
+            let id = nodeIdGenerator.generateId();
             return new FlowNode(id, type);
         },
         
         createFunctionId: function() {
-            return functionIdGenerator.makeNew();
+            return functionIdGenerator.generateId();
         }
     };
 }

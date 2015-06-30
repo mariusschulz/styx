@@ -1,11 +1,15 @@
-export interface IdGenerator {
-    makeNew: () => number;
+interface IdGenerator {
+    generateId: () => number;
 }
 
-export function createIdGenerator(): IdGenerator {
-    let id = 0;
+const generatorFactory = {
+    create(): IdGenerator {
+        let id = 0;
     
-    return {
-        makeNew: () => ++id
-    };
-}
+        return {
+            generateId: () => ++id
+        };
+    }
+};
+
+export { generatorFactory as IdGenerator };
