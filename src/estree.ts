@@ -14,6 +14,7 @@ module ESTree {
         static ForStatement = "ForStatement";
         static ForInStatement = "ForInStatement";
         static FunctionDeclaration = "FunctionDeclaration";
+        static FunctionExpression = "FunctionExpression";
         static Identifier = "Identifier";
         static IfStatement = "IfStatement";
         static LabeledStatement = "LabeledStatement";
@@ -175,6 +176,10 @@ module ESTree {
         key: Literal | Identifier;
         value: Expression;
         kind: string;
+    }
+    
+    export interface FunctionExpression extends Function, Expression {
+        
     }
     
     export interface SequenceExpression extends Expression {
