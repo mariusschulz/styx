@@ -1,7 +1,7 @@
 type ObjectKey = string | number;
 type LookupObject = { [key: string]: boolean; } 
 
-export class Set<T extends ObjectKey> {
+export default class Set<T extends ObjectKey> {
     private elementLookup: LookupObject;
     
     constructor() {

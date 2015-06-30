@@ -1,6 +1,6 @@
 import * as ESTree from "./../../estree";
 
-import { Set } from "./../../collections/set";
+import Set from "./../../collections/set";
 import * as ArrayUtils from "./../../util/arrayUtil";
 
 import {
