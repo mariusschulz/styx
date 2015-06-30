@@ -1,33 +1,46 @@
 namespace Styx.Collections {
-    export class Stack<T> {
-        private elements: T[];
+    interface Predicate<T> {
+        (element: T): boolean;
+    }
+    
+    export interface Stack<T> {
+        push: (element: T) => void;
+        pop: () => T;
+        peek: () => T;
+        find: (predicate: Predicate<T>) => T;
+    }
+    
+    export const Stack = {
+        create: createStack
+    }
+    
+    function createStack<T>(): Stack<T> {
+        let elements: T[] = [];
         
-        constructor() {
-            this.elements = [];
-        }
-        
-        push(element: T): void {
-            this.elements.push(element);
-        }
-        
-        pop(): T {
-            return this.elements.pop();
-        }
-        
-        peek(): T {
-            return this.elements[this.elements.length - 1];            
-        }
-        
-        find(predicate: Predicate<T>): T {
-            for (let i = this.elements.length - 1; i >= 0; i--) {
-                let element = this.elements[i];
-                
-                if (predicate(element)) {
-                    return element;
-                }
-            }
+        return {
+            push(element) {
+                elements.push(element);
+            },
             
-            return void 0;
+            pop() {
+                return elements.pop();
+            },
+            
+            peek() {
+                return elements[elements.length - 1];            
+            },
+            
+            find(predicate) {
+                for (let i = elements.length - 1; i >= 0; i--) {
+                    let element = elements[i];
+                    
+                    if (predicate(element)) {
+                        return element;
+                    }
+                }
+                
+                return void 0;
+            }
         }
     }
 }

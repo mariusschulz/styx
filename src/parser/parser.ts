@@ -52,7 +52,7 @@ namespace Styx.Parser {
         return {
             functions: [],
             currentFunction: null,
-            enclosingStatements: new Collections.Stack<EnclosingStatement>(),
+            enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName: function() {
                 return "$$temp" + variableNameIdGenerator.generateId();
