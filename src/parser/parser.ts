@@ -45,9 +45,9 @@ namespace Styx.Parser {
     }
     
     function createParsingContext(): ParsingContext {
-        let nodeIdGenerator = Util.createIdGenerator();
-        let functionIdGenerator = Util.createIdGenerator();
-        let variableNameIdGenerator = Util.createIdGenerator();
+        let nodeIdGenerator = Util.IdGenerator.create();
+        let functionIdGenerator = Util.IdGenerator.create();
+        let variableNameIdGenerator = Util.IdGenerator.create();
         
         return {
             functions: [],
@@ -55,16 +55,16 @@ namespace Styx.Parser {
             enclosingStatements: new Collections.Stack<EnclosingStatement>(),
             
             createTemporaryLocalVariableName: function() {
-                return "$$temp" + variableNameIdGenerator.makeNew();
+                return "$$temp" + variableNameIdGenerator.generateId();
             },
             
             createNode: function(type = NodeType.Normal) {
-                let id = nodeIdGenerator.makeNew();
+                let id = nodeIdGenerator.generateId();
                 return new FlowNode(id, type);
             },
             
             createFunctionId: function() {
-                return functionIdGenerator.makeNew();
+                return functionIdGenerator.generateId();
             }
         };
     }
