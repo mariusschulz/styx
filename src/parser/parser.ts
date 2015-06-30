@@ -54,16 +54,16 @@ namespace Styx.Parser {
             currentFunction: null,
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
-            createTemporaryLocalVariableName: function() {
+            createTemporaryLocalVariableName() {
                 return "$$temp" + variableNameIdGenerator.generateId();
             },
             
-            createNode: function(type = NodeType.Normal) {
+            createNode(type = NodeType.Normal) {
                 let id = nodeIdGenerator.generateId();
                 return new FlowNode(id, type);
             },
             
-            createFunctionId: function() {
+            createFunctionId() {
                 return functionIdGenerator.generateId();
             }
         };
