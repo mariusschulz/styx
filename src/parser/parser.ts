@@ -3,7 +3,7 @@ import { stringify } from "./expressions/stringifier";
 
 import * as Passes from "./passes/index";
 
-import { Stack } from "./../collections/stack";
+import Stack from "./../collections/stack";
 import IdGenerator from "./../util/idGenerator";
 
 import * as ESTree from "./../estree";
