@@ -1,10 +1,10 @@
-/// <reference path="../../collections/set.ts" />
+/// <reference path="../../collections/numericSet.ts" />
 /// <reference path="../../util/arrayUtil.ts" />
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
     export function rewriteConstantConditionalEdges(graphEntry: FlowNode) {
-        let visitedNodes = new Collections.Set<number>();
+        let visitedNodes = Collections.NumericSet.create();
         let edgesToRemove: FlowEdge[] = [];
         
         visitNode(graphEntry, visitedNodes, edgesToRemove);
@@ -14,7 +14,7 @@ namespace Styx.Passes {
         }
     }
     
-    function visitNode(node: FlowNode, visitedNodes: Collections.Set<number>, edgesToRemove: FlowEdge[]) {
+    function visitNode(node: FlowNode, visitedNodes: Collections.NumericSet, edgesToRemove: FlowEdge[]) {
         if (visitedNodes.contains(node.id)) {
             return;
         }

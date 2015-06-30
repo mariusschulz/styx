@@ -1,14 +1,14 @@
 /// <reference path="../../util/arrayUtil.ts" />
-/// <reference path="../../collections/set.ts" />
+/// <reference path="../../collections/numericSet.ts" />
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
     export function removeTransitNodes(graphEntry: FlowNode) {
-        let visitedNodes = new Collections.Set<number>();
+        let visitedNodes = Collections.NumericSet.create();
         optimizeNode(graphEntry, visitedNodes);
     }
     
-    function optimizeNode(node: FlowNode, visitedNodes: Collections.Set<number>) {
+    function optimizeNode(node: FlowNode, visitedNodes: Collections.NumericSet) {
         if (visitedNodes.contains(node.id)) {
             return;
         }
@@ -34,7 +34,7 @@ namespace Styx.Passes {
         }
     }
     
-    function optimizeTransitNode(transitNode: FlowNode, visitedNodes: Collections.Set<number>) {
+    function optimizeTransitNode(transitNode: FlowNode, visitedNodes: Collections.NumericSet) {
         // Remember the transit node's original target
         let originalTarget = transitNode.outgoingEdges[0].target;
         
