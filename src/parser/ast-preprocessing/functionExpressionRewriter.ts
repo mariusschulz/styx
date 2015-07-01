@@ -11,7 +11,22 @@ namespace Styx.Parser.AstPreprocessing {
         let functionIdGenerator = Util.IdGenerator.create();
         let functionExpressionsToRewrite: RewrittenFunction[] = [];
         
+        // We're making use of the built-in `JSON.stringify` method here
+        // because it accepts a `replacer` callback as its second parameter.
+        // That callback gets passed every key and value that's being stringified
+        // and can return a different value that's included in the JSON string
+        // instead of the original value.
+        // 
+        // This is a poor man's AST visitor, if you will. The idea is that
+        // we can easily detect every AST node of type `FunctionExpression` this way.
+        // When we encounter such a function expression, we keep track of it
+        // and replace the corresponding AST node by a new unique identifier.
+        // 
+        // After the entire program has been visited, we prepend to the program body
+        // a function declaration for every function expression we've encountered.
         let stringifiedProgram = JSON.stringify(program, visitNode);
+        
+        // The original program is not modified; instead, a clone is created
         let clonedProgram: ESTree.Program = JSON.parse(stringifiedProgram);
         
         prependFunctionDeclarationsToProgramBody(functionExpressionsToRewrite, clonedProgram);
