@@ -2,6 +2,7 @@
 /// <reference path="../flow.ts" />
 /// <reference path="../util/idGenerator.ts" />
 /// <reference path="../collections/stack.ts" />
+/// <reference path="ast-preprocessing/functionExpressionRewriter.ts" />
 /// <reference path="enclosingStatement.ts" />
 /// <reference path="expressions/negator.ts" />
 /// <reference path="expressions/stringifier.ts" />
@@ -33,8 +34,10 @@ namespace Styx.Parser {
     }
     
     export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
-        let context = createParsingContext();        
-        let parsedProgram = parseProgram(program, options, context);
+        let context = createParsingContext();
+        
+        let rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(program);
+        let parsedProgram = parseProgram(rewrittenProgram, options, context);
         
         // Run optimization passes
         let functionFlowGraphs = context.functions.map(func => func.flowGraph);
