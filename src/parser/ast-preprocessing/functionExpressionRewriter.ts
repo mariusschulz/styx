@@ -49,7 +49,7 @@ namespace Styx.Parser.AstPreprocessing {
             }
         }
         
-        function clone(object: any): any {
+        function clone<T>(object: T): T {
             return JSON.parse(JSON.stringify(object));
         }
     }
