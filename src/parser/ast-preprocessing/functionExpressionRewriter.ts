@@ -14,12 +14,12 @@ namespace Styx.Parser.AstPreprocessing {
         let stringifiedProgram = JSON.stringify(program, visitNode);
         let clonedProgram: ESTree.Program = JSON.parse(stringifiedProgram);
         
-        for (let func of functionExpressionsToRewrite) {
+        for (let funcToRewrite of functionExpressionsToRewrite) {
             let functionDeclaration: ESTree.Function = {
                 type: ESTree.NodeType.FunctionDeclaration,
-                id: { type: ESTree.NodeType.Identifier, name: func.name },
-                params: func.functionExpression.params,
-                body: func.functionExpression.body
+                id: { type: ESTree.NodeType.Identifier, name: funcToRewrite.name },
+                params: clone(funcToRewrite.functionExpression.params),
+                body: clone(funcToRewrite.functionExpression.body)
             };
             
             clonedProgram.body.unshift(functionDeclaration);
@@ -49,6 +49,10 @@ namespace Styx.Parser.AstPreprocessing {
                 type: ESTree.NodeType.Identifier,
                 name: funcName
             }
+        }
+        
+        function clone(object: any): any {
+            return JSON.parse(JSON.stringify(object));
         }
     }
 }
