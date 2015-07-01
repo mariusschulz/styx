@@ -2,28 +2,19 @@
 /// <reference path="../../estree.ts" />
 
 namespace Styx.Parser.AstPreprocessing {
-    interface FunctionExpressionToRewrite {
+    interface RewrittenFunction {
         name: string;
         functionExpression: ESTree.FunctionExpression;
     }
     
     export function rewriteFunctionExpressions(program: ESTree.Program): ESTree.Program {
         let functionIdGenerator = Util.IdGenerator.create();
-        let functionExpressionsToRewrite: FunctionExpressionToRewrite[] = [];
+        let functionExpressionsToRewrite: RewrittenFunction[] = [];
         
         let stringifiedProgram = JSON.stringify(program, visitNode);
         let clonedProgram: ESTree.Program = JSON.parse(stringifiedProgram);
         
-        for (let funcToRewrite of functionExpressionsToRewrite) {
-            let functionDeclaration: ESTree.Function = {
-                type: ESTree.NodeType.FunctionDeclaration,
-                id: { type: ESTree.NodeType.Identifier, name: funcToRewrite.name },
-                params: clone(funcToRewrite.functionExpression.params),
-                body: clone(funcToRewrite.functionExpression.body)
-            };
-            
-            clonedProgram.body.unshift(functionDeclaration);
-        }
+        prependFunctionDeclarationsToProgramBody(functionExpressionsToRewrite, clonedProgram);
         
         return clonedProgram;
     
@@ -48,9 +39,25 @@ namespace Styx.Parser.AstPreprocessing {
                 name: funcName
             }
         }
-        
-        function clone<T>(object: T): T {
-            return JSON.parse(JSON.stringify(object));
+    }
+    
+    function prependFunctionDeclarationsToProgramBody(rewrittenFunctions: RewrittenFunction[], program: ESTree.Program) {
+        for (let rewrittenFunc of rewrittenFunctions) {
+            let functionDeclaration: ESTree.Function = {
+                type: ESTree.NodeType.FunctionDeclaration,
+                id: {
+                    type: ESTree.NodeType.Identifier,
+                    name: rewrittenFunc.name
+                },
+                params: clone(rewrittenFunc.functionExpression.params),
+                body: clone(rewrittenFunc.functionExpression.body)
+            };
+            
+            program.body.unshift(functionDeclaration);
         }
+    }
+        
+    function clone<T>(object: T): T {
+        return JSON.parse(JSON.stringify(object));
     }
 }
