@@ -34,11 +34,9 @@ namespace Styx.Parser.AstPreprocessing {
         }
         
         function rewriteFunctionExpression(functionExpression: ESTree.FunctionExpression): ESTree.Identifier {
-            let funcName = "$$func" + functionIdGenerator.generateId();
-            
-            if (functionExpression.id) {
-                funcName += "_" + functionExpression.id.name;
-            }
+            let funcId = functionIdGenerator.generateId();
+            let nameSuffix = functionExpression.id ? "_" + functionExpression.id.name : "";
+            let funcName = `$$func${funcId}${nameSuffix}`
             
             functionExpressionsToRewrite.push({
                 name: funcName,
