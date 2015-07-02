@@ -98,6 +98,8 @@
                 return "#FFCC00";
             case Styx.NodeType.SuccessExit:
                 return "#4CD964";
+            case Styx.NodeType.ErrorExit:
+                return "#FF2D55";
             default:
                 return "#97C2FC";
         }
