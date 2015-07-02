@@ -13,6 +13,7 @@ namespace Styx {
     export interface ControlFlowGraph {
         entry: FlowNode;
         successExit: FlowNode;
+        errorExit: FlowNode;
     }
     
     export interface FlowEdge {
@@ -63,7 +64,8 @@ namespace Styx {
     export const enum NodeType {
         Normal = 0,
         Entry = 1,
-        Exit = 2
+        Exit = 2,
+        ErrorExit = 3
     }
     
     export const enum EdgeType {

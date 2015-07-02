@@ -75,8 +75,13 @@ namespace Styx.Parser {
     function parseProgram(program: ESTree.Program, options: ParserOptions, context: ParsingContext): FlowProgram {
         let entryNode = context.createNode(NodeType.Entry);
         let successExitNode = context.createNode(NodeType.Exit);
+        let errorExitNode = context.createNode(NodeType.ErrorExit);
         
-        let programFlowGraph = { entry: entryNode, successExit: successExitNode };
+        let programFlowGraph: ControlFlowGraph = {
+            entry: entryNode,
+            successExit: successExitNode,
+            errorExit: errorExitNode
+        };
         
         let finalNode = parseStatements(program.body, entryNode, context);
         successExitNode.appendEpsilonEdgeTo(finalNode);
