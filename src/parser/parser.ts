@@ -483,24 +483,28 @@ namespace Styx.Parser {
         
         // Parse the `try` block
         context.enclosingTryBlocks.push({ handlerBodyEntry, finalizerBodyEntry });
+        
+        // For ease of reference, the identifiers B, C, and F
+        // are taken literally from the ECMAScript specification
         let B = parseBlockStatement(tryStatement.block, currentNode, context);
+        
         context.enclosingTryBlocks.pop();
         
-        // try/catch
+        // try/catch production
         if (handler && !finalizer) {
             return B.throw
                 ? parseBlockStatement(handler.body, handlerBodyEntry, context)
                 : B;
         }
         
-        // try/finally
+        // try/finally production
         if (!handler && finalizer) {
             let F = parseBlockStatement(finalizer, finalizerBodyEntry, context);
             
             return F.normal ? B : F;
         }
         
-        // try/catch/finally
+        // try/catch/finally production
         let C = B.throw
             ? parseBlockStatement(handler.body, handlerBodyEntry, context)
             : B;
