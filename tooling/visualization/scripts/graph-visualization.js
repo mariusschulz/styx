@@ -96,7 +96,7 @@
         switch (node.type) {
             case Styx.NodeType.Entry:
                 return "#FFCC00";
-            case Styx.NodeType.Exit:
+            case Styx.NodeType.SuccessExit:
                 return "#4CD964";
             default:
                 return "#97C2FC";
