@@ -69,7 +69,8 @@
             label: node.label || node.id,
             color: getNodeColor(node),
             font: {
-                face: fontFaces
+                face: fontFaces,
+                color: getNodeFontColor(node)
             }
         });
         
@@ -103,6 +104,10 @@
             default:
                 return "#97C2FC";
         }
+    }
+    
+    function getNodeFontColor(node) {
+        return node.type === Styx.NodeType.ErrorExit ? "white" : "black";
     }
     
     function getEdgeColor(edge) {
