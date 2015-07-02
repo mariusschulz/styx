@@ -126,6 +126,7 @@ namespace Styx.Parser {
             [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
             [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
             [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
+            [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
             [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
             [ESTree.NodeType.WhileStatement]: parseWhileStatement,
             [ESTree.NodeType.WithStatement]: parseWithStatement
@@ -420,6 +421,16 @@ namespace Styx.Parser {
         
         context.currentFunction.flowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+        
+        return null;
+    }
+    
+    function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+        let argument = stringify(throwStatement.argument);
+        let throwLabel = `throw ${argument}`;
+        
+        //context.currentFunction.flowGraph.errorExit
+        //    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return null;
     }
