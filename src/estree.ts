@@ -261,5 +261,6 @@ module ESTree {
     
     export interface Literal extends Node, Expression {
         value: string | boolean | number | RegExp;
+        raw: string; // Not part of the ESTree specification, but provided by Esprima
     }
 }

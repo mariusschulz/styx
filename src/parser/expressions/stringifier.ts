@@ -107,13 +107,7 @@ namespace Styx.Expressions.Stringifier {
     }
     
     function stringifyLiteral(literal: ESTree.Literal): string {
-        let value = literal.value;
-        
-        return typeof value === "string"
-            ? `"${value}"`
-            : value === null
-                ? "null"
-                : value.toString();
+        return literal.raw;
     }
     
     function stringifyLogicalExpression(logicalExpression: ESTree.LogicalExpression): string {
