@@ -29,6 +29,7 @@ module ESTree {
         static SequenceExpression = "SequenceExpression";
         static SwitchStatement = "SwitchStatement";
         static ThisExpression = "ThisExpression";
+        static ThrowStatement = "ThrowStatement";
         static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
@@ -108,6 +109,10 @@ module ESTree {
     }
     
     export interface ReturnStatement extends Statement {
+        argument: Expression;
+    }
+    
+    export interface ThrowStatement extends Statement {
         argument: Expression;
     }
     
