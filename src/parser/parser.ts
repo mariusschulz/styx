@@ -21,7 +21,7 @@ namespace Styx.Parser {
     
     interface ParsingContext {
         functions: FlowFunction[];
-        currentFunction: FlowFunction;
+        currentFlowGraph: ControlFlowGraph;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
@@ -54,7 +54,7 @@ namespace Styx.Parser {
         
         return {
             functions: [],
-            currentFunction: null,
+            currentFlowGraph: null,
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
@@ -159,8 +159,8 @@ namespace Styx.Parser {
             }
         };
         
-        let previousFunction = context.currentFunction;
-        context.currentFunction = func;
+        let previousFlowGraph = context.currentFlowGraph;
+        context.currentFlowGraph = func.flowGraph;
         
         let finalNode = parseBlockStatement(functionDeclaration.body, entryNode, context);
         
@@ -177,7 +177,7 @@ namespace Styx.Parser {
         }
         
         context.functions.push(func);
-        context.currentFunction = previousFunction;
+        context.currentFlowGraph = previousFlowGraph;
         
         return currentNode;
     }
@@ -427,7 +427,7 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
-        context.currentFunction.flowGraph.successExit
+        context.currentFlowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
         
         return null;
