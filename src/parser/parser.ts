@@ -83,6 +83,7 @@ namespace Styx.Parser {
             errorExit: errorExitNode
         };
         
+        context.currentFlowGraph = programFlowGraph;
         let finalNode = parseStatements(program.body, entryNode, context);
         
         if (finalNode) {
@@ -437,8 +438,8 @@ namespace Styx.Parser {
         let argument = stringify(throwStatement.argument);
         let throwLabel = `throw ${argument}`;
         
-        //context.currentFunction.flowGraph.errorExit
-        //    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        context.currentFlowGraph.errorExit
+            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return null;
     }
