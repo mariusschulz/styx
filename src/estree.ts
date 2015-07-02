@@ -30,6 +30,7 @@ module ESTree {
         static SwitchStatement = "SwitchStatement";
         static ThisExpression = "ThisExpression";
         static ThrowStatement = "ThrowStatement";
+        static TryStatement = "TryStatement";
         static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
@@ -114,6 +115,12 @@ module ESTree {
     
     export interface ThrowStatement extends Statement {
         argument: Expression;
+    }
+    
+    export interface TryStatement extends Statement {
+        block: BlockStatement;
+        handler: CatchClause;
+        finalizer: BlockStatement;
     }
     
     export interface WhileStatement extends Statement {
@@ -250,6 +257,11 @@ module ESTree {
         param: Identifier;
         test: Expression;
         consequent: Statement[]; 
+    }
+    
+    export interface CatchClause extends Node {
+        param: Identifier;
+        body: BlockStatement; 
     }
     
     
