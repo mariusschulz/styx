@@ -91,6 +91,14 @@ namespace Styx.Expressions.Stringifier {
         let consequent = stringify(conditionalExpression.consequent);
         let alternate = stringify(conditionalExpression.alternate);
         
+        if (needsParenthesizing(conditionalExpression.consequent)) {
+            consequent = parenthesize(consequent);
+        }
+        
+        if (needsParenthesizing(conditionalExpression.alternate)) {
+            alternate = parenthesize(alternate);
+        }
+        
         return `${test} ? ${consequent} : ${alternate}`;
     }
     
@@ -184,6 +192,7 @@ namespace Styx.Expressions.Stringifier {
     function needsParenthesizing(expression: ESTree.Expression): boolean {
         switch (expression.type) {
             case ESTree.NodeType.AssignmentExpression:
+            case ESTree.NodeType.ConditionalExpression:
             case ESTree.NodeType.BinaryExpression:
             case ESTree.NodeType.LogicalExpression:
                 return true;
