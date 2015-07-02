@@ -457,18 +457,27 @@ namespace Styx.Parser {
         let argument = stringify(throwStatement.argument);
         let throwLabel = `throw ${argument}`;
         
+        if (!context.enclosingTryBlocks.isEmpty) {
+            let enclosingTry = context.enclosingTryBlocks.peek();
+            
+            if (enclosingTry.catchBlockEntry) {
+                enclosingTry.catchBlockEntry
+                    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+                
+                return null;
+            }
+        }
+        
         context.currentFlowGraph.errorExit
             .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return { throw: true };
     }
     
-    function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        let beginOfCatchBlock = context.createNode();
-        let beginOfFinallyBlock = context.createNode();
-        
+    function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let enclosingTry: EnclosingTryStatement = {
-            
+            catchBlockEntry: tryStatement.handlers.length === 0 ? null : context.createNode(),
+            finallyBlockEntry: tryStatement.finalizer === null ? null : context.createNode()
         };
         
         context.enclosingTryBlocks.push(enclosingTry);

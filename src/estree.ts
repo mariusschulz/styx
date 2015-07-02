@@ -119,7 +119,7 @@ module ESTree {
     
     export interface TryStatement extends Statement {
         block: BlockStatement;
-        handler: CatchClause;
+        handlers: CatchClause[]; // Different from the ESTree specification, but implemented this way in Esprima
         finalizer: BlockStatement;
     }
     

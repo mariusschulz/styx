@@ -9,6 +9,7 @@ namespace Styx {
     }
     
     export interface EnclosingTryStatement {
-        
+        catchBlockEntry: FlowNode;
+        finallyBlockEntry: FlowNode;
     }
 }
