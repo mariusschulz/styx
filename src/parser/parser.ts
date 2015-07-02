@@ -84,7 +84,10 @@ namespace Styx.Parser {
         };
         
         let finalNode = parseStatements(program.body, entryNode, context);
-        successExitNode.appendEpsilonEdgeTo(finalNode);
+        
+        if (finalNode) {
+            successExitNode.appendEpsilonEdgeTo(finalNode);
+        }
         
         return {
             flowGraph: programFlowGraph,
