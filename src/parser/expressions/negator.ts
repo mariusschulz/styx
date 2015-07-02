@@ -32,6 +32,7 @@ namespace Styx.Expressions.Negator {
     function createBooleanLiteral(value: boolean): ESTree.Literal {
         return {
             type: ESTree.NodeType.Literal,
+            raw: value.toString(),
             value: value
         };
     }
