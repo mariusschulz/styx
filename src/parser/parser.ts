@@ -112,23 +112,23 @@ namespace Styx.Parser {
         }
         
         let statementParsers: StatementTypeToParserMap = {
-            [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
-            [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
             [ESTree.NodeType.BlockStatement]: parseBlockStatement,
-            [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
-            [ESTree.NodeType.IfStatement]: parseIfStatement,
-            [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
             [ESTree.NodeType.BreakStatement]: parseBreakStatement,
             [ESTree.NodeType.ContinueStatement]: parseContinueStatement,
-            [ESTree.NodeType.WithStatement]: parseWithStatement,
-            [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
-            [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
-            [ESTree.NodeType.WhileStatement]: parseWhileStatement,
-            [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
-            [ESTree.NodeType.ForStatement]: parseForStatement,
-            [ESTree.NodeType.ForInStatement]: parseForInStatement,
             [ESTree.NodeType.DebuggerStatement]: parseDebuggerStatement,
-            [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement
+            [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
+            [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
+            [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement,
+            [ESTree.NodeType.ForInStatement]: parseForInStatement,
+            [ESTree.NodeType.ForStatement]: parseForStatement,
+            [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
+            [ESTree.NodeType.IfStatement]: parseIfStatement,
+            [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
+            [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
+            [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
+            [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
+            [ESTree.NodeType.WhileStatement]: parseWhileStatement,
+            [ESTree.NodeType.WithStatement]: parseWithStatement
         };
         
         let parsingMethod = statementParsers[statement.type];

@@ -12,8 +12,8 @@ module ESTree {
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
-        static ForStatement = "ForStatement";
         static ForInStatement = "ForInStatement";
+        static ForStatement = "ForStatement";
         static FunctionDeclaration = "FunctionDeclaration";
         static FunctionExpression = "FunctionExpression";
         static Identifier = "Identifier";
