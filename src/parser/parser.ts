@@ -464,7 +464,7 @@ namespace Styx.Parser {
                 enclosingTry.catchBlockEntry
                     .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
                 
-                return null;
+                return { throw: true };
             }
         }
         
