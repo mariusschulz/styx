@@ -12,8 +12,8 @@ module ESTree {
         static DoWhileStatement = "DoWhileStatement";
         static EmptyStatement = "EmptyStatement";
         static ExpressionStatement = "ExpressionStatement";
-        static ForStatement = "ForStatement";
         static ForInStatement = "ForInStatement";
+        static ForStatement = "ForStatement";
         static FunctionDeclaration = "FunctionDeclaration";
         static FunctionExpression = "FunctionExpression";
         static Identifier = "Identifier";
@@ -29,6 +29,7 @@ module ESTree {
         static SequenceExpression = "SequenceExpression";
         static SwitchStatement = "SwitchStatement";
         static ThisExpression = "ThisExpression";
+        static ThrowStatement = "ThrowStatement";
         static UnaryExpression = "UnaryExpression";
         static UpdateExpression = "UpdateExpression";
         static VariableDeclaration = "VariableDeclaration";
@@ -108,6 +109,10 @@ module ESTree {
     }
     
     export interface ReturnStatement extends Statement {
+        argument: Expression;
+    }
+    
+    export interface ThrowStatement extends Statement {
         argument: Expression;
     }
     

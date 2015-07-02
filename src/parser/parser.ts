@@ -21,7 +21,7 @@ namespace Styx.Parser {
     
     interface ParsingContext {
         functions: FlowFunction[];
-        currentFunction: FlowFunction;
+        currentFlowGraph: ControlFlowGraph;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
@@ -54,7 +54,7 @@ namespace Styx.Parser {
         
         return {
             functions: [],
-            currentFunction: null,
+            currentFlowGraph: null,
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
@@ -83,8 +83,12 @@ namespace Styx.Parser {
             errorExit: errorExitNode
         };
         
+        context.currentFlowGraph = programFlowGraph;
         let finalNode = parseStatements(program.body, entryNode, context);
-        successExitNode.appendEpsilonEdgeTo(finalNode);
+        
+        if (finalNode) {
+            successExitNode.appendEpsilonEdgeTo(finalNode);
+        }
         
         return {
             flowGraph: programFlowGraph,
@@ -112,23 +116,24 @@ namespace Styx.Parser {
         }
         
         let statementParsers: StatementTypeToParserMap = {
-            [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
-            [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
             [ESTree.NodeType.BlockStatement]: parseBlockStatement,
-            [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
-            [ESTree.NodeType.IfStatement]: parseIfStatement,
-            [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
             [ESTree.NodeType.BreakStatement]: parseBreakStatement,
             [ESTree.NodeType.ContinueStatement]: parseContinueStatement,
-            [ESTree.NodeType.WithStatement]: parseWithStatement,
-            [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
-            [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
-            [ESTree.NodeType.WhileStatement]: parseWhileStatement,
-            [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
-            [ESTree.NodeType.ForStatement]: parseForStatement,
-            [ESTree.NodeType.ForInStatement]: parseForInStatement,
             [ESTree.NodeType.DebuggerStatement]: parseDebuggerStatement,
-            [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement
+            [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
+            [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
+            [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement,
+            [ESTree.NodeType.ForInStatement]: parseForInStatement,
+            [ESTree.NodeType.ForStatement]: parseForStatement,
+            [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
+            [ESTree.NodeType.IfStatement]: parseIfStatement,
+            [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
+            [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
+            [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
+            [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
+            [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
+            [ESTree.NodeType.WhileStatement]: parseWhileStatement,
+            [ESTree.NodeType.WithStatement]: parseWithStatement
         };
         
         let parsingMethod = statementParsers[statement.type];
@@ -143,15 +148,20 @@ namespace Styx.Parser {
     function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
         let entryNode = context.createNode(NodeType.Entry);
         let successExitNode = context.createNode(NodeType.SuccessExit);
+        let errorExitNode = context.createNode(NodeType.ErrorExit);
         
         let func: FlowFunction = {
             id: context.createFunctionId(),
             name: functionDeclaration.id.name,
-            flowGraph: { entry: entryNode, successExit: successExitNode }
+            flowGraph: {
+                entry: entryNode,
+                successExit: successExitNode,
+                errorExit: errorExitNode
+            }
         };
         
-        let previousFunction = context.currentFunction;
-        context.currentFunction = func;
+        let previousFlowGraph = context.currentFlowGraph;
+        context.currentFlowGraph = func.flowGraph;
         
         let finalNode = parseBlockStatement(functionDeclaration.body, entryNode, context);
         
@@ -168,7 +178,7 @@ namespace Styx.Parser {
         }
         
         context.functions.push(func);
-        context.currentFunction = previousFunction;
+        context.currentFlowGraph = previousFlowGraph;
         
         return currentNode;
     }
@@ -418,8 +428,18 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
-        context.currentFunction.flowGraph.successExit
+        context.currentFlowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+        
+        return null;
+    }
+    
+    function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+        let argument = stringify(throwStatement.argument);
+        let throwLabel = `throw ${argument}`;
+        
+        context.currentFlowGraph.errorExit
+            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return null;
     }
@@ -608,8 +628,9 @@ namespace Styx.Parser {
             case ESTree.NodeType.BreakStatement:
             case ESTree.NodeType.ContinueStatement:
             case ESTree.NodeType.ReturnStatement:
+            case ESTree.NodeType.ThrowStatement:
                 return true;
-                
+            
             default:
                 return false;
         }
