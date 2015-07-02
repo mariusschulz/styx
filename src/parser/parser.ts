@@ -410,7 +410,8 @@ namespace Styx.Parser {
     }
     
     function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        let returnLabel = "return " + stringify(returnStatement.argument);
+        let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
+        let returnLabel = `return ${argument}`;
         
         context.currentFunction.flowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
