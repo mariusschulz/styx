@@ -624,8 +624,9 @@ namespace Styx.Parser {
             case ESTree.NodeType.BreakStatement:
             case ESTree.NodeType.ContinueStatement:
             case ESTree.NodeType.ReturnStatement:
+            case ESTree.NodeType.ThrowStatement:
                 return true;
-                
+            
             default:
                 return false;
         }
