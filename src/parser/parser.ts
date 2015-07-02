@@ -144,11 +144,16 @@ namespace Styx.Parser {
     function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
         let entryNode = context.createNode(NodeType.Entry);
         let successExitNode = context.createNode(NodeType.SuccessExit);
+        let errorExitNode = context.createNode(NodeType.ErrorExit);
         
         let func: FlowFunction = {
             id: context.createFunctionId(),
             name: functionDeclaration.id.name,
-            flowGraph: { entry: entryNode, successExit: successExitNode }
+            flowGraph: {
+                entry: entryNode,
+                successExit: successExitNode,
+                errorExit: errorExitNode
+            }
         };
         
         let previousFunction = context.currentFunction;
