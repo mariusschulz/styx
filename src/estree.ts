@@ -6,6 +6,7 @@ module ESTree {
         static BlockStatement = "BlockStatement";
         static BreakStatement = "BreakStatement"
         static CallExpression = "CallExpression";
+        static ConditionalExpression = "ConditionalExpression";
         static ContinueStatement = "ContinueStatement";
         static DebuggerStatement = "DebuggerStatement";
         static DoWhileStatement = "DoWhileStatement";
@@ -214,6 +215,12 @@ module ESTree {
         operator: string;
         left: Expression;
         right: Expression;
+    }
+    
+    export interface ConditionalExpression extends Expression {
+        test: Expression;
+        consequent: Expression;
+        alternate: Expression;
     }
     
     export interface CallExpression extends Expression {

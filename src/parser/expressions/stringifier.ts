@@ -11,6 +11,7 @@ namespace Styx.Expressions.Stringifier {
             [ESTree.NodeType.AssignmentExpression]: stringifyAssignmentExpression,
             [ESTree.NodeType.BinaryExpression]: stringifyBinaryExpression,
             [ESTree.NodeType.CallExpression]: stringifyCallExpression,
+            [ESTree.NodeType.ConditionalExpression]: stringifyConditionalExpression,
             [ESTree.NodeType.Identifier]: stringifyIdentifier,
             [ESTree.NodeType.Literal]: stringifyLiteral,            
             [ESTree.NodeType.LogicalExpression]: stringifyLogicalExpression,
@@ -83,6 +84,22 @@ namespace Styx.Expressions.Stringifier {
             .join(", ");
         
         return `${stringifiedCallee}(${stringifiedArguments})`;
+    }
+    
+    function stringifyConditionalExpression(conditionalExpression: ESTree.ConditionalExpression): string {
+        let test = stringify(conditionalExpression.test);
+        let consequent = stringify(conditionalExpression.consequent);
+        let alternate = stringify(conditionalExpression.alternate);
+        
+        if (needsParenthesizing(conditionalExpression.consequent)) {
+            consequent = parenthesize(consequent);
+        }
+        
+        if (needsParenthesizing(conditionalExpression.alternate)) {
+            alternate = parenthesize(alternate);
+        }
+        
+        return `${test} ? ${consequent} : ${alternate}`;
     }
     
     function stringifyIdentifier(identifier: ESTree.Identifier): string {
@@ -175,6 +192,7 @@ namespace Styx.Expressions.Stringifier {
     function needsParenthesizing(expression: ESTree.Expression): boolean {
         switch (expression.type) {
             case ESTree.NodeType.AssignmentExpression:
+            case ESTree.NodeType.ConditionalExpression:
             case ESTree.NodeType.BinaryExpression:
             case ESTree.NodeType.LogicalExpression:
                 return true;
