@@ -460,8 +460,8 @@ namespace Styx.Parser {
         if (!context.enclosingTryBlocks.isEmpty) {
             let enclosingTry = context.enclosingTryBlocks.peek();
             
-            if (enclosingTry.catchBlockEntry) {
-                enclosingTry.catchBlockEntry
+            if (enclosingTry.handlerBodyEntry) {
+                enclosingTry.handlerBodyEntry
                     .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
                 
                 return { throw: true };
@@ -475,18 +475,39 @@ namespace Styx.Parser {
     }
     
     function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-        let enclosingTry: EnclosingTryStatement = {
-            catchBlockEntry: tryStatement.handlers.length === 0 ? null : context.createNode(),
-            finallyBlockEntry: tryStatement.finalizer === null ? null : context.createNode()
-        };
+        let handler = tryStatement.handlers[0];
+        let finalizer = tryStatement.finalizer;
         
-        context.enclosingTryBlocks.push(enclosingTry);
+        let handlerBodyEntry = handler ? context.createNode() : null;
+        let finalizerBodyEntry = finalizer ? context.createNode() : null;
         
-        let endOfTryBlock = parseBlockStatement(tryStatement.block, currentNode, context);
-        
+        // Parse the `try` block
+        context.enclosingTryBlocks.push({ handlerBodyEntry, finalizerBodyEntry });
+        let B = parseBlockStatement(tryStatement.block, currentNode, context);
         context.enclosingTryBlocks.pop();
         
-        return endOfTryBlock;
+        // try/catch
+        if (handler && !finalizer) {
+            return B.throw
+                ? parseBlockStatement(handler.body, handlerBodyEntry, context)
+                : B;
+        }
+        
+        // try/finally
+        if (!handler && finalizer) {
+            let F = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+            
+            return F.normal ? B : F;
+        }
+        
+        // try/catch/finally
+        let C = B.throw
+            ? parseBlockStatement(handler.body, handlerBodyEntry, context)
+            : B;
+        
+        let F = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+        
+        return F.normal ? C : F;
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
