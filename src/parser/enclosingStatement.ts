@@ -7,4 +7,8 @@ namespace Styx {
         continueTarget: FlowNode;
         breakTarget: FlowNode;
     }
+    
+    export interface EnclosingTryStatement {
+        
+    }
 }

@@ -22,6 +22,8 @@ namespace Styx.Parser {
     interface ParsingContext {
         functions: FlowFunction[];
         currentFlowGraph: ControlFlowGraph;
+        
+        enclosingTryBlocks: Collections.Stack<EnclosingTryStatement>;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
@@ -63,6 +65,8 @@ namespace Styx.Parser {
         return {
             functions: [],
             currentFlowGraph: null,
+            
+            enclosingTryBlocks: Collections.Stack.create<EnclosingTryStatement>(),
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
@@ -141,6 +145,7 @@ namespace Styx.Parser {
             [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
             [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
             [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
+            [ESTree.NodeType.TryStatement]: parseTryStatement,
             [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
             [ESTree.NodeType.WhileStatement]: parseWhileStatement,
             [ESTree.NodeType.WithStatement]: parseWithStatement
@@ -456,6 +461,23 @@ namespace Styx.Parser {
             .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return { throw: true };
+    }
+    
+    function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+        let beginOfCatchBlock = context.createNode();
+        let beginOfFinallyBlock = context.createNode();
+        
+        let enclosingTry: EnclosingTryStatement = {
+            
+        };
+        
+        context.enclosingTryBlocks.push(enclosingTry);
+        
+        let endOfTryBlock = parseBlockStatement(tryStatement.block, currentNode, context);
+        
+        context.enclosingTryBlocks.pop();
+        
+        return endOfTryBlock;
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
