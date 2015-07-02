@@ -29,8 +29,16 @@ namespace Styx.Parser {
         createFunctionId(): number;
     }
     
+    interface Completion {
+        normal?: FlowNode;
+        break?: any;
+        continue?: any;
+        return?: any;
+        throw?: any;
+    };
+    
     interface StatementTypeToParserMap {
-        [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => FlowNode;
+        [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
     }
     
     export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
@@ -84,10 +92,10 @@ namespace Styx.Parser {
         };
         
         context.currentFlowGraph = programFlowGraph;
-        let finalNode = parseStatements(program.body, entryNode, context);
+        let completion = parseStatements(program.body, entryNode, context);
         
-        if (finalNode) {
-            successExitNode.appendEpsilonEdgeTo(finalNode);
+        if (completion.normal) {
+            successExitNode.appendEpsilonEdgeTo(completion.normal);
         }
         
         return {
@@ -96,23 +104,25 @@ namespace Styx.Parser {
         };
     }
 
-    function parseStatements(statements: ESTree.Statement[], currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseStatements(statements: ESTree.Statement[], currentNode: FlowNode, context: ParsingContext): Completion {
         for (let statement of statements) {
-            currentNode = parseStatement(statement, currentNode, context);
+            let completion = parseStatement(statement, currentNode, context);
             
-            if (isAbruptCompletion(statement)) {
+            if (!completion.normal) {
                 // If we encounter an abrupt completion, normal control flow is interrupted
                 // and the following statements aren't executed
-                return currentNode;
+                return completion;
             }
+            
+            currentNode = completion.normal;
         }
         
-        return currentNode;
+        return { normal: currentNode };
     }
 
-    function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext): Completion {
         if (statement === null) {
-            return currentNode;
+            return { normal: currentNode };
         }
         
         let statementParsers: StatementTypeToParserMap = {
@@ -145,7 +155,7 @@ namespace Styx.Parser {
         return parsingMethod(statement, currentNode, context);
     }
     
-    function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): Completion {
         let entryNode = context.createNode(NodeType.Entry);
         let successExitNode = context.createNode(NodeType.SuccessExit);
         let errorExitNode = context.createNode(NodeType.ErrorExit);
@@ -163,9 +173,9 @@ namespace Styx.Parser {
         let previousFlowGraph = context.currentFlowGraph;
         context.currentFlowGraph = func.flowGraph;
         
-        let finalNode = parseBlockStatement(functionDeclaration.body, entryNode, context);
+        let completion = parseBlockStatement(functionDeclaration.body, entryNode, context);
         
-        if (finalNode) {
+        if (completion.normal) {
             // If we reached this point, the function didn't end with an explicit return statement.
             // Thus, an implicit "undefined" is returned.
             let undefinedReturnValue: ESTree.Identifier = {
@@ -174,34 +184,36 @@ namespace Styx.Parser {
             };
             
             func.flowGraph.successExit
-                .appendTo(finalNode, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
+                .appendTo(completion.normal, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
         }
         
         context.functions.push(func);
         context.currentFlowGraph = previousFlowGraph;
         
-        return currentNode;
+        return { normal: currentNode };
     }
     
-    function parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        return context.createNode().appendTo(currentNode, "(empty)");
+    function parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode, context: ParsingContext): Completion {
+        return {
+            normal: context.createNode().appendTo(currentNode, "(empty)")
+        };
     }
     
-    function parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         return parseStatements(blockStatement.body, currentNode, context);
     }
 
-    function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): Completion {
         for (let declarator of declaration.declarations) {
             let initString = stringify(declarator.init);
             let edgeLabel = `${declarator.id.name} = ${initString}`;
             currentNode = context.createNode().appendTo(currentNode, edgeLabel);
         }
 
-        return currentNode;
+        return { normal: currentNode };
     }
 
-    function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let body = labeledStatement.body;
         let label = labeledStatement.label.name;
         
@@ -216,10 +228,12 @@ namespace Styx.Parser {
                 };
                 
                 context.enclosingStatements.push(enclosingStatement);
-                let endOfStatementBodyNode = parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
+                let blockCompletion = parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
                 context.enclosingStatements.pop();
-                                    
-                return finalNode.appendEpsilonEdgeTo(endOfStatementBodyNode);
+                
+                finalNode.appendEpsilonEdgeTo(blockCompletion.normal)
+                
+                return { normal: finalNode };
             
             case ESTree.NodeType.SwitchStatement:
                 return parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, context, label);
@@ -243,13 +257,13 @@ namespace Styx.Parser {
         }
     }
 
-    function parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         return ifStatement.alternate === null
             ? parseSimpleIfStatement(ifStatement, currentNode, context)
             : parseIfElseStatement(ifStatement, currentNode, context);
     }
 
-    function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let negatedTest = negateTruthiness(ifStatement.test);
         
         let thenLabel = stringify(ifStatement.test);
@@ -258,44 +272,44 @@ namespace Styx.Parser {
         let thenNode = context.createNode()
             .appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
         
-        let endOfThenBranch = parseStatement(ifStatement.consequent, thenNode, context);
+        let thenBranchCompletion = parseStatement(ifStatement.consequent, thenNode, context);
         
         let finalNode = context.createNode()
             .appendConditionallyTo(currentNode, elseLabel, negatedTest);
         
-        if (endOfThenBranch) {
-            finalNode.appendEpsilonEdgeTo(endOfThenBranch);
+        if (thenBranchCompletion.normal) {
+            finalNode.appendEpsilonEdgeTo(thenBranchCompletion.normal);
         }
         
-        return finalNode;
+        return { normal: finalNode };
     }
 
-    function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         // Then branch
         let thenLabel = stringify(ifStatement.test);
         let thenNode = context.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
-        let endOfThenBranch = parseStatement(ifStatement.consequent, thenNode, context);
+        let thenBranchCompletion = parseStatement(ifStatement.consequent, thenNode, context);
         
         // Else branch
         let negatedTest = negateTruthiness(ifStatement.test);
         let elseLabel = stringify(negatedTest); 
         let elseNode = context.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
-        let endOfElseBranch = parseStatement(ifStatement.alternate, elseNode, context);
+        let elseBranchCompletion = parseStatement(ifStatement.alternate, elseNode, context);
         
         let finalNode = context.createNode();
         
-        if (endOfThenBranch) {
-            finalNode.appendEpsilonEdgeTo(endOfThenBranch);
+        if (thenBranchCompletion.normal) {
+            finalNode.appendEpsilonEdgeTo(thenBranchCompletion.normal);
         }
         
-        if (endOfElseBranch) {
-            finalNode.appendEpsilonEdgeTo(endOfElseBranch);
+        if (elseBranchCompletion.normal) {
+            finalNode.appendEpsilonEdgeTo(elseBranchCompletion.normal);
         }
         
-        return finalNode;
+        return { normal: finalNode };
     }
     
-    function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let label = breakStatement.label ? breakStatement.label.name : void 0;
         let enclosingStatement = label
             ? context.enclosingStatements.find(statement => statement.label === label)
@@ -303,10 +317,10 @@ namespace Styx.Parser {
         
         enclosingStatement.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
         
-        return null;
+        return { break: true };
     }
     
-    function parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let label = continueStatement.label ? continueStatement.label.name : void 0;
         let enclosingStatement = label
             ? context.enclosingStatements.find(statement => statement.label === label)
@@ -318,17 +332,17 @@ namespace Styx.Parser {
         
         enclosingStatement.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
         
-        return null;
+        return { continue: true };
     }
     
-    function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let stringifiedExpression = stringify(withStatement.object);
         let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression); 
         
         return parseStatement(withStatement.body, expressionNode, context);
     }
     
-    function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
+    function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
         const switchExpression = context.createTemporaryLocalVariableName();
         
         let stringifiedDiscriminant = stringify(switchStatement.discriminant);
@@ -347,7 +361,7 @@ namespace Styx.Parser {
         let caseClauses = [...caseClausesA, ...caseClausesB];
         
         let stillSearchingNode = evaluatedDiscriminantNode;
-        let endOfPreviousCaseBody: FlowNode = null;
+        let endOfPreviousCaseBody: Completion = null;
         let firstNodeOfClauseListB: FlowNode = null;
         
         for (let caseClause of caseClauses) {
@@ -365,11 +379,11 @@ namespace Styx.Parser {
                 firstNodeOfClauseListB = beginOfCaseBody;
             }
             
-            if (endOfPreviousCaseBody) {
+            if (endOfPreviousCaseBody.normal) {
                 // We reached the end of the case through normal control flow,
                 // which means there was no 'break' statement at the end.
                 // We therefore fall through from the previous case!
-                beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+                beginOfCaseBody.appendEpsilonEdgeTo(endOfPreviousCaseBody.normal);
             }
             
             endOfPreviousCaseBody = parseStatements(caseClause.consequent, beginOfCaseBody, context);
@@ -379,18 +393,18 @@ namespace Styx.Parser {
                 .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
         }
         
-        if (endOfPreviousCaseBody) {
+        if (endOfPreviousCaseBody.normal) {
             // If the last case didn't end with an abrupt completion,
             // connect it to the final node and resume normal control flow.
-            finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody);
+            finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody.normal);
         }
         
         if (defaultCase) {
-            let endOfDefaultCaseBody = parseStatements(defaultCase.consequent, stillSearchingNode, context);
+            let defaultCaseCompletion = parseStatements(defaultCase.consequent, stillSearchingNode, context);
             
-            if (endOfDefaultCaseBody) {
+            if (defaultCaseCompletion.normal) {
                 let nodeAfterDefaultCase = firstNodeOfClauseListB || finalNode;
-                nodeAfterDefaultCase.appendEpsilonEdgeTo(endOfDefaultCaseBody);
+                nodeAfterDefaultCase.appendEpsilonEdgeTo(defaultCaseCompletion.normal);
             }
         } else {
             // If there's no default case, the switch statements isn't necessarily exhaustive.
@@ -401,7 +415,7 @@ namespace Styx.Parser {
         
         context.enclosingStatements.pop();
         
-        return finalNode;
+        return { normal: finalNode };
     }
     
     function partitionCases(cases: ESTree.SwitchCase[]): CaseBlock {
@@ -424,27 +438,27 @@ namespace Styx.Parser {
         return { caseClausesA, defaultCase, caseClausesB };
     }
     
-    function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
         context.currentFlowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
         
-        return null;
+        return { return: true };
     }
     
-    function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let argument = stringify(throwStatement.argument);
         let throwLabel = `throw ${argument}`;
         
         context.currentFlowGraph.errorExit
             .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
-        return null;
+        return { throw: true };
     }
     
-    function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
+    function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
         // Truthy test (enter loop)
         let truthyCondition = whileStatement.test;
         let truthyConditionLabel = stringify(truthyCondition);
@@ -462,19 +476,21 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = parseStatement(whileStatement.body, loopBodyNode, context);
+        let loopBodyCompletion = parseStatement(whileStatement.body, loopBodyNode, context);
         
-        if (endOfLoopBodyNode) {
-            currentNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
+        if (loopBodyCompletion.normal) {
+            currentNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
         }
         
         context.enclosingStatements.pop();
         
-        return finalNode
-            .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition);
+        finalNode
+            .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition)
+        
+        return { normal: finalNode };
     }
     
-    function parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
+    function parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
         // Truthy test (enter loop)
         let truthyCondition = doWhileStatement.test;
         let truthyConditionLabel = stringify(truthyCondition);
@@ -492,23 +508,23 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = parseStatement(doWhileStatement.body, currentNode, context);
+        let loopBodyCompletion = parseStatement(doWhileStatement.body, currentNode, context);
         
         context.enclosingStatements.pop();
         
         currentNode.appendConditionallyTo(testNode, truthyConditionLabel, truthyCondition);
         finalNode.appendConditionallyTo(testNode, falsyConditionLabel, falsyCondition);
         
-        if (endOfLoopBodyNode) {
-            testNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
+        if (loopBodyCompletion.normal) {
+            testNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
         }
         
-        return finalNode;
+        return { normal: finalNode };
     }
     
-    function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
+    function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
         // Parse initialization
-        let testDecisionNode = parseStatement(forStatement.init, currentNode, context);
+        let testDecisionNode = parseStatement(forStatement.init, currentNode, context).normal;
         
         // Create nodes for loop cornerstones
         let beginOfLoopBodyNode = context.createNode();
@@ -540,7 +556,7 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBodyNode = parseStatement(forStatement.body, beginOfLoopBodyNode, context);
+        let loopBodyCompletion = parseStatement(forStatement.body, beginOfLoopBodyNode, context);
         
         context.enclosingStatements.pop();
         
@@ -555,16 +571,16 @@ namespace Styx.Parser {
             testDecisionNode.appendEpsilonEdgeTo(updateNode);
         }
         
-        if (endOfLoopBodyNode) {
+        if (loopBodyCompletion.normal) {
             // If we reached the end of the loop body through normal control flow,
             // continue regularly with the update
-            updateNode.appendEpsilonEdgeTo(endOfLoopBodyNode);
+            updateNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
         }
         
-        return finalNode;
+        return { normal: finalNode };
     }
     
-    function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): FlowNode {
+    function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
         let stringifiedRight = stringify(forInStatement.right);
         
         let variableDeclarator = forInStatement.left.declarations[0];
@@ -585,23 +601,25 @@ namespace Styx.Parser {
             label: label
         });
         
-        let endOfLoopBody = parseStatement(forInStatement.body, startOfLoopBody, context);
+        let loopBodyCompletion = parseStatement(forInStatement.body, startOfLoopBody, context);
         
         context.enclosingStatements.pop();
         
-        if (endOfLoopBody) {
-            conditionNode.appendEpsilonEdgeTo(endOfLoopBody);
+        if (loopBodyCompletion.normal) {
+            conditionNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
         }
         
-        return finalNode;
+        return { normal: finalNode };
     }
     
-    function parseDebuggerStatement(debuggerStatement: ESTree.DebuggerStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        return currentNode;
+    function parseDebuggerStatement(debuggerStatement: ESTree.DebuggerStatement, currentNode: FlowNode, context: ParsingContext): Completion {
+        return { normal: currentNode };
     }
     
-    function parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode, context: ParsingContext): FlowNode {
-        return parseExpression(expressionStatement.expression, currentNode, context);
+    function parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode, context: ParsingContext): Completion {
+        return {
+            normal: parseExpression(expressionStatement.expression, currentNode, context)
+        };
     }
     
     function parseExpression(expression: ESTree.Expression, currentNode: FlowNode, context: ParsingContext): FlowNode {
@@ -621,19 +639,6 @@ namespace Styx.Parser {
         }
         
         return currentNode;
-    }
-    
-    function isAbruptCompletion(statement: ESTree.Statement): boolean {
-        switch (statement.type) {
-            case ESTree.NodeType.BreakStatement:
-            case ESTree.NodeType.ContinueStatement:
-            case ESTree.NodeType.ReturnStatement:
-            case ESTree.NodeType.ThrowStatement:
-                return true;
-            
-            default:
-                return false;
-        }
     }
     
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
