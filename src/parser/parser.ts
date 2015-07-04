@@ -480,38 +480,26 @@ namespace Styx.Parser {
         
         let handlerBodyEntry = handler ? context.createNode() : null;
         let finalizerBodyEntry = finalizer ? context.createNode() : null;
+        let finalNode = context.createNode();
         
-        // Parse the `try` block
         context.enclosingTryBlocks.push({ handlerBodyEntry, finalizerBodyEntry });
-        
-        // For ease of reference, the identifiers B, C, and F
-        // are taken literally from the ECMAScript specification
-        let B = parseBlockStatement(tryStatement.block, currentNode, context);
-        
+        let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
         context.enclosingTryBlocks.pop();
         
         // try/catch production
         if (handler && !finalizer) {
-            return B.throw
-                ? parseBlockStatement(handler.body, handlerBodyEntry, context)
-                : B;
-        }
-        
-        // try/finally production
-        if (!handler && finalizer) {
-            let F = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+            let handlerCompletion = parseBlockStatement(handler.body, handlerBodyEntry, context);
             
-            return F.normal ? B : F;
+            if (tryBlockCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            }
+            
+            if (handlerCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(handlerCompletion.normal);
+            }
         }
         
-        // try/catch/finally production
-        let C = B.throw
-            ? parseBlockStatement(handler.body, handlerBodyEntry, context)
-            : B;
-        
-        let F = parseBlockStatement(finalizer, finalizerBodyEntry, context);
-        
-        return F.normal ? C : F;
+        return { normal: finalNode };
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
