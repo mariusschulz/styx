@@ -480,8 +480,6 @@ namespace Styx.Parser {
         let handler = tryStatement.handlers[0];
         let finalizer = tryStatement.finalizer;
         
-        let finalNode = context.createNode();
-        
         let handlerBodyEntry = handler ? context.createNode() : null;
         let finalizerBodyEntry = finalizer ? context.createNode() : null;
         
@@ -502,6 +500,8 @@ namespace Styx.Parser {
         
         // try/catch production
         if (handler && !finalizer) {
+            let finalNode = context.createNode();
+        
             if (tryBlockCompletion.normal) {
                 finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
             }
@@ -509,10 +509,14 @@ namespace Styx.Parser {
             if (handlerBodyCompletion.normal) {
                 finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
             }
+            
+            return { normal: finalNode };
         }
         
         // try/finally production
         if (!handler && finalizer) {
+            let finalNode = context.createNode();
+        
             if (tryBlockCompletion.normal) {
                 finalizerBodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
                 
@@ -522,9 +526,11 @@ namespace Styx.Parser {
                     return finalizerBodyCompletion;
                 }
             }
+            
+            return { normal: finalNode };
         }
         
-        return { normal: finalNode };
+        return null;
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
