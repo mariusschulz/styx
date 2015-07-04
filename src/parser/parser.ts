@@ -335,7 +335,13 @@ namespace Styx.Parser {
             throw new Error(`Illegal continue target detected: "${label}" does not label an enclosing iteration statement`);
         }
         
-        enclosingStatement.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
+        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
+        }
+        
+        enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", EdgeType.AbruptCompletion);
         
         return { continue: true };
     }
