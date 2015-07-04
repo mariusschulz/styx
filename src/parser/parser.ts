@@ -597,11 +597,12 @@ namespace Styx.Parser {
             let finalizer = parseFinalizer();
             finalizer.bodyEntry.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
             
-            if (!finalizer.bodyCompletion.normal) {
-                throw Error("Can't deal with abruptly ending finalizers yet");
+            if (finalizer.bodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+                return { normal: finalNode };
             }
             
-            finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+            return finalizer.bodyCompletion;
         }
         
         return { normal: finalNode };
