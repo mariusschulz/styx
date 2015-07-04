@@ -314,7 +314,13 @@ namespace Styx.Parser {
             ? context.enclosingStatements.find(statement => statement.label === label)
             : context.enclosingStatements.peek();
         
-        enclosingStatement.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
+        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
+        }
+        
+        enclosingStatement.breakTarget.appendTo(finalizerCompletion.normal, "break", EdgeType.AbruptCompletion);
         
         return { break: true };
     }
