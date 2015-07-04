@@ -4,10 +4,10 @@
 namespace Styx {
     export interface Completion {
         normal?: FlowNode;
-        break?: any;
-        continue?: any;
-        return?: any;
-        throw?: any;
+        break?: boolean;
+        continue?: boolean;
+        return?: boolean;
+        throw?: boolean;
     };
     
     export interface EnclosingStatement {
@@ -18,11 +18,14 @@ namespace Styx {
     
     export interface EnclosingTryStatement {
         handlerBodyEntry: FlowNode;
-        finalizerBodyEntry: FlowNode;
-        finalizerBodyCompletion: Completion;
+        handlerBodyCompletion: Completion;
     }
     
     export interface EnclosingFinalizer {
+        parseFinalizer: () => Finalizer;
+    }
+    
+    export interface Finalizer {
         bodyEntry: FlowNode;
         bodyCompletion: Completion;
     }

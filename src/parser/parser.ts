@@ -468,49 +468,64 @@ namespace Styx.Parser {
     function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let throwLabel = "throw " + stringify(throwStatement.argument);
         
-        if (context.enclosingTryBlocks.isEmpty) {
-            context.currentFlowGraph.errorExit
-                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-        
-            return { throw: true };
+        if (!context.enclosingTryBlocks.isEmpty) {
+            // We're in a try
+            let enclosingTry = context.enclosingTryBlocks.peek();
+            
+            if (enclosingTry.handlerBodyEntry) {
+                // We have a catch handler
+                enclosingTry.handlerBodyEntry
+                    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+                
+                return { throw: true };
+            }
         }
         
-        let enclosingTry = context.enclosingTryBlocks.peek();
-        
-        if (enclosingTry.handlerBodyEntry) {
-            enclosingTry.handlerBodyEntry
-                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        if (!context.enclosingFinalizers.isEmpty) {
+            // We have a finalizer
+            let finalizer = context.enclosingFinalizers.peek().parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+            
+            if (!finalizer.bodyCompletion.normal) {
+                // The finalizer ended abruptly
+                return finalizer.bodyCompletion;
+            }
+            
+            context.currentFlowGraph.errorExit
+                .appendTo(finalizer.bodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
             
             return { throw: true };
         }
         
-        enclosingTry.finalizerBodyEntry.appendEpsilonEdgeTo(currentNode);
+        // Neither in a try nor with a finalizer
+        context.currentFlowGraph.errorExit
+            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
-        if (enclosingTry.finalizerBodyCompletion.normal) {
-            context.currentFlowGraph.errorExit
-                .appendTo(enclosingTry.finalizerBodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-            
-            return { throw: true };
-        }
-        
-        return enclosingTry.finalizerBodyCompletion;
+        return { throw: true };
     }
     
     function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let handler = tryStatement.handlers[0];
         let finalizer = tryStatement.finalizer;
         
-        let finalizerBodyEntry: FlowNode = null;
-        let finalizerBodyCompletion: Completion = null;
-        
-        if (finalizer) {
-            finalizerBodyEntry = context.createNode();
-            finalizerBodyCompletion = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+        let parseFinalizer = function parseFinalizer() {
+            let topmostFinalizer = context.enclosingFinalizers.pop();
             
-            context.enclosingFinalizers.push({
+            let finalizerBodyEntry = context.createNode();
+            let finalizerBodyCompletion = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+            
+            if (topmostFinalizer) {
+                context.enclosingFinalizers.push(topmostFinalizer);
+            }
+            
+            return {
                 bodyEntry: finalizerBodyEntry,
                 bodyCompletion: finalizerBodyCompletion
-            });
+            };
+        };
+        
+        if (finalizer) {
+            context.enclosingFinalizers.push({ parseFinalizer });
         }
         
         let handlerBodyEntry = handler ? context.createNode() : null;        
@@ -518,8 +533,7 @@ namespace Styx.Parser {
         
         context.enclosingTryBlocks.push({
             handlerBodyEntry,
-            finalizerBodyEntry,
-            finalizerBodyCompletion
+            handlerBodyCompletion
         });
         
         let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
@@ -532,37 +546,64 @@ namespace Styx.Parser {
         
         // try/catch production
         if (handler && !finalizer) {
-            let finalNode = context.createNode();
+            throw Error("Can't deal with try/catch yet");
+            // let finalNode = context.createNode();
         
-            if (tryBlockCompletion.normal) {
-                finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
-            }
+            // if (tryBlockCompletion.normal) {
+            //     finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            // }
             
-            if (handlerBodyCompletion.normal) {
-                finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
-            }
+            // if (handlerBodyCompletion.normal) {
+            //     finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
+            // }
             
-            return { normal: finalNode };
+            // return { normal: finalNode };
         }
         
         // try/finally production
         if (!handler && finalizer) {
-            let finalNode = context.createNode();
+            throw Error("Can't deal with try/finally yet");
+            // let finalNode = context.createNode();
         
-            if (tryBlockCompletion.normal) {
-                finalizerBodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            // if (tryBlockCompletion.normal) {
+            //     regularFinalizerBodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
                 
-                if (finalizerBodyCompletion.normal) {
-                    finalNode.appendEpsilonEdgeTo(finalizerBodyCompletion.normal);
-                } else {
-                    return finalizerBodyCompletion;
-                }
-            }
+            //     if (regularFinalizerBodyCompletion.normal) {
+            //         finalNode.appendEpsilonEdgeTo(regularFinalizerBodyCompletion.normal);
+            //     } else {
+            //         return regularFinalizerBodyCompletion;
+            //     }
+            // }
             
-            return { normal: finalNode };
+            // return { normal: finalNode };
         }
         
-        return null;
+        // try/catch/finally production
+        let finalNode = context.createNode();
+        
+        if (tryBlockCompletion.normal) {
+            let finalizer = parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            
+            if (!finalizer.bodyCompletion.normal) {
+                throw Error("Can't deal with abruptly ending finalizers yet");
+            }
+            
+            finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+        }
+        
+        if (handlerBodyCompletion.normal) {
+            let finalizer = parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
+            
+            if (!finalizer.bodyCompletion.normal) {
+                throw Error("Can't deal with abruptly ending finalizers yet");
+            }
+            
+            finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+        }
+        
+        return { normal: finalNode };
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
@@ -749,14 +790,15 @@ namespace Styx.Parser {
     }
     
     function runPotentialFinalizer(currentNode: FlowNode, context: ParsingContext): Completion {
-        if (context.enclosingFinalizers.isEmpty) {
-            return { normal: currentNode };
-        }
+        throw Error("Must re-implement `runPotentialFinalizer`");
+        // if (context.enclosingFinalizers.isEmpty) {
+        //     return { normal: currentNode };
+        // }
         
-        let finalizer = context.enclosingFinalizers.peek();
-        finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+        // let finalizer = context.enclosingFinalizers.peek();
+        // finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
         
-        return finalizer.bodyCompletion;
+        // return finalizer.bodyCompletion;
     }
     
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {

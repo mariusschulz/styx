@@ -115,6 +115,7 @@
             viewModel.functions(functions);
         } catch (e) {
             viewModel.error(e);
+            console.error(e);
         }
     }
     
