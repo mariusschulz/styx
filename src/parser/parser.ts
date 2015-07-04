@@ -488,8 +488,6 @@ namespace Styx.Parser {
         
         context.enclosingTryBlocks.push({
             handlerBodyEntry,
-            handlerBodyCompletion,
-            
             finalizerBodyEntry,
             finalizerBodyCompletion
         });
