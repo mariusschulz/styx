@@ -24,6 +24,7 @@ namespace Styx.Parser {
         currentFlowGraph: ControlFlowGraph;
         
         enclosingTryBlocks: Collections.Stack<EnclosingTryStatement>;
+        enclosingFinalizers: Collections.Stack<EnclosingFinalizer>;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
@@ -59,6 +60,7 @@ namespace Styx.Parser {
             currentFlowGraph: null,
             
             enclosingTryBlocks: Collections.Stack.create<EnclosingTryStatement>(),
+            enclosingFinalizers: Collections.Stack.create<EnclosingFinalizer>(),
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
@@ -439,6 +441,17 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
+        if (context.enclosingFinalizers.isNotEmpty) {
+            let finalizer = context.enclosingFinalizers.peek();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+            
+            if (finalizer.bodyCompletion.normal) {
+                currentNode = finalizer.bodyCompletion.normal;
+            } else {
+                return finalizer.bodyCompletion;
+            }
+        }
+        
         context.currentFlowGraph.successExit
             .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
         
@@ -480,11 +493,21 @@ namespace Styx.Parser {
         let handler = tryStatement.handlers[0];
         let finalizer = tryStatement.finalizer;
         
-        let handlerBodyEntry = handler ? context.createNode() : null;
-        let finalizerBodyEntry = finalizer ? context.createNode() : null;
+        let finalizerBodyEntry: FlowNode = null;
+        let finalizerBodyCompletion: Completion = null;
         
+        if (finalizer) {
+            finalizerBodyEntry = context.createNode();
+            finalizerBodyCompletion = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+            
+            context.enclosingFinalizers.push({
+                bodyEntry: finalizerBodyEntry,
+                bodyCompletion: finalizerBodyCompletion
+            });
+        }
+        
+        let handlerBodyEntry = handler ? context.createNode() : null;        
         let handlerBodyCompletion = handler ? parseBlockStatement(handler.body, handlerBodyEntry, context) : null;
-        let finalizerBodyCompletion = finalizer ? parseBlockStatement(finalizer, finalizerBodyEntry, context) : null;
         
         context.enclosingTryBlocks.push({
             handlerBodyEntry,
@@ -495,6 +518,10 @@ namespace Styx.Parser {
         let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
         
         context.enclosingTryBlocks.pop();
+        
+        if (finalizer) {
+            context.enclosingFinalizers.pop();
+        }
         
         // try/catch production
         if (handler && !finalizer) {

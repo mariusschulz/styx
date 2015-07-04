@@ -21,4 +21,9 @@ namespace Styx {
         finalizerBodyEntry: FlowNode;
         finalizerBodyCompletion: Completion;
     }
+    
+    export interface EnclosingFinalizer {
+        bodyEntry: FlowNode;
+        bodyCompletion: Completion;
+    }
 }
