@@ -485,27 +485,29 @@ namespace Styx.Parser {
         let handlerBodyEntry = handler ? context.createNode() : null;
         let finalizerBodyEntry = finalizer ? context.createNode() : null;
         
+        let handlerBodyCompletion = handler ? parseBlockStatement(handler.body, handlerBodyEntry, context) : null;
         let finalizerBodyCompletion = finalizer ? parseBlockStatement(finalizer, finalizerBodyEntry, context) : null;
         
         context.enclosingTryBlocks.push({
             handlerBodyEntry,
+            handlerBodyCompletion,
+            
             finalizerBodyEntry,
             finalizerBodyCompletion
         });
         
         let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
+        
         context.enclosingTryBlocks.pop();
         
         // try/catch production
         if (handler && !finalizer) {
-            let handlerCompletion = parseBlockStatement(handler.body, handlerBodyEntry, context);
-            
             if (tryBlockCompletion.normal) {
                 finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
             }
             
-            if (handlerCompletion.normal) {
-                finalNode.appendEpsilonEdgeTo(handlerCompletion.normal);
+            if (handlerBodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
             }
         }
         

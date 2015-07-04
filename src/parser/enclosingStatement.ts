@@ -18,6 +18,8 @@ namespace Styx {
     
     export interface EnclosingTryStatement {
         handlerBodyEntry: FlowNode;
+        handlerBodyCompletion: Completion;
+        
         finalizerBodyEntry: FlowNode;
         finalizerBodyCompletion: Completion;
     }
