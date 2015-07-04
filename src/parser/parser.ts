@@ -446,8 +446,7 @@ namespace Styx.Parser {
     }
     
     function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-        let argument = stringify(throwStatement.argument);
-        let throwLabel = `throw ${argument}`;
+        let throwLabel = "throw " + stringify(throwStatement.argument);
         
         if (context.enclosingTryBlocks.isEmpty) {
             context.currentFlowGraph.errorExit
