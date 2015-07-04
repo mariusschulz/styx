@@ -441,20 +441,15 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
-        if (context.enclosingFinalizers.isNotEmpty) {
-            let finalizer = context.enclosingFinalizers.peek();
-            finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
-            
-            if (finalizer.bodyCompletion.normal) {
-                currentNode = finalizer.bodyCompletion.normal;
-            } else {
-                return finalizer.bodyCompletion;
-            }
+        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
         }
         
         context.currentFlowGraph.successExit
-            .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
-        
+            .appendTo(finalizerCompletion.normal, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+    
         return { return: true };
     }
     
@@ -739,6 +734,17 @@ namespace Styx.Parser {
         }
         
         return currentNode;
+    }
+    
+    function runPotentialFinalizer(currentNode: FlowNode, context: ParsingContext): Completion {
+        if (context.enclosingFinalizers.isEmpty) {
+            return { normal: currentNode };
+        }
+        
+        let finalizer = context.enclosingFinalizers.peek();
+        finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+        
+        return finalizer.bodyCompletion;
     }
     
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
