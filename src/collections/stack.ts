@@ -8,7 +8,6 @@ namespace Styx.Collections {
         pop: () => T;
         peek: () => T;
         isEmpty: boolean;
-        count: number;
         find: (predicate: Predicate<T>) => T;
     }
     
@@ -22,10 +21,6 @@ namespace Styx.Collections {
         return {
             push(element) {
                 elements.push(element);
-            },
-            
-            get count() {
-                return elements.length;
             },
             
             pop() {
