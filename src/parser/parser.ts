@@ -31,14 +31,6 @@ namespace Styx.Parser {
         createFunctionId(): number;
     }
     
-    interface Completion {
-        normal?: FlowNode;
-        break?: any;
-        continue?: any;
-        return?: any;
-        throw?: any;
-    };
-    
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
     }
@@ -466,6 +458,17 @@ namespace Styx.Parser {
                 
                 return { throw: true };
             }
+            
+            enclosingTry.finalizerBodyEntry.appendEpsilonEdgeTo(currentNode);
+            
+            if (enclosingTry.finalizerBodyCompletion.normal) {
+                context.currentFlowGraph.errorExit
+                    .appendTo(enclosingTry.finalizerBodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+                
+                return { throw: true };
+            } else {
+                return enclosingTry.finalizerBodyCompletion;
+            }
         }
         
         context.currentFlowGraph.errorExit
@@ -478,11 +481,19 @@ namespace Styx.Parser {
         let handler = tryStatement.handlers[0];
         let finalizer = tryStatement.finalizer;
         
-        let handlerBodyEntry = handler ? context.createNode() : null;
-        let finalizerBodyEntry = finalizer ? context.createNode() : null;
         let finalNode = context.createNode();
         
-        context.enclosingTryBlocks.push({ handlerBodyEntry, finalizerBodyEntry });
+        let handlerBodyEntry = handler ? context.createNode() : null;
+        let finalizerBodyEntry = finalizer ? context.createNode() : null;
+        
+        let finalizerBodyCompletion = finalizer ? parseBlockStatement(finalizer, finalizerBodyEntry, context) : null;
+        
+        context.enclosingTryBlocks.push({
+            handlerBodyEntry,
+            finalizerBodyEntry,
+            finalizerBodyCompletion
+        });
+        
         let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
         context.enclosingTryBlocks.pop();
         
@@ -496,6 +507,19 @@ namespace Styx.Parser {
             
             if (handlerCompletion.normal) {
                 finalNode.appendEpsilonEdgeTo(handlerCompletion.normal);
+            }
+        }
+        
+        // try/finally production
+        if (!handler && finalizer) {
+            if (tryBlockCompletion.normal) {
+                finalizerBodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+                
+                if (finalizerBodyCompletion.normal) {
+                    finalNode.appendEpsilonEdgeTo(finalizerBodyCompletion.normal);
+                } else {
+                    return finalizerBodyCompletion;
+                }
             }
         }
         
