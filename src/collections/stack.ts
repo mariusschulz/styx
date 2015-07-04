@@ -8,6 +8,7 @@ namespace Styx.Collections {
         pop: () => T;
         peek: () => T;
         isEmpty: boolean;
+        isNotEmpty: boolean;
         find: (predicate: Predicate<T>) => T;
     }
     
@@ -33,6 +34,10 @@ namespace Styx.Collections {
             
             get isEmpty() {
                 return elements.length === 0;
+            },
+            
+            get isNotEmpty() {
+                return elements.length !== 0;
             },
             
             find(predicate) {
