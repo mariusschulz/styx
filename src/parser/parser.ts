@@ -546,18 +546,17 @@ namespace Styx.Parser {
         
         // try/catch production
         if (handler && !finalizer) {
-            throw Error("Can't deal with try/catch yet");
-            // let finalNode = context.createNode();
+            let finalNode = context.createNode();
         
-            // if (tryBlockCompletion.normal) {
-            //     finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
-            // }
+            if (tryBlockCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            }
             
-            // if (handlerBodyCompletion.normal) {
-            //     finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
-            // }
+            if (handlerBodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
+            }
             
-            // return { normal: finalNode };
+            return { normal: finalNode };
         }
         
         // try/finally production
