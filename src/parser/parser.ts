@@ -469,12 +469,11 @@ namespace Styx.Parser {
         let throwLabel = "throw " + stringify(throwStatement.argument);
         
         if (!context.enclosingTryBlocks.isEmpty) {
-            // We're in a try
-            let enclosingTry = context.enclosingTryBlocks.peek();
+            let tryStatementWithHandler = context.enclosingTryBlocks.find(tryStatement => !!tryStatement.handlerBodyEntry);
             
-            if (enclosingTry.handlerBodyEntry) {
+            if (tryStatementWithHandler) {
                 // We have a catch handler
-                enclosingTry.handlerBodyEntry
+                tryStatementWithHandler.handlerBodyEntry
                     .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
                 
                 return { throw: true };
