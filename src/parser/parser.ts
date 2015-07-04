@@ -449,32 +449,32 @@ namespace Styx.Parser {
         let argument = stringify(throwStatement.argument);
         let throwLabel = `throw ${argument}`;
         
-        if (!context.enclosingTryBlocks.isEmpty) {
-            let enclosingTry = context.enclosingTryBlocks.peek();
-            
-            if (enclosingTry.handlerBodyEntry) {
-                enclosingTry.handlerBodyEntry
-                    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-                
-                return { throw: true };
-            }
-            
-            enclosingTry.finalizerBodyEntry.appendEpsilonEdgeTo(currentNode);
-            
-            if (enclosingTry.finalizerBodyCompletion.normal) {
-                context.currentFlowGraph.errorExit
-                    .appendTo(enclosingTry.finalizerBodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-                
-                return { throw: true };
-            } else {
-                return enclosingTry.finalizerBodyCompletion;
-            }
+        if (context.enclosingTryBlocks.isEmpty) {
+            context.currentFlowGraph.errorExit
+                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        
+            return { throw: true };
         }
         
-        context.currentFlowGraph.errorExit
-            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        let enclosingTry = context.enclosingTryBlocks.peek();
         
-        return { throw: true };
+        if (enclosingTry.handlerBodyEntry) {
+            enclosingTry.handlerBodyEntry
+                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+            
+            return { throw: true };
+        }
+        
+        enclosingTry.finalizerBodyEntry.appendEpsilonEdgeTo(currentNode);
+        
+        if (enclosingTry.finalizerBodyCompletion.normal) {
+            context.currentFlowGraph.errorExit
+                .appendTo(enclosingTry.finalizerBodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+            
+            return { throw: true };
+        }
+        
+        return enclosingTry.finalizerBodyCompletion;
     }
     
     function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
