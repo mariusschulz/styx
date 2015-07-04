@@ -508,7 +508,7 @@ namespace Styx.Parser {
         let handler = tryStatement.handlers[0];
         let finalizer = tryStatement.finalizer;
         
-        let parseFinalizer = function parseFinalizer() {
+        let parseFinalizer = () => {
             let topmostFinalizer = context.enclosingFinalizers.pop();
             
             let finalizerBodyEntry = context.createNode();
