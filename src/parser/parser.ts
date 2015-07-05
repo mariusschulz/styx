@@ -312,7 +312,7 @@ namespace Styx.Parser {
             ? context.enclosingStatements.find(statement => statement.label === label)
             : context.enclosingStatements.peek();
         
-        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
         
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -333,7 +333,7 @@ namespace Styx.Parser {
             throw new Error(`Illegal continue target detected: "${label}" does not label an enclosing iteration statement`);
         }
         
-        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
         
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -451,7 +451,7 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
-        let finalizerCompletion = runPotentialFinalizer(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
         
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -785,16 +785,30 @@ namespace Styx.Parser {
         return currentNode;
     }
     
-    function runPotentialFinalizer(currentNode: FlowNode, context: ParsingContext): Completion {
-        throw Error("Must re-implement `runPotentialFinalizer`");
-        // if (context.enclosingFinalizers.isEmpty) {
-        //     return { normal: currentNode };
-        // }
+    function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
+        if (context.enclosingTryStatements.isEmpty) {
+            return { normal: currentNode };
+        }
         
-        // let finalizer = context.enclosingFinalizers.peek();
-        // finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
         
-        // return finalizer.bodyCompletion;
+        for (let tryStatement of enclosingTryStatements) {
+            if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                tryStatement.isCurrentlyInFinalizer = true;
+                let finalizer = tryStatement.parseFinalizer();
+                tryStatement.isCurrentlyInFinalizer = false;
+                
+                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+                
+                if (finalizer.bodyCompletion.normal) {
+                    currentNode = finalizer.bodyCompletion.normal;
+                } else {
+                    return finalizer.bodyCompletion;
+                }
+            }
+        }
+        
+        return { normal: currentNode };
     }
     
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
@@ -809,3 +823,4 @@ namespace Styx.Parser {
         }
     }
 }
+ 
