@@ -23,8 +23,7 @@ namespace Styx.Parser {
         functions: FlowFunction[];
         currentFlowGraph: ControlFlowGraph;
         
-        enclosingTryBlocks: Collections.Stack<EnclosingTryStatement>;
-        enclosingFinalizers: Collections.Stack<EnclosingFinalizer>;
+        enclosingTryStatements: Collections.Stack<EnclosingTryStatement>;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
@@ -59,7 +58,7 @@ namespace Styx.Parser {
             functions: [],
             currentFlowGraph: null,
             
-            enclosingTryBlocks: Collections.Stack.create<EnclosingTryStatement>(),
+            enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             enclosingFinalizers: Collections.Stack.create<EnclosingFinalizer>(),
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
@@ -467,38 +466,41 @@ namespace Styx.Parser {
     
     function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let throwLabel = "throw " + stringify(throwStatement.argument);
+        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
         
-        if (!context.enclosingTryBlocks.isEmpty) {
-            let tryStatementWithHandler = context.enclosingTryBlocks.find(tryStatement => !!tryStatement.handlerBodyEntry);
-            
-            if (tryStatementWithHandler) {
-                // We have a catch handler
-                tryStatementWithHandler.handlerBodyEntry
-                    .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        let foundHandler = false;
+        
+        for (let tryStatement of enclosingTryStatements) {
+            if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
+                let parameter = stringify(tryStatement.handler.param);
+                let argument = stringify(throwStatement.argument);
                 
-                return { throw: true };
+                let assignmentNode = context.createNode()
+                    .appendTo(currentNode, `${parameter} = ${argument}`);
+                
+                tryStatement.handlerBodyEntry.appendEpsilonEdgeTo(assignmentNode);
+                
+                foundHandler = true;
+                break;
+            } else if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                tryStatement.isCurrentlyInFinalizer = true;
+                let finalizer = tryStatement.parseFinalizer();
+                tryStatement.isCurrentlyInFinalizer = false;
+                
+                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+                
+                if (finalizer.bodyCompletion.normal) {
+                    currentNode = finalizer.bodyCompletion.normal;
+                } else {
+                    return { throw: true };
+                }
             }
         }
         
-        if (!context.enclosingFinalizers.isEmpty) {
-            // We have a finalizer
-            let finalizer = context.enclosingFinalizers.peek().parseFinalizer();
-            finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
-            
-            if (!finalizer.bodyCompletion.normal) {
-                // The finalizer ended abruptly
-                return finalizer.bodyCompletion;
-            }
-            
+        if (!foundHandler) {
             context.currentFlowGraph.errorExit
-                .appendTo(finalizer.bodyCompletion.normal, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-            
-            return { throw: true };
+                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         }
-        
-        // Neither in a try nor with a finalizer
-        context.currentFlowGraph.errorExit
-            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
         
         return { throw: true };
     }
@@ -508,14 +510,8 @@ namespace Styx.Parser {
         let finalizer = tryStatement.finalizer;
         
         let parseFinalizer = () => {
-            let topmostFinalizer = context.enclosingFinalizers.pop();
-            
             let finalizerBodyEntry = context.createNode();
             let finalizerBodyCompletion = parseBlockStatement(finalizer, finalizerBodyEntry, context);
-            
-            if (topmostFinalizer) {
-                context.enclosingFinalizers.push(topmostFinalizer);
-            }
             
             return {
                 bodyEntry: finalizerBodyEntry,
@@ -523,25 +519,25 @@ namespace Styx.Parser {
             };
         };
         
-        if (finalizer) {
-            context.enclosingFinalizers.push({ parseFinalizer });
-        }
+        let handlerBodyEntry = handler ? context.createNode() : null;
         
-        let handlerBodyEntry = handler ? context.createNode() : null;        
+        let enclosingTryStatement: EnclosingTryStatement = {
+            isCurrentlyInTryBlock: false,
+            isCurrentlyInFinalizer: false,
+            handler: handler,
+            handlerBodyEntry,
+            parseFinalizer: finalizer ? parseFinalizer : null
+        };
+        
+        context.enclosingTryStatements.push(enclosingTryStatement);
+        
+        enclosingTryStatement.isCurrentlyInTryBlock = true;
+        let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
+        enclosingTryStatement.isCurrentlyInTryBlock = false;
+        
         let handlerBodyCompletion = handler ? parseBlockStatement(handler.body, handlerBodyEntry, context) : null;
         
-        context.enclosingTryBlocks.push({
-            handlerBodyEntry,
-            handlerBodyCompletion
-        });
-        
-        let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
-        
-        context.enclosingTryBlocks.pop();
-        
-        if (finalizer) {
-            context.enclosingFinalizers.pop();
-        }
+        context.enclosingTryStatements.pop();
         
         // try/catch production
         if (handler && !finalizer) {

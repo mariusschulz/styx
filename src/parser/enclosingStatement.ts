@@ -17,8 +17,11 @@ namespace Styx {
     }
     
     export interface EnclosingTryStatement {
+        isCurrentlyInTryBlock: boolean;
+        isCurrentlyInFinalizer: boolean;
+        handler: ESTree.CatchClause;
         handlerBodyEntry: FlowNode;
-        handlerBodyCompletion: Completion;
+        parseFinalizer: () => Finalizer;
     }
     
     export interface EnclosingFinalizer {
