@@ -786,10 +786,6 @@ namespace Styx.Parser {
     }
     
     function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
-        if (context.enclosingTryStatements.isEmpty) {
-            return { normal: currentNode };
-        }
-        
         let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
         
         for (let tryStatement of enclosingTryStatements) {
