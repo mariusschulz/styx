@@ -491,7 +491,7 @@ namespace Styx.Parser {
                 if (finalizer.bodyCompletion.normal) {
                     currentNode = finalizer.bodyCompletion.normal;
                 } else {
-                    return { throw: true };
+                    return finalizer.bodyCompletion;
                 }
             }
         }
