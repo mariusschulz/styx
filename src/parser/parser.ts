@@ -22,20 +22,14 @@ namespace Styx.Parser {
     interface ParsingContext {
         functions: FlowFunction[];
         currentFlowGraph: ControlFlowGraph;
+        
+        enclosingTryStatements: Collections.Stack<EnclosingTryStatement>;
         enclosingStatements: Collections.Stack<EnclosingStatement>;
         
         createTemporaryLocalVariableName(): string;
         createNode(type?: NodeType): FlowNode;
         createFunctionId(): number;
     }
-    
-    interface Completion {
-        normal?: FlowNode;
-        break?: any;
-        continue?: any;
-        return?: any;
-        throw?: any;
-    };
     
     interface StatementTypeToParserMap {
         [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
@@ -63,6 +57,8 @@ namespace Styx.Parser {
         return {
             functions: [],
             currentFlowGraph: null,
+            
+            enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
@@ -141,6 +137,7 @@ namespace Styx.Parser {
             [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
             [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
             [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
+            [ESTree.NodeType.TryStatement]: parseTryStatement,
             [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
             [ESTree.NodeType.WhileStatement]: parseWhileStatement,
             [ESTree.NodeType.WithStatement]: parseWithStatement
@@ -315,7 +312,13 @@ namespace Styx.Parser {
             ? context.enclosingStatements.find(statement => statement.label === label)
             : context.enclosingStatements.peek();
         
-        enclosingStatement.breakTarget.appendTo(currentNode, "break", EdgeType.AbruptCompletion);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
+        
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
+        }
+        
+        enclosingStatement.breakTarget.appendTo(finalizerCompletion.normal, "break", EdgeType.AbruptCompletion);
         
         return { break: true };
     }
@@ -330,7 +333,13 @@ namespace Styx.Parser {
             throw new Error(`Illegal continue target detected: "${label}" does not label an enclosing iteration statement`);
         }
         
-        enclosingStatement.continueTarget.appendTo(currentNode, "continue", EdgeType.AbruptCompletion);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
+        
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
+        }
+        
+        enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", EdgeType.AbruptCompletion);
         
         return { continue: true };
     }
@@ -442,20 +451,155 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
         
-        context.currentFlowGraph.successExit
-            .appendTo(currentNode, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
         
+        if (!finalizerCompletion.normal) {
+            return finalizerCompletion;
+        }
+        
+        context.currentFlowGraph.successExit
+            .appendTo(finalizerCompletion.normal, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+    
         return { return: true };
     }
     
     function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-        let argument = stringify(throwStatement.argument);
-        let throwLabel = `throw ${argument}`;
+        let throwLabel = "throw " + stringify(throwStatement.argument);
+        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
         
-        context.currentFlowGraph.errorExit
-            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        let foundHandler = false;
+        
+        for (let tryStatement of enclosingTryStatements) {
+            if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
+                let parameter = stringify(tryStatement.handler.param);
+                let argument = stringify(throwStatement.argument);
+                
+                let assignmentNode = context.createNode()
+                    .appendTo(currentNode, `${parameter} = ${argument}`);
+                
+                tryStatement.handlerBodyEntry.appendEpsilonEdgeTo(assignmentNode);
+                
+                foundHandler = true;
+                break;
+            } else if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                tryStatement.isCurrentlyInFinalizer = true;
+                let finalizer = tryStatement.parseFinalizer();
+                tryStatement.isCurrentlyInFinalizer = false;
+                
+                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+                
+                if (finalizer.bodyCompletion.normal) {
+                    currentNode = finalizer.bodyCompletion.normal;
+                } else {
+                    return finalizer.bodyCompletion;
+                }
+            }
+        }
+        
+        if (!foundHandler) {
+            context.currentFlowGraph.errorExit
+                .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+        }
         
         return { throw: true };
+    }
+    
+    function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
+        let handler = tryStatement.handlers[0];
+        let finalizer = tryStatement.finalizer;
+        
+        let parseFinalizer = () => {
+            let finalizerBodyEntry = context.createNode();
+            let finalizerBodyCompletion = parseBlockStatement(finalizer, finalizerBodyEntry, context);
+            
+            return {
+                bodyEntry: finalizerBodyEntry,
+                bodyCompletion: finalizerBodyCompletion
+            };
+        };
+        
+        let handlerBodyEntry = handler ? context.createNode() : null;
+        
+        let enclosingTryStatement: EnclosingTryStatement = {
+            isCurrentlyInTryBlock: false,
+            isCurrentlyInFinalizer: false,
+            handler: handler,
+            handlerBodyEntry,
+            parseFinalizer: finalizer ? parseFinalizer : null
+        };
+        
+        context.enclosingTryStatements.push(enclosingTryStatement);
+        
+        enclosingTryStatement.isCurrentlyInTryBlock = true;
+        let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
+        enclosingTryStatement.isCurrentlyInTryBlock = false;
+        
+        let handlerBodyCompletion = handler ? parseBlockStatement(handler.body, handlerBodyEntry, context) : null;
+        
+        context.enclosingTryStatements.pop();
+        
+        // try/catch production
+        if (handler && !finalizer) {
+            let finalNode = context.createNode();
+        
+            if (tryBlockCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            }
+            
+            if (handlerBodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
+            }
+            
+            return { normal: finalNode };
+        }
+        
+        // try/finally production
+        if (!handler && finalizer) {
+            if (!tryBlockCompletion.normal) {
+                return tryBlockCompletion;
+            }
+            
+            let finalizer = parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            
+            if (finalizer.bodyCompletion.normal) {
+                let finalNode = context.createNode();
+                finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+                
+                return { normal: finalNode };
+            }
+            
+            return finalizer.bodyCompletion;
+        }
+        
+        // try/catch/finally production
+        let finalNode = context.createNode();
+        
+        if (tryBlockCompletion.normal) {
+            let finalizer = parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(tryBlockCompletion.normal);
+            
+            if (finalizer.bodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+                return { normal: finalNode };
+            }
+            
+            return finalizer.bodyCompletion;
+        }
+        
+        if (handlerBodyCompletion.normal) {
+            let finalizer = parseFinalizer();
+            finalizer.bodyEntry.appendEpsilonEdgeTo(handlerBodyCompletion.normal);
+            
+            if (finalizer.bodyCompletion.normal) {
+                finalNode.appendEpsilonEdgeTo(finalizer.bodyCompletion.normal);
+                return { normal: finalNode };
+            }
+            
+            return finalizer.bodyCompletion;
+        }
+        
+        return { normal: finalNode };
     }
     
     function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
@@ -641,6 +785,28 @@ namespace Styx.Parser {
         return currentNode;
     }
     
+    function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
+        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
+        
+        for (let tryStatement of enclosingTryStatements) {
+            if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                tryStatement.isCurrentlyInFinalizer = true;
+                let finalizer = tryStatement.parseFinalizer();
+                tryStatement.isCurrentlyInFinalizer = false;
+                
+                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+                
+                if (finalizer.bodyCompletion.normal) {
+                    currentNode = finalizer.bodyCompletion.normal;
+                } else {
+                    return finalizer.bodyCompletion;
+                }
+            }
+        }
+        
+        return { normal: currentNode };
+    }
+    
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
         for (let graph of graphs) {
             if (options.passes.rewriteConstantConditionalEdges) {
@@ -653,3 +819,4 @@ namespace Styx.Parser {
         }
     }
 }
+ 
