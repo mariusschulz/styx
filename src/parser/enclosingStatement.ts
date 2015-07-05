@@ -24,10 +24,6 @@ namespace Styx {
         parseFinalizer: () => Finalizer;
     }
     
-    export interface EnclosingFinalizer {
-        parseFinalizer: () => Finalizer;
-    }
-    
     export interface Finalizer {
         bodyEntry: FlowNode;
         bodyCompletion: Completion;

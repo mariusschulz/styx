@@ -59,7 +59,6 @@ namespace Styx.Parser {
             currentFlowGraph: null,
             
             enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
-            enclosingFinalizers: Collections.Stack.create<EnclosingFinalizer>(),
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             
             createTemporaryLocalVariableName() {
