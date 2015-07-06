@@ -9,5 +9,5 @@ gulp.task("typescript", function() {
 });
 
 gulp.task("default", ["typescript"], function() {
-    return gulp.watch(scriptGlobs, ["typescript"]); 
+    return gulp.watch(scriptGlobs, ["typescript"]);
 });

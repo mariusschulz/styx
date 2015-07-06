@@ -9,13 +9,13 @@ namespace Styx {
         name: string;
         flowGraph: ControlFlowGraph;
     }
-    
+
     export interface ControlFlowGraph {
         entry: FlowNode;
         successExit: FlowNode;
         errorExit: FlowNode;
     }
-    
+
     export interface FlowEdge {
         source: FlowNode;
         target: FlowNode;
@@ -45,29 +45,29 @@ namespace Styx {
                 label: label,
                 data: edgeData
             };
-            
+
             node.outgoingEdges.push(edge);
             this.incomingEdges.push(edge);
 
             return this;
         }
-        
+
         appendConditionallyTo(node: FlowNode, label: string, condition: ESTree.Expression): FlowNode {
             return this.appendTo(node, label, EdgeType.Conditional, condition);
         }
-        
+
         appendEpsilonEdgeTo(node: FlowNode): FlowNode {
             return this.appendTo(node, "", EdgeType.Epsilon);
         }
     }
-    
+
     export const enum NodeType {
         Normal = 0,
         Entry = 1,
         SuccessExit = 2,
         ErrorExit = 3
     }
-    
+
     export const enum EdgeType {
         Normal = 0,
         Epsilon = 1,

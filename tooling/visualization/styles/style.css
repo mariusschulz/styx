@@ -48,7 +48,7 @@ label,
 }
 
 @media screen and (min-width: 992px) {
-    .no-padding-md {    
+    .no-padding-md {
         padding: 0;
     }
 }

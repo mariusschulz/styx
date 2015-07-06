@@ -2,8 +2,8 @@
     <head>
         <title>CFG Visualization</title>
         <link rel="stylesheet" type="text/css" href="../../vendor/stylesheets/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="styles/style.css">                      
-    </head>    
+        <link rel="stylesheet" type="text/css" href="styles/style.css">
+    </head>
     <body>
         <header>
             <div class="header-bar">
@@ -13,7 +13,7 @@
                 </div>
             </div>
         </header>
-            
+
         <div id="visualization" class="container fading fading--faded-out">
             <div class="row">
                 <div class="col-md-3 no-padding-md">
@@ -21,7 +21,7 @@
                         <div class="panel-heading">
                             <strong>Optimization Passes</strong>
                         </div>
-                        
+
                         <div class="panel-body">
                             <div class="checkbox">
                                 <label>
@@ -29,7 +29,7 @@
                                     Rewrite constant conditional edges
                                 </label>
                             </div>
-                            
+
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" data-bind="checked: passes.removeTransitNodes" />
@@ -39,37 +39,37 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-9">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <strong>JavaScript Code</strong>
                         </div>
-                        
+
                         <div class="panel-body">
                             <textarea id="input" autofocus="autofocus" class="form-control code-input" rows="11"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-3 no-padding-md">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <strong>Control Flow Graphs</strong>
                         </div>
-                        
+
                         <div class="panel-body">
                             <div class="list-group no-margin-bottom">
                                 <a href="#" class="list-group-item" data-bind="click: selectMainTab, css: { active: isMainTabActive }">
                                     Main program
                                 </a>
                             </div>
-                            
+
                             <div data-bind="visible: functions().length" class="margin-top-md" style="display: none">
                                 <strong>Functions</strong>
-                                
+
                                 <div class="list-group no-margin-bottom">
                                     <div data-bind="foreach: functions">
                                         <a href="#" class="list-group-item" data-bind="text: name, click: function(data) { $parent.selectTab(data.id) }, css: { active: $parent.isTabActive(id) }"></a>
@@ -79,16 +79,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-9">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <strong>Graph Visualization</strong>
                         </div>
-                        
+
                         <div class="panel-body">
                             <div id="graph" data-bind="visible: !error()"></div>
-                            
+
                             <div data-bind="visible: !!error(), text: error()" class="alert alert-danger no-margin-bottom">
                             </div>
                         </div>
@@ -103,7 +103,7 @@
         <script type="text/javascript" src="../../vendor/vis.min.js"></script>
         <script type="text/javascript" src="../../vendor/knockout.min.js"></script>
         <script type="text/javascript" src="../../dist/styx.js"></script>
-        
+
         <script type="text/javascript" src="scripts/jquery-extensions.js"></script>
         <script type="text/javascript" src="scripts/graph-visualization.js"></script>
         <script type="text/javascript" src="scripts/main.js"></script>
