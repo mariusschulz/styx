@@ -189,8 +189,13 @@ namespace Styx.Parser {
                 name: "undefined"
             };
 
+            let returnStatement: ESTree.ReturnStatement = {
+                type: ESTree.NodeType.ReturnStatement,
+                argument: undefinedReturnValue
+            };
+
             func.flowGraph.successExit
-                .appendTo(completion.normal, "return undefined", EdgeType.AbruptCompletion, undefinedReturnValue);
+                .appendTo(completion.normal, "return undefined", EdgeType.AbruptCompletion, returnStatement);
         }
 
         context.functions.push(func);
