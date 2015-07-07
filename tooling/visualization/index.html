@@ -68,7 +68,10 @@
                             </div>
 
                             <div data-bind="visible: functions().length" class="margin-top-md" style="display: none">
-                                <strong>Functions</strong>
+                                <strong>
+                                    Functions
+                                    (<span data-bind="text: functions().length"></span>)
+                                </strong>
 
                                 <div class="list-group no-margin-bottom">
                                     <div data-bind="foreach: functions">
