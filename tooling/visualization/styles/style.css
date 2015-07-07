@@ -43,6 +43,10 @@ label,
     margin-top: 20px;
 }
 
+.margin-top-sm {
+    margin-top: 10px;
+}
+
 .no-margin-bottom {
     margin-bottom: 0;
 }
