@@ -167,10 +167,19 @@ namespace Styx.Parser {
             }
         };
 
-        let previousFlowGraph = context.currentFlowGraph;
-        context.currentFlowGraph = func.flowGraph;
+        let functionContext: ParsingContext = {
+            functions: context.functions,
+            currentFlowGraph: func.flowGraph,
 
-        let completion = parseBlockStatement(functionDeclaration.body, entryNode, context);
+            enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
+            enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
+
+            createTemporaryLocalVariableName: context.createTemporaryLocalVariableName,
+            createNode: context.createNode,
+            createFunctionId: context.createFunctionId
+        };
+
+        let completion = parseBlockStatement(functionDeclaration.body, entryNode, functionContext);
 
         if (completion.normal) {
             // If we reached this point, the function didn't end with an explicit return statement.
@@ -185,7 +194,6 @@ namespace Styx.Parser {
         }
 
         context.functions.push(func);
-        context.currentFlowGraph = previousFlowGraph;
 
         return { normal: currentNode };
     }
