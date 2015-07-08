@@ -349,9 +349,17 @@ namespace Styx.Parser {
     }
 
     function findLabeledEnclosingStatement(context: ParsingContext, label: ESTree.Identifier): EnclosingStatement {
-        return context.enclosingStatements.find(statement => label
-            ? statement.label === label.name
-            : !statement.label);
+        return context.enclosingStatements.find(statement => {
+            if (label) {
+                // If we have a truthy label, we look for a matching enclosing statement
+                return statement.label === label.name;
+            }
+
+            // If we don't have a label, we look for the topmost enclosing statement
+            // that is not a try statement because that would be an invalid target
+            // for `break` or `continue` statements
+            return statement.type !== EnclosingStatementType.TryStatement;
+        });
     }
 
     function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): Completion {
