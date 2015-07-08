@@ -470,7 +470,7 @@ namespace Styx.Parser {
         let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
         let returnLabel = `return ${argument}`;
 
-        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforerReturn(currentNode, context);
 
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -820,6 +820,30 @@ namespace Styx.Parser {
     }
 
     function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
+        let enclosingTryStatements = <EnclosingTryStatement[]>context.enclosingStatements
+            .enumerateElements()
+            .filter(statement => statement.type === EnclosingStatementType.TryStatement);
+
+        for (let tryStatement of enclosingTryStatements) {
+            if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                tryStatement.isCurrentlyInFinalizer = true;
+                let finalizer = tryStatement.parseFinalizer();
+                tryStatement.isCurrentlyInFinalizer = false;
+
+                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+
+                if (finalizer.bodyCompletion.normal) {
+                    currentNode = finalizer.bodyCompletion.normal;
+                } else {
+                    return finalizer.bodyCompletion;
+                }
+            }
+        }
+
+        return { normal: currentNode };
+    }
+
+    function runFinalizersBeforerReturn(currentNode: FlowNode, context: ParsingContext): Completion {
         let enclosingTryStatements = <EnclosingTryStatement[]>context.enclosingStatements
             .enumerateElements()
             .filter(statement => statement.type === EnclosingStatementType.TryStatement);
