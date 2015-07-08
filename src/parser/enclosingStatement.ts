@@ -10,13 +10,19 @@ namespace Styx {
         throw?: boolean;
     };
 
+    export const enum EnclosingStatementType {
+        TryStatement,
+        OtherStatement
+    }
+
     export interface EnclosingStatement {
+        type: EnclosingStatementType;
         label: string;
         continueTarget: FlowNode;
         breakTarget: FlowNode;
     }
 
-    export interface EnclosingTryStatement {
+    export interface EnclosingTryStatement extends EnclosingStatement {
         isCurrentlyInTryBlock: boolean;
         isCurrentlyInFinalizer: boolean;
         handler: ESTree.CatchClause;
