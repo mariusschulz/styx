@@ -11,15 +11,12 @@ namespace Styx {
     };
 
     export const enum EnclosingStatementType {
-        __EnclosingStatement,
-        TryStatement
+        TryStatement,
+        OtherStatement
     }
 
     export interface EnclosingStatement {
         type: EnclosingStatementType;
-    }
-
-    export interface __EnclosingStatement extends EnclosingStatement {
         label: string;
         continueTarget: FlowNode;
         breakTarget: FlowNode;

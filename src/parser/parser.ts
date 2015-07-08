@@ -24,7 +24,6 @@ namespace Styx.Parser {
         currentFlowGraph: ControlFlowGraph;
 
         enclosingStatements: Collections.Stack<EnclosingStatement>;
-        __enclosingStatements: Collections.Stack<__EnclosingStatement>;
 
         createTemporaryLocalVariableName(): string;
         createNode(type?: NodeType): FlowNode;
@@ -59,7 +58,6 @@ namespace Styx.Parser {
             currentFlowGraph: null,
 
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
-            __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
             createTemporaryLocalVariableName() {
                 return "$$temp" + variableNameIdGenerator.generateId();
@@ -172,7 +170,6 @@ namespace Styx.Parser {
             currentFlowGraph: func.flowGraph,
 
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
-            __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
             createTemporaryLocalVariableName: context.createTemporaryLocalVariableName,
             createNode: context.createNode,
@@ -231,16 +228,16 @@ namespace Styx.Parser {
             case ESTree.NodeType.BlockStatement:
                 let finalNode = context.createNode();
 
-                let enclosingStatement: __EnclosingStatement = {
-                    type: EnclosingStatementType.__EnclosingStatement,
+                let enclosingStatement: EnclosingStatement = {
+                    type: EnclosingStatementType.OtherStatement,
                     breakTarget: finalNode,
                     continueTarget: null,
                     label: label
                 };
 
-                context.__enclosingStatements.push(enclosingStatement);
+                context.enclosingStatements.push(enclosingStatement);
                 let blockCompletion = parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
-                context.__enclosingStatements.pop();
+                context.enclosingStatements.pop();
 
                 finalNode.appendEpsilonEdgeTo(blockCompletion.normal)
 
@@ -321,11 +318,7 @@ namespace Styx.Parser {
     }
 
     function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-        let label = breakStatement.label ? breakStatement.label.name : void 0;
-        let enclosingStatement = label
-            ? context.__enclosingStatements.find(statement => statement.label === label)
-            : context.__enclosingStatements.peek();
-
+        let enclosingStatement = findLabeledEnclosingStatement(context, breakStatement.label);
         let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
 
         if (!finalizerCompletion.normal) {
@@ -338,13 +331,10 @@ namespace Styx.Parser {
     }
 
     function parseContinueStatement(continueStatement: ESTree.ContinueStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-        let label = continueStatement.label ? continueStatement.label.name : void 0;
-        let enclosingStatement = label
-            ? context.__enclosingStatements.find(statement => statement.label === label)
-            : context.__enclosingStatements.peek();
+        let enclosingStatement = findLabeledEnclosingStatement(context, continueStatement.label);
 
         if (enclosingStatement.continueTarget === null) {
-            throw new Error(`Illegal continue target detected: "${label}" does not label an enclosing iteration statement`);
+            throw new Error(`Illegal continue target detected: "${continueStatement.label}" does not label an enclosing iteration statement`);
         }
 
         let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
@@ -356,6 +346,12 @@ namespace Styx.Parser {
         enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", EdgeType.AbruptCompletion);
 
         return { continue: true };
+    }
+
+    function findLabeledEnclosingStatement(context: ParsingContext, label: ESTree.Identifier): EnclosingStatement {
+        return context.enclosingStatements.find(statement => label
+            ? statement.label === label.name
+            : !statement.label);
     }
 
     function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): Completion {
@@ -374,8 +370,8 @@ namespace Styx.Parser {
 
         let finalNode = context.createNode();
 
-        context.__enclosingStatements.push({
-            type: EnclosingStatementType.__EnclosingStatement,
+        context.enclosingStatements.push({
+            type: EnclosingStatementType.OtherStatement,
             breakTarget: finalNode,
             continueTarget: null,
             label: label
@@ -437,7 +433,7 @@ namespace Styx.Parser {
             finalNode.appendEpsilonEdgeTo(stillSearchingNode);
         }
 
-        context.__enclosingStatements.pop();
+        context.enclosingStatements.pop();
 
         return { normal: finalNode };
     }
@@ -542,6 +538,10 @@ namespace Styx.Parser {
         let handlerBodyEntry = handler ? context.createNode() : null;
 
         let enclosingTryStatement: EnclosingTryStatement = {
+            label: null,
+            breakTarget: null,
+            continueTarget: null,
+
             type: EnclosingStatementType.TryStatement,
             isCurrentlyInTryBlock: false,
             isCurrentlyInFinalizer: false,
@@ -636,8 +636,8 @@ namespace Styx.Parser {
         let loopBodyNode = context.createNode().appendConditionallyTo(currentNode, truthyConditionLabel, truthyCondition);
         let finalNode = context.createNode();
 
-        context.__enclosingStatements.push({
-            type: EnclosingStatementType.__EnclosingStatement,
+        context.enclosingStatements.push({
+            type: EnclosingStatementType.OtherStatement,
             continueTarget: currentNode,
             breakTarget: finalNode,
             label: label
@@ -649,7 +649,7 @@ namespace Styx.Parser {
             currentNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
         }
 
-        context.__enclosingStatements.pop();
+        context.enclosingStatements.pop();
 
         finalNode
             .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition)
@@ -669,8 +669,8 @@ namespace Styx.Parser {
         let testNode = context.createNode();
         let finalNode = context.createNode();
 
-        context.__enclosingStatements.push({
-            type: EnclosingStatementType.__EnclosingStatement,
+        context.enclosingStatements.push({
+            type: EnclosingStatementType.OtherStatement,
             continueTarget: testNode,
             breakTarget: finalNode,
             label: label
@@ -678,7 +678,7 @@ namespace Styx.Parser {
 
         let loopBodyCompletion = parseStatement(doWhileStatement.body, currentNode, context);
 
-        context.__enclosingStatements.pop();
+        context.enclosingStatements.pop();
 
         currentNode.appendConditionallyTo(testNode, truthyConditionLabel, truthyCondition);
         finalNode.appendConditionallyTo(testNode, falsyConditionLabel, falsyCondition);
@@ -718,8 +718,8 @@ namespace Styx.Parser {
             beginOfLoopBodyNode.appendEpsilonEdgeTo(testDecisionNode);
         }
 
-        context.__enclosingStatements.push({
-            type: EnclosingStatementType.__EnclosingStatement,
+        context.enclosingStatements.push({
+            type: EnclosingStatementType.OtherStatement,
             continueTarget: updateNode,
             breakTarget: finalNode,
             label: label
@@ -727,7 +727,7 @@ namespace Styx.Parser {
 
         let loopBodyCompletion = parseStatement(forStatement.body, beginOfLoopBodyNode, context);
 
-        context.__enclosingStatements.pop();
+        context.enclosingStatements.pop();
 
         if (forStatement.update) {
             // If the loop has an update expression,
@@ -764,8 +764,8 @@ namespace Styx.Parser {
         let finalNode = context.createNode()
             .appendConditionallyTo(conditionNode, "<no more>", null);
 
-        context.__enclosingStatements.push({
-            type: EnclosingStatementType.__EnclosingStatement,
+        context.enclosingStatements.push({
+            type: EnclosingStatementType.OtherStatement,
             breakTarget: finalNode,
             continueTarget: conditionNode,
             label: label
@@ -773,7 +773,7 @@ namespace Styx.Parser {
 
         let loopBodyCompletion = parseStatement(forInStatement.body, startOfLoopBody, context);
 
-        context.__enclosingStatements.pop();
+        context.enclosingStatements.pop();
 
         if (loopBodyCompletion.normal) {
             conditionNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
