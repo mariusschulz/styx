@@ -820,15 +820,11 @@ namespace Styx.Parser {
     }
 
     function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
-        let enclosingStatements = context.enclosingStatements.enumerateElements();
+        let enclosingTryStatements = <EnclosingTryStatement[]>context.enclosingStatements
+            .enumerateElements()
+            .filter(statement => statement.type === EnclosingStatementType.TryStatement);
 
-        for (let statement of enclosingStatements) {
-            if (statement.type !== EnclosingStatementType.TryStatement) {
-                continue;
-            }
-
-            let tryStatement = <EnclosingTryStatement>statement;
-
+        for (let tryStatement of enclosingTryStatements) {
             if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
                 tryStatement.isCurrentlyInFinalizer = true;
                 let finalizer = tryStatement.parseFinalizer();
