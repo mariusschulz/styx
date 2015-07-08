@@ -24,7 +24,6 @@ namespace Styx.Parser {
         currentFlowGraph: ControlFlowGraph;
 
         enclosingStatements: Collections.Stack<EnclosingStatement>;
-        enclosingTryStatements: Collections.Stack<EnclosingTryStatement>;
         __enclosingStatements: Collections.Stack<__EnclosingStatement>;
 
         createTemporaryLocalVariableName(): string;
@@ -60,7 +59,6 @@ namespace Styx.Parser {
             currentFlowGraph: null,
 
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
-            enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
             createTemporaryLocalVariableName() {
@@ -174,7 +172,6 @@ namespace Styx.Parser {
             currentFlowGraph: func.flowGraph,
 
             enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
-            enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
             createTemporaryLocalVariableName: context.createTemporaryLocalVariableName,
@@ -235,6 +232,7 @@ namespace Styx.Parser {
                 let finalNode = context.createNode();
 
                 let enclosingStatement: __EnclosingStatement = {
+                    type: EnclosingStatementType.__EnclosingStatement,
                     breakTarget: finalNode,
                     continueTarget: null,
                     label: label
@@ -377,6 +375,7 @@ namespace Styx.Parser {
         let finalNode = context.createNode();
 
         context.__enclosingStatements.push({
+            type: EnclosingStatementType.__EnclosingStatement,
             breakTarget: finalNode,
             continueTarget: null,
             label: label
@@ -481,11 +480,17 @@ namespace Styx.Parser {
 
     function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let throwLabel = "throw " + stringify(throwStatement.argument);
-        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
+        let enclosingStatements = context.enclosingStatements.enumerateElements();
 
         let foundHandler = false;
 
-        for (let tryStatement of enclosingTryStatements) {
+        for (let statement of enclosingStatements) {
+            if (statement.type !== EnclosingStatementType.TryStatement) {
+                continue;
+            }
+
+            let tryStatement = <EnclosingTryStatement>statement;
+
             if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
                 let parameter = stringify(tryStatement.handler.param);
                 let argument = stringify(throwStatement.argument);
@@ -537,6 +542,7 @@ namespace Styx.Parser {
         let handlerBodyEntry = handler ? context.createNode() : null;
 
         let enclosingTryStatement: EnclosingTryStatement = {
+            type: EnclosingStatementType.TryStatement,
             isCurrentlyInTryBlock: false,
             isCurrentlyInFinalizer: false,
             handler: handler,
@@ -544,7 +550,7 @@ namespace Styx.Parser {
             parseFinalizer: finalizer ? parseFinalizer : null
         };
 
-        context.enclosingTryStatements.push(enclosingTryStatement);
+        context.enclosingStatements.push(enclosingTryStatement);
 
         enclosingTryStatement.isCurrentlyInTryBlock = true;
         let tryBlockCompletion = parseBlockStatement(tryStatement.block, currentNode, context);
@@ -552,7 +558,7 @@ namespace Styx.Parser {
 
         let handlerBodyCompletion = handler ? parseBlockStatement(handler.body, handlerBodyEntry, context) : null;
 
-        context.enclosingTryStatements.pop();
+        context.enclosingStatements.pop();
 
         // try/catch production
         if (handler && !finalizer) {
@@ -631,6 +637,7 @@ namespace Styx.Parser {
         let finalNode = context.createNode();
 
         context.__enclosingStatements.push({
+            type: EnclosingStatementType.__EnclosingStatement,
             continueTarget: currentNode,
             breakTarget: finalNode,
             label: label
@@ -663,6 +670,7 @@ namespace Styx.Parser {
         let finalNode = context.createNode();
 
         context.__enclosingStatements.push({
+            type: EnclosingStatementType.__EnclosingStatement,
             continueTarget: testNode,
             breakTarget: finalNode,
             label: label
@@ -711,6 +719,7 @@ namespace Styx.Parser {
         }
 
         context.__enclosingStatements.push({
+            type: EnclosingStatementType.__EnclosingStatement,
             continueTarget: updateNode,
             breakTarget: finalNode,
             label: label
@@ -756,6 +765,7 @@ namespace Styx.Parser {
             .appendConditionallyTo(conditionNode, "<no more>", null);
 
         context.__enclosingStatements.push({
+            type: EnclosingStatementType.__EnclosingStatement,
             breakTarget: finalNode,
             continueTarget: conditionNode,
             label: label
@@ -802,9 +812,15 @@ namespace Styx.Parser {
     }
 
     function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
-        let enclosingTryStatements = context.enclosingTryStatements.enumerateElements();
+        let enclosingStatements = context.enclosingStatements.enumerateElements();
 
-        for (let tryStatement of enclosingTryStatements) {
+        for (let statement of enclosingStatements) {
+            if (statement.type !== EnclosingStatementType.TryStatement) {
+                continue;
+            }
+
+            let tryStatement = <EnclosingTryStatement>statement;
+
             if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
                 tryStatement.isCurrentlyInFinalizer = true;
                 let finalizer = tryStatement.parseFinalizer();

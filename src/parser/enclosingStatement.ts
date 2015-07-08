@@ -10,21 +10,28 @@ namespace Styx {
         throw?: boolean;
     };
 
-    export interface __EnclosingStatement {
+    export const enum EnclosingStatementType {
+        __EnclosingStatement,
+        TryStatement
+    }
+
+    export interface EnclosingStatement {
+        type: EnclosingStatementType;
+    }
+
+    export interface __EnclosingStatement extends EnclosingStatement {
         label: string;
         continueTarget: FlowNode;
         breakTarget: FlowNode;
     }
 
-    export interface EnclosingTryStatement {
+    export interface EnclosingTryStatement extends EnclosingStatement {
         isCurrentlyInTryBlock: boolean;
         isCurrentlyInFinalizer: boolean;
         handler: ESTree.CatchClause;
         handlerBodyEntry: FlowNode;
         parseFinalizer: () => Finalizer;
     }
-
-    export type EnclosingStatement = __EnclosingStatement | EnclosingTryStatement;
 
     export interface Finalizer {
         bodyEntry: FlowNode;
