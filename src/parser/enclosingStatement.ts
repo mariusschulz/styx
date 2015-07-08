@@ -10,7 +10,7 @@ namespace Styx {
         throw?: boolean;
     };
 
-    export interface EnclosingStatement {
+    export interface __EnclosingStatement {
         label: string;
         continueTarget: FlowNode;
         breakTarget: FlowNode;
@@ -23,6 +23,8 @@ namespace Styx {
         handlerBodyEntry: FlowNode;
         parseFinalizer: () => Finalizer;
     }
+
+    export type EnclosingStatement = __EnclosingStatement | EnclosingTryStatement;
 
     export interface Finalizer {
         bodyEntry: FlowNode;

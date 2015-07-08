@@ -23,6 +23,7 @@ namespace Styx.Parser {
         functions: FlowFunction[];
         currentFlowGraph: ControlFlowGraph;
 
+        enclosingStatements: Collections.Stack<EnclosingStatement>;
         enclosingTryStatements: Collections.Stack<EnclosingTryStatement>;
         __enclosingStatements: Collections.Stack<__EnclosingStatement>;
 
@@ -58,6 +59,7 @@ namespace Styx.Parser {
             functions: [],
             currentFlowGraph: null,
 
+            enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
@@ -171,6 +173,7 @@ namespace Styx.Parser {
             functions: context.functions,
             currentFlowGraph: func.flowGraph,
 
+            enclosingStatements: Collections.Stack.create<EnclosingStatement>(),
             enclosingTryStatements: Collections.Stack.create<EnclosingTryStatement>(),
             __enclosingStatements: Collections.Stack.create<__EnclosingStatement>(),
 
