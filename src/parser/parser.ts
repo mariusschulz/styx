@@ -319,7 +319,7 @@ namespace Styx.Parser {
 
     function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode, context: ParsingContext): Completion {
         let enclosingStatement = findLabeledEnclosingStatement(context, breakStatement.label);
-        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinue(currentNode, context, enclosingStatement);
 
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -337,7 +337,7 @@ namespace Styx.Parser {
             throw new Error(`Illegal continue target detected: "${continueStatement.label}" does not label an enclosing iteration statement`);
         }
 
-        let finalizerCompletion = runFinalizersBeforeBreakOrContinueOrReturn(currentNode, context);
+        let finalizerCompletion = runFinalizersBeforeBreakOrContinue(currentNode, context, enclosingStatement);
 
         if (!finalizerCompletion.normal) {
             return finalizerCompletion;
@@ -819,24 +819,32 @@ namespace Styx.Parser {
         return currentNode;
     }
 
-    function runFinalizersBeforeBreakOrContinueOrReturn(currentNode: FlowNode, context: ParsingContext): Completion {
-        let enclosingTryStatements = <EnclosingTryStatement[]>context.enclosingStatements
-            .enumerateElements()
-            .filter(statement => statement.type === EnclosingStatementType.TryStatement);
+    function runFinalizersBeforeBreakOrContinue(currentNode: FlowNode, context: ParsingContext, target: EnclosingStatement): Completion {
+        let enclosingStatements = context.enclosingStatements.enumerateElements();
 
-        for (let tryStatement of enclosingTryStatements) {
-            if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
-                tryStatement.isCurrentlyInFinalizer = true;
-                let finalizer = tryStatement.parseFinalizer();
-                tryStatement.isCurrentlyInFinalizer = false;
+        for (let statement of enclosingStatements) {
+            if (statement.type === EnclosingStatementType.TryStatement) {
+                let tryStatement = <EnclosingTryStatement>statement;
 
-                finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+                if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
+                    tryStatement.isCurrentlyInFinalizer = true;
+                    let finalizer = tryStatement.parseFinalizer();
+                    tryStatement.isCurrentlyInFinalizer = false;
 
-                if (finalizer.bodyCompletion.normal) {
-                    currentNode = finalizer.bodyCompletion.normal;
-                } else {
-                    return finalizer.bodyCompletion;
+                    finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
+
+                    if (finalizer.bodyCompletion.normal) {
+                        currentNode = finalizer.bodyCompletion.normal;
+                    } else {
+                        return finalizer.bodyCompletion;
+                    }
                 }
+            }
+
+            if (statement === target) {
+                // We only run finalizers of `try` statements that are nested
+                // within the target enclosing statement. Therefore, stop here.
+                break;
             }
         }
 
