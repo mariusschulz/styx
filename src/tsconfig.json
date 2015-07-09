@@ -2,10 +2,10 @@
     "compilerOptions": {
         "preserveConstEnums": true,
         "noImplicitAny": true,
-        "out": "../dist/styx.js",
+        "outDir": "../dist/transpiled/",
         "target": "ES5"
     },
     "files": [
-        "styx.ts"
+        "index.ts"
     ]
 }
