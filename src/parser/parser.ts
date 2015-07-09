@@ -249,7 +249,7 @@ namespace Styx.Parser {
                 context.enclosingStatements.pop();
 
                 if (bodyCompletion.normal) {
-                    finalNode.appendEpsilonEdgeTo(bodyCompletion.normal)
+                    finalNode.appendEpsilonEdgeTo(bodyCompletion.normal);
                     return { normal: finalNode };
                 }
 
@@ -672,7 +672,7 @@ namespace Styx.Parser {
         context.enclosingStatements.pop();
 
         finalNode
-            .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition)
+            .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition);
 
         return { normal: finalNode };
     }
@@ -730,7 +730,7 @@ namespace Styx.Parser {
             let falsyConditionLabel = stringify(falsyCondition);
 
             // Add truthy and falsy edges
-            beginOfLoopBodyNode.appendConditionallyTo(testDecisionNode, truthyConditionLabel, truthyCondition)
+            beginOfLoopBodyNode.appendConditionallyTo(testDecisionNode, truthyConditionLabel, truthyCondition);
             finalNode.appendConditionallyTo(testDecisionNode, falsyConditionLabel, falsyCondition);
         } else {
             // If the loop doesn't have a test expression,
