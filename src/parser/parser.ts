@@ -899,7 +899,7 @@ namespace Styx.Parser {
                 Passes.removeTransitNodes(graph.entry);
             }
 
-            Passes.collectNodesAndEdges(graph.entry);
+            Passes.collectNodesAndEdges(graph);
         }
     }
 }

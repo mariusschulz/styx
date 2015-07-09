@@ -2,9 +2,9 @@
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    export function collectNodesAndEdges(graphEntry: FlowNode) {
-        let nodes = collectNodes(graphEntry);
-        let edges = collectEdges(nodes);
+    export function collectNodesAndEdges(graph: ControlFlowGraph) {
+        graph.nodes = collectNodes(graph.entry);
+        graph.edges = collectEdges(graph.nodes);
     }
 
     function collectNodes(graphEntry: FlowNode): FlowNode[] {
