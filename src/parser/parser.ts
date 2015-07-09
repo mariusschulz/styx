@@ -2,6 +2,7 @@
 /// <reference path="expressions/negator.ts" />
 /// <reference path="expressions/stringifier.ts" />
 /// <reference path="passes/constantConditionalEdgeRewriting.ts" />
+/// <reference path="passes/nodeAndEdgeCollecting.ts" />
 /// <reference path="passes/transitNodeRemoval.ts" />
 /// <reference path="passes/unreachableNodeRemoval.ts" />
 /// <reference path="preprocessing/functionExpressionRewriter.ts" />
@@ -897,6 +898,8 @@ namespace Styx.Parser {
             if (options.passes.removeTransitNodes) {
                 Passes.removeTransitNodes(graph.entry);
             }
+
+            Passes.collectNodesAndEdges(graph.entry);
         }
     }
 }
