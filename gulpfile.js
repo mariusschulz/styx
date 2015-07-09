@@ -1,13 +1,14 @@
 var gulp = require("gulp");
-var shell = require("gulp-shell");
+var browserify = require('gulp-browserify');
 
-var scriptGlobs = ["src/**/*.ts"];
+var transpiledScriptGlobs = ["./dist/transpiled/**/*.js"];
 
-gulp.task("typescript", function() {
-    return gulp.src(scriptGlobs)
-        .pipe(shell(["node ../TypeScript/built/local/tsc -p src"]));
+gulp.task("browserify", function() {
+    return gulp.src("./dist/transpiled/index.js")
+        .pipe(browserify())
+        .pipe(gulp.dest("./dist/browser"));
 });
 
-gulp.task("default", ["typescript"], function() {
-    return gulp.watch(scriptGlobs, ["typescript"]);
+gulp.task("default", ["browserify"], function() {
+    return gulp.watch(transpiledScriptGlobs, ["browserify"]);
 });

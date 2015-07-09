@@ -20,6 +20,6 @@
   "license": "MIT",
   "devDependencies": {
     "gulp": "^3.8.11",
-    "gulp-shell": "^0.4.1"
+    "gulp-browserify": "^0.5.1"
   }
 }
