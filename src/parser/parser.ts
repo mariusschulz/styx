@@ -83,7 +83,9 @@ namespace Styx.Parser {
         let programFlowGraph: ControlFlowGraph = {
             entry: entryNode,
             successExit: successExitNode,
-            errorExit: errorExitNode
+            errorExit: errorExitNode,
+            nodes: [],
+            edges: []
         };
 
         context.currentFlowGraph = programFlowGraph;
@@ -162,7 +164,9 @@ namespace Styx.Parser {
             flowGraph: {
                 entry: entryNode,
                 successExit: successExitNode,
-                errorExit: errorExitNode
+                errorExit: errorExitNode,
+                nodes: [],
+                edges: []
             }
         };
 

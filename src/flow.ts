@@ -14,6 +14,8 @@ namespace Styx {
         entry: FlowNode;
         successExit: FlowNode;
         errorExit: FlowNode;
+        nodes: FlowNode[];
+        edges: FlowEdge[];
     }
 
     export interface FlowEdge {
