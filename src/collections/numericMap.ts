@@ -1,6 +1,6 @@
 namespace Styx.Collections {
     export interface NumericMap<T> {
-        add(key: number, value: T);
+        add(key: number, value: T): void;
         contains(key: number): boolean;
         get(key: number): T;
     }
