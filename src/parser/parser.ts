@@ -236,15 +236,15 @@ namespace Styx.Parser {
                 };
 
                 context.enclosingStatements.push(enclosingStatement);
-                let blockCompletion = parseBlockStatement(<ESTree.BlockStatement>body, currentNode, context);
+                let bodyCompletion = parseStatement(body, currentNode, context);
                 context.enclosingStatements.pop();
 
-                if (blockCompletion.normal) {
-                    finalNode.appendEpsilonEdgeTo(blockCompletion.normal)
+                if (bodyCompletion.normal) {
+                    finalNode.appendEpsilonEdgeTo(bodyCompletion.normal)
                     return { normal: finalNode };
                 }
 
-                return blockCompletion;
+                return bodyCompletion;
 
             case ESTree.NodeType.SwitchStatement:
                 return parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, context, label);
