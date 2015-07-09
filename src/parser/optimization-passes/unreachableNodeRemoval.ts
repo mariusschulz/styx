@@ -1,22 +1,18 @@
 /// <reference path="../../util/arrayUtil.ts" />
+/// <reference path="../../collections/numericMap.ts" />
 /// <reference path="../../collections/numericSet.ts" />
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    interface NodeLookup {
-        [nodeId: number]: FlowNode;
-        [nodeId: string]: FlowNode;
-    }
-
     export function removeUnreachableNodes(graphEntry: FlowNode) {
         // First, traverse the graph following only outgoing edges
         // to find and collect all reachable nodes
-        let reachableNodes: NodeLookup = {};
+        let reachableNodes = Collections.NumericMap.create<FlowNode>();
         collectReachableNodes(graphEntry, reachableNodes);
 
         // Now, traverse the entire graph following edges in both directions
         // to find and collect all unreachable nodes
-        let unreachableNodes: NodeLookup = {};
+        let unreachableNodes = Collections.NumericMap.create<FlowNode>();
         let visitedNodes = Collections.NumericSet.create();
 
         for (let nodeId of Object.keys(reachableNodes)) {
@@ -33,8 +29,8 @@ namespace Styx.Passes {
         }
     }
 
-    function collectReachableNodes(currentNode: FlowNode, reachableNodes: NodeLookup) {
-        if (reachableNodes.hasOwnProperty(currentNode.id.toString())) {
+    function collectReachableNodes(currentNode: FlowNode, reachableNodes: Collections.NumericMap<FlowNode>) {
+        if (reachableNodes.containsKey(currentNode.id)) {
             return;
         }
 
@@ -45,14 +41,14 @@ namespace Styx.Passes {
         }
     }
 
-    function collectUnreachableNodes(node: FlowNode, reachableNodes: NodeLookup, unreachableNodes: NodeLookup, visitedNodes: Collections.NumericSet) {
+    function collectUnreachableNodes(node: FlowNode, reachableNodes: Collections.NumericMap<FlowNode>, unreachableNodes: Collections.NumericMap<FlowNode>, visitedNodes: Collections.NumericSet) {
         if (visitedNodes.contains(node.id)) {
             return;
         }
 
         visitedNodes.add(node.id);
 
-        if (!reachableNodes.hasOwnProperty(node.id.toString())) {
+        if (!reachableNodes.containsKey(node.id)) {
             unreachableNodes[node.id] = node;
         }
 
