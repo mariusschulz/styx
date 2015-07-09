@@ -32,7 +32,7 @@ namespace Styx.Passes {
             return;
         }
 
-        reachableNodes[currentNode.id] = currentNode;
+        reachableNodes.set(currentNode.id, currentNode);
 
         for (let outgoingEdge of currentNode.outgoingEdges) {
             collectReachableNodes(outgoingEdge.target, reachableNodes);
@@ -50,7 +50,7 @@ namespace Styx.Passes {
         visitedNodes.add(node.id);
 
         if (!reachableNodes.containsKey(node.id)) {
-            unreachableNodes[node.id] = node;
+            unreachableNodes.set(node.id, node);
         }
 
         for (let incomingEdge of node.incomingEdges) {

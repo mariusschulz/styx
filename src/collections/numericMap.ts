@@ -1,9 +1,9 @@
 namespace Styx.Collections {
     export interface NumericMap<T> {
-        add(key: number, value: T): void;
         containsKey(key: number): boolean;
         enumerate(): { key: number, value: T }[];
-        get(key: number): T;
+        get(key: number): T,
+        set(key: number, value: T): void;
     }
 
     interface LookupObject<T> {
@@ -18,10 +18,6 @@ namespace Styx.Collections {
         let lookup: LookupObject<T> = {};
 
         return {
-            add(key, value) {
-                lookup[key] = value;
-            },
-
             containsKey(key) {
                 return lookup.hasOwnProperty(key.toString());
             },
@@ -39,6 +35,10 @@ namespace Styx.Collections {
 
             get(key) {
                 return lookup[key];
+            },
+
+            set(key, value) {
+                lookup[key] = value;
             }
         };
     }
