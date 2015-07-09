@@ -890,13 +890,13 @@ namespace Styx.Parser {
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
         for (let graph of graphs) {
             if (options.passes.rewriteConstantConditionalEdges) {
-                Passes.rewriteConstantConditionalEdges(graph.entry);
+                Passes.rewriteConstantConditionalEdges(graph);
             }
 
-            Passes.removeUnreachableNodes(graph.entry);
+            Passes.removeUnreachableNodes(graph);
 
             if (options.passes.removeTransitNodes) {
-                Passes.removeTransitNodes(graph.entry);
+                Passes.removeTransitNodes(graph);
             }
 
             Passes.collectNodesAndEdges(graph);

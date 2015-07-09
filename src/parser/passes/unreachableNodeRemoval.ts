@@ -4,11 +4,11 @@
 /// <reference path="../../flow.ts" />
 
 namespace Styx.Passes {
-    export function removeUnreachableNodes(graphEntry: FlowNode) {
+    export function removeUnreachableNodes(graph: ControlFlowGraph) {
         // First, traverse the graph following only outgoing edges
         // to find and collect all reachable nodes
         let reachableNodes = Collections.NumericMap.create<FlowNode>();
-        collectReachableNodes(graphEntry, reachableNodes);
+        collectReachableNodes(graph.entry, reachableNodes);
 
         // Now, traverse the entire graph following edges in both directions
         // to find and collect all unreachable nodes
