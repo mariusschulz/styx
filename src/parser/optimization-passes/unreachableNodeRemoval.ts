@@ -15,14 +15,12 @@ namespace Styx.Passes {
         let unreachableNodes = Collections.NumericMap.create<FlowNode>();
         let visitedNodes = Collections.NumericSet.create();
 
-        for (let nodeId of Object.keys(reachableNodes)) {
-            collectUnreachableNodes(reachableNodes[nodeId], reachableNodes, unreachableNodes, visitedNodes);
+        for (let { value: reachableNode } of reachableNodes.enumerate()) {
+            collectUnreachableNodes(reachableNode, reachableNodes, unreachableNodes, visitedNodes);
         }
 
         // Finally, delete unreachable (normal) nodes and their edges
-        for (let nodeId of Object.keys(unreachableNodes)) {
-            let unreachableNode = unreachableNodes[nodeId];
-
+        for (let { value: unreachableNode } of unreachableNodes.enumerate()) {
             if (unreachableNode.type === NodeType.Normal) {
                 removeUnreachableNode(unreachableNode);
             }
@@ -41,7 +39,10 @@ namespace Styx.Passes {
         }
     }
 
-    function collectUnreachableNodes(node: FlowNode, reachableNodes: Collections.NumericMap<FlowNode>, unreachableNodes: Collections.NumericMap<FlowNode>, visitedNodes: Collections.NumericSet) {
+    function collectUnreachableNodes(node: FlowNode,
+        reachableNodes: Collections.NumericMap<FlowNode>,
+        unreachableNodes: Collections.NumericMap<FlowNode>,
+        visitedNodes: Collections.NumericSet) {
         if (visitedNodes.contains(node.id)) {
             return;
         }
