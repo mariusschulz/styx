@@ -226,6 +226,7 @@ namespace Styx.Parser {
 
         switch (body.type) {
             case ESTree.NodeType.BlockStatement:
+            case ESTree.NodeType.TryStatement:
                 let finalNode = context.createNode();
 
                 let enclosingStatement: EnclosingStatement = {
