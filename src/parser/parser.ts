@@ -40,7 +40,7 @@ namespace Styx.Parser {
         let context = createParsingContext();
 
         let rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(program);
-        let parsedProgram = parseProgram(rewrittenProgram, options, context);
+        let parsedProgram = parseProgram(rewrittenProgram, context);
 
         // Run optimization passes
         let functionFlowGraphs = context.functions.map(func => func.flowGraph);
@@ -76,7 +76,7 @@ namespace Styx.Parser {
         };
     }
 
-    function parseProgram(program: ESTree.Program, options: ParserOptions, context: ParsingContext): FlowProgram {
+    function parseProgram(program: ESTree.Program, context: ParsingContext): FlowProgram {
         let entryNode = context.createNode(NodeType.Entry);
         let successExitNode = context.createNode(NodeType.SuccessExit);
         let errorExitNode = context.createNode(NodeType.ErrorExit);
