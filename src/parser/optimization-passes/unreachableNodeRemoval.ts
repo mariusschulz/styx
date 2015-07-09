@@ -20,7 +20,11 @@ namespace Styx.Passes {
         }
 
         for (let nodeId of Object.keys(unreachableNodes)) {
-            removeUnreachableNode(unreachableNodes[nodeId]);
+            let unreachableNode = unreachableNodes[nodeId];
+
+            if (unreachableNode.type === NodeType.Normal) {
+                removeUnreachableNode(unreachableNode);
+            }
         }
     }
 
