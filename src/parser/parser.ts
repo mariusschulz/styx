@@ -4,6 +4,7 @@
 /// <reference path="expressions/stringifier.ts" />
 /// <reference path="optimization-passes/constantConditionalEdgeRewriting.ts" />
 /// <reference path="optimization-passes/transitNodeRemoval.ts" />
+/// <reference path="optimization-passes/unreachableNodeRemoval.ts" />
 /// <reference path="enclosingStatement.ts" />
 /// <reference path="../util/idGenerator.ts" />
 /// <reference path="../estree.ts" />
@@ -886,6 +887,8 @@ namespace Styx.Parser {
             if (options.passes.rewriteConstantConditionalEdges) {
                 Passes.rewriteConstantConditionalEdges(graph.entry);
             }
+
+            Passes.removeUnreachableNodes(graph.entry);
 
             if (options.passes.removeTransitNodes) {
                 Passes.removeTransitNodes(graph.entry);

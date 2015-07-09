@@ -15,6 +15,9 @@ namespace Styx.Passes {
 
         visitedNodes.add(node.id);
 
+        // Remember target nodes for later traversal
+        let targetNodes = node.outgoingEdges.map(edge => edge.target);
+
         // We want to simplify transit nodes, but we only ever remove normal nodes
         // because we don't want to mess up references to entry or exit nodes
         if (node.incomingEdges.length === 1 &&
@@ -29,8 +32,8 @@ namespace Styx.Passes {
             }
         }
 
-        for (let edge of node.outgoingEdges) {
-            optimizeNode(edge.target, visitedNodes);
+        for (let target of targetNodes) {
+            optimizeNode(target, visitedNodes);
         }
     }
 
