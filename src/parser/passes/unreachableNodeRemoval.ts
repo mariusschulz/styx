@@ -15,12 +15,12 @@ namespace Styx.Passes {
         let unreachableNodes = Collections.NumericMap.create<FlowNode>();
         let visitedNodes = Collections.NumericSet.create();
 
-        for (let { value: reachableNode } of reachableNodes.enumerate()) {
+        for (let { value: reachableNode } of reachableNodes.entries()) {
             collectUnreachableNodes(reachableNode, reachableNodes, unreachableNodes, visitedNodes);
         }
 
         // Finally, delete unreachable (normal) nodes and their edges
-        for (let { value: unreachableNode } of unreachableNodes.enumerate()) {
+        for (let { value: unreachableNode } of unreachableNodes.entries()) {
             if (unreachableNode.type === NodeType.Normal) {
                 removeUnreachableNode(unreachableNode);
             }
