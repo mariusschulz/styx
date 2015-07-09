@@ -1,13 +1,15 @@
 namespace Styx.Collections {
     export interface NumericMap<T> {
         containsKey(key: number): boolean;
-        enumerate(): { key: number, value: T }[];
+        entries(): { key: number, value: T }[];
+        values(): T[];
         get(key: number): T,
         set(key: number, value: T): void;
     }
 
     interface LookupObject<T> {
         [key: number]: T;
+        [key: string]: T;
     }
 
     export const NumericMap = {
@@ -22,15 +24,17 @@ namespace Styx.Collections {
                 return lookup.hasOwnProperty(key.toString());
             },
 
-            enumerate() {
-                let keys = Object.keys(lookup).map(Number);
-
-                return keys.map(key => {
+            entries() {
+                return Object.keys(lookup).map(key => {
                     return {
-                        key: key,
+                        key: Number(key),
                         value: lookup[key]
                     }
                 });
+            },
+
+            values() {
+                return Object.keys(lookup).map(key => lookup[key]);
             },
 
             get(key) {

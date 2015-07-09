@@ -2,6 +2,7 @@
 /// <reference path="expressions/negator.ts" />
 /// <reference path="expressions/stringifier.ts" />
 /// <reference path="passes/constantConditionalEdgeRewriting.ts" />
+/// <reference path="passes/nodeAndEdgeCollecting.ts" />
 /// <reference path="passes/transitNodeRemoval.ts" />
 /// <reference path="passes/unreachableNodeRemoval.ts" />
 /// <reference path="preprocessing/functionExpressionRewriter.ts" />
@@ -83,7 +84,9 @@ namespace Styx.Parser {
         let programFlowGraph: ControlFlowGraph = {
             entry: entryNode,
             successExit: successExitNode,
-            errorExit: errorExitNode
+            errorExit: errorExitNode,
+            nodes: [],
+            edges: []
         };
 
         context.currentFlowGraph = programFlowGraph;
@@ -162,7 +165,9 @@ namespace Styx.Parser {
             flowGraph: {
                 entry: entryNode,
                 successExit: successExitNode,
-                errorExit: errorExitNode
+                errorExit: errorExitNode,
+                nodes: [],
+                edges: []
             }
         };
 
@@ -885,14 +890,16 @@ namespace Styx.Parser {
     function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
         for (let graph of graphs) {
             if (options.passes.rewriteConstantConditionalEdges) {
-                Passes.rewriteConstantConditionalEdges(graph.entry);
+                Passes.rewriteConstantConditionalEdges(graph);
             }
 
-            Passes.removeUnreachableNodes(graph.entry);
+            Passes.removeUnreachableNodes(graph);
 
             if (options.passes.removeTransitNodes) {
-                Passes.removeTransitNodes(graph.entry);
+                Passes.removeTransitNodes(graph);
             }
+
+            Passes.collectNodesAndEdges(graph);
         }
     }
 }
