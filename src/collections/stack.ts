@@ -14,7 +14,7 @@ namespace Styx.Collections {
 
     export const Stack = {
         create: createStack
-    }
+    };
 
     function createStack<T>(): Stack<T> {
         let elements: T[] = [];
