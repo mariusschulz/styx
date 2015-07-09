@@ -413,7 +413,7 @@ namespace Styx.Parser {
                 firstNodeOfClauseListB = beginOfCaseBody;
             }
 
-            if (endOfPreviousCaseBody.normal) {
+            if (endOfPreviousCaseBody && endOfPreviousCaseBody.normal) {
                 // We reached the end of the case through normal control flow,
                 // which means there was no 'break' statement at the end.
                 // We therefore fall through from the previous case!
@@ -427,7 +427,7 @@ namespace Styx.Parser {
                 .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
         }
 
-        if (endOfPreviousCaseBody.normal) {
+        if (endOfPreviousCaseBody && endOfPreviousCaseBody.normal) {
             // If the last case didn't end with an abrupt completion,
             // connect it to the final node and resume normal control flow.
             finalNode.appendEpsilonEdgeTo(endOfPreviousCaseBody.normal);
