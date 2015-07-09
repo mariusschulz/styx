@@ -1,15 +1,15 @@
-/// <reference path="../delegateTypes.ts" />
+interface IdGenerator {
+    generateId: () => number;
+}
 
-namespace Styx.Util.IdGenerator {
-    export interface IdGenerator {
-        generateId: Func<number>;
-    }
-
-    export function create(): IdGenerator {
+const idGeneratorFactory = {
+    create(): IdGenerator {
         let id = 0;
 
         return {
             generateId: () => ++id
         };
     }
-}
+};
+
+export default idGeneratorFactory;

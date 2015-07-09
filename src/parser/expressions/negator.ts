@@ -1,75 +1,75 @@
-/// <reference path="../../estree.ts" />
+import * as ESTree from "../../estree";
 
-namespace Styx.Expressions.Negator {
-    const equalityComparisonOperators = ["==", "===", "!=", "!=="];
+export { negateTruthiness };
 
-    export function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
-        if (expression.type === ESTree.NodeType.Literal) {
-            let literal = <ESTree.Literal>expression;
+const equalityComparisonOperators = ["==", "===", "!=", "!=="];
 
-            if (typeof literal.value === "boolean") {
-                return createBooleanLiteral(!literal.value);
-            }
-        } else if (expression.type === ESTree.NodeType.UnaryExpression) {
-            let unaryExpression = <ESTree.UnaryExpression>expression;
+function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
+    if (expression.type === ESTree.NodeType.Literal) {
+        let literal = <ESTree.Literal>expression;
 
-            if (unaryExpression.operator === "!") {
-                return unaryExpression.argument;
-            }
-        } else if (expression.type === ESTree.NodeType.BinaryExpression) {
-            let binaryExpression = <ESTree.BinaryExpression>expression;
-
-            if (equalityComparisonOperators.indexOf(binaryExpression.operator) > -1) {
-                return invertEqualityComparisonOperator(binaryExpression);
-            }
-        } else if (expression.type === ESTree.NodeType.LogicalExpression) {
-            return invertLogicalExpression(<ESTree.LogicalExpression>expression);
+        if (typeof literal.value === "boolean") {
+            return createBooleanLiteral(!literal.value);
         }
+    } else if (expression.type === ESTree.NodeType.UnaryExpression) {
+        let unaryExpression = <ESTree.UnaryExpression>expression;
 
-        return wrapInUnaryNegationExpression(expression);
+        if (unaryExpression.operator === "!") {
+            return unaryExpression.argument;
+        }
+    } else if (expression.type === ESTree.NodeType.BinaryExpression) {
+        let binaryExpression = <ESTree.BinaryExpression>expression;
+
+        if (equalityComparisonOperators.indexOf(binaryExpression.operator) > -1) {
+            return invertEqualityComparisonOperator(binaryExpression);
+        }
+    } else if (expression.type === ESTree.NodeType.LogicalExpression) {
+        return invertLogicalExpression(<ESTree.LogicalExpression>expression);
     }
 
-    function createBooleanLiteral(value: boolean): ESTree.Literal {
-        return {
-            type: ESTree.NodeType.Literal,
-            raw: value.toString(),
-            value: value
-        };
-    }
+    return wrapInUnaryNegationExpression(expression);
+}
 
-    function invertEqualityComparisonOperator(binaryExpression: ESTree.BinaryExpression): ESTree.BinaryExpression {
-        let isNegated = binaryExpression.operator.charAt(0) === "!";
-        let firstCharOfInvertedOperator = isNegated ? "=" : "!";
-        let restOfInvertedOperator = binaryExpression.operator.substr(1);
+function createBooleanLiteral(value: boolean): ESTree.Literal {
+    return {
+        type: ESTree.NodeType.Literal,
+        raw: value.toString(),
+        value: value
+    };
+}
 
-        return {
-            type: ESTree.NodeType.BinaryExpression,
-            operator: firstCharOfInvertedOperator + restOfInvertedOperator,
-            left: binaryExpression.left,
-            right: binaryExpression.right
-        };
-    }
+function invertEqualityComparisonOperator(binaryExpression: ESTree.BinaryExpression): ESTree.BinaryExpression {
+    let isNegated = binaryExpression.operator.charAt(0) === "!";
+    let firstCharOfInvertedOperator = isNegated ? "=" : "!";
+    let restOfInvertedOperator = binaryExpression.operator.substr(1);
 
-    function invertLogicalExpression(logicalExpression: ESTree.LogicalExpression): ESTree.LogicalExpression {
-        // The only two logical operators are && and ||
-        let invertedOperator = logicalExpression.operator === "&&" ? "||" : "&&";
+    return {
+        type: ESTree.NodeType.BinaryExpression,
+        operator: firstCharOfInvertedOperator + restOfInvertedOperator,
+        left: binaryExpression.left,
+        right: binaryExpression.right
+    };
+}
 
-        return {
-            type: ESTree.NodeType.LogicalExpression,
-            operator: invertedOperator,
+function invertLogicalExpression(logicalExpression: ESTree.LogicalExpression): ESTree.LogicalExpression {
+    // The only two logical operators are && and ||
+    let invertedOperator = logicalExpression.operator === "&&" ? "||" : "&&";
 
-            // Perform simplification according to De Morgan's laws
-            left: negateTruthiness(logicalExpression.left),
-            right: negateTruthiness(logicalExpression.right)
-        };
-    }
+    return {
+        type: ESTree.NodeType.LogicalExpression,
+        operator: invertedOperator,
 
-    function wrapInUnaryNegationExpression(expression: ESTree.Expression): ESTree.UnaryExpression {
-        return {
-            type: ESTree.NodeType.UnaryExpression,
-            operator: "!",
-            prefix: true,
-            argument: expression
-        };
-    }
+        // Perform simplification according to De Morgan's laws
+        left: negateTruthiness(logicalExpression.left),
+        right: negateTruthiness(logicalExpression.right)
+    };
+}
+
+function wrapInUnaryNegationExpression(expression: ESTree.Expression): ESTree.UnaryExpression {
+    return {
+        type: ESTree.NodeType.UnaryExpression,
+        operator: "!",
+        prefix: true,
+        argument: expression
+    };
 }

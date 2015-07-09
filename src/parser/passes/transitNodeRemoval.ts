@@ -1,100 +1,106 @@
-/// <reference path="../../util/arrayUtil.ts" />
-/// <reference path="../../collections/numericSet.ts" />
-/// <reference path="../../flow.ts" />
+import { NumericSet } from "../../collections/numericSet";
+import * as ArrayUtils from "../../util/arrayUtil";
 
-namespace Styx.Passes {
-    export function removeTransitNodes(graph: ControlFlowGraph) {
-        let visitedNodes = Collections.NumericSet.create();
-        optimizeNode(graph.entry, visitedNodes);
+import {
+    ControlFlowGraph,
+    EdgeType,
+    FlowNode,
+    NodeType
+} from "../../flow";
+
+export { removeTransitNodes };
+
+function removeTransitNodes(graph: ControlFlowGraph) {
+    let visitedNodes = NumericSet.create();
+    optimizeNode(graph.entry, visitedNodes);
+}
+
+function optimizeNode(node: FlowNode, visitedNodes: NumericSet) {
+    if (visitedNodes.contains(node.id)) {
+        return;
     }
 
-    function optimizeNode(node: FlowNode, visitedNodes: Collections.NumericSet) {
-        if (visitedNodes.contains(node.id)) {
-            return;
-        }
+    visitedNodes.add(node.id);
 
-        visitedNodes.add(node.id);
+    // Remember target nodes for later traversal
+    let targetNodes = node.outgoingEdges.map(edge => edge.target);
 
-        // Remember target nodes for later traversal
-        let targetNodes = node.outgoingEdges.map(edge => edge.target);
+    // We want to simplify transit nodes, but we only ever remove normal nodes
+    // because we don't want to mess up references to entry or exit nodes
+    if (node.incomingEdges.length === 1 &&
+        node.outgoingEdges.length === 1 &&
+        node.type === NodeType.Normal) {
+        let incomingEdge = node.incomingEdges[0];
+        let outgoingEdge = node.outgoingEdges[0];
 
-        // We want to simplify transit nodes, but we only ever remove normal nodes
-        // because we don't want to mess up references to entry or exit nodes
-        if (node.incomingEdges.length === 1 &&
-            node.outgoingEdges.length === 1 &&
-            node.type === NodeType.Normal) {
-            let incomingEdge = node.incomingEdges[0];
-            let outgoingEdge = node.outgoingEdges[0];
-
-            if (incomingEdge.type === EdgeType.Epsilon ||
-                outgoingEdge.type === EdgeType.Epsilon) {
-                optimizeTransitNode(node, visitedNodes);
-            }
-        }
-
-        for (let target of targetNodes) {
-            optimizeNode(target, visitedNodes);
+        if (incomingEdge.type === EdgeType.Epsilon ||
+            outgoingEdge.type === EdgeType.Epsilon) {
+            optimizeTransitNode(node, visitedNodes);
         }
     }
 
-    function optimizeTransitNode(transitNode: FlowNode, visitedNodes: Collections.NumericSet) {
-        // Remember the transit node's original target
-        let originalTarget = transitNode.outgoingEdges[0].target;
+    for (let target of targetNodes) {
+        optimizeNode(target, visitedNodes);
+    }
+}
 
-        if (shouldRemoveTransitNode(transitNode)) {
-            removeTransitNode(transitNode);
+function optimizeTransitNode(transitNode: FlowNode, visitedNodes: NumericSet) {
+    // Remember the transit node's original target
+    let originalTarget = transitNode.outgoingEdges[0].target;
+
+    if (shouldRemoveTransitNode(transitNode)) {
+        removeTransitNode(transitNode);
+    }
+
+    // Recursively optimize, starting with the original target
+    optimizeNode(originalTarget, visitedNodes);
+}
+
+function shouldRemoveTransitNode(transitNode: FlowNode): boolean {
+    let sourceId = transitNode.incomingEdges[0].source.id;
+    let target = transitNode.outgoingEdges[0].target;
+
+    for (let incomingTargetEdges of target.incomingEdges) {
+        // We only simplify transit nodes if their removal doesn't lead
+        // to a node being directly connected to another node by 2 edges
+        if (incomingTargetEdges.source.id === sourceId) {
+            return false;
         }
-
-        // Recursively optimize, starting with the original target
-        optimizeNode(originalTarget, visitedNodes);
     }
 
-    function shouldRemoveTransitNode(transitNode: FlowNode): boolean {
-        let sourceId = transitNode.incomingEdges[0].source.id;
-        let target = transitNode.outgoingEdges[0].target;
+    return true;
+}
 
-        for (let incomingTargetEdges of target.incomingEdges) {
-            // We only simplify transit nodes if their removal doesn't lead
-            // to a node being directly connected to another node by 2 edges
-            if (incomingTargetEdges.source.id === sourceId) {
-                return false;
-            }
-        }
+function removeTransitNode(transitNode: FlowNode) {
+    let incomingEdge = transitNode.incomingEdges[0];
+    let outgoingEdge = transitNode.outgoingEdges[0];
 
-        return true;
-    }
+    let source = incomingEdge.source;
+    let target = outgoingEdge.target;
 
-    function removeTransitNode(transitNode: FlowNode) {
-        let incomingEdge = transitNode.incomingEdges[0];
-        let outgoingEdge = transitNode.outgoingEdges[0];
+    // Decide whether to keep the incoming or the outgoing edge.
+    // If both are epsilon edges, it doesn't matter which one to keep.
+    let [edgeToKeep, edgeToRemove] = incomingEdge.type === EdgeType.Epsilon
+        ? [outgoingEdge, incomingEdge]
+        : [incomingEdge, outgoingEdge];
 
-        let source = incomingEdge.source;
-        let target = outgoingEdge.target;
+    // Redirect surviving edge
+    edgeToKeep.source = source;
+    edgeToKeep.target = target;
 
-        // Decide whether to keep the incoming or the outgoing edge.
-        // If both are epsilon edges, it doesn't matter which one to keep.
-        let [edgeToKeep, edgeToRemove] = incomingEdge.type === EdgeType.Epsilon
-            ? [outgoingEdge, incomingEdge]
-            : [incomingEdge, outgoingEdge];
+    // Delete both edges from the source
+    ArrayUtils.removeElementFromArray(edgeToRemove, source.outgoingEdges);
+    ArrayUtils.removeElementFromArray(edgeToKeep, source.outgoingEdges);
 
-        // Redirect surviving edge
-        edgeToKeep.source = source;
-        edgeToKeep.target = target;
+    // Delete both edges from the target
+    ArrayUtils.removeElementFromArray(edgeToRemove, target.incomingEdges);
+    ArrayUtils.removeElementFromArray(edgeToKeep, target.incomingEdges);
 
-        // Delete both edges from the source
-        Util.Arrays.removeElementFromArray(edgeToRemove, source.outgoingEdges);
-        Util.Arrays.removeElementFromArray(edgeToKeep, source.outgoingEdges);
+    // Add the new edge to both source and target
+    source.outgoingEdges.push(edgeToKeep);
+    target.incomingEdges.push(edgeToKeep);
 
-        // Delete both edges from the target
-        Util.Arrays.removeElementFromArray(edgeToRemove, target.incomingEdges);
-        Util.Arrays.removeElementFromArray(edgeToKeep, target.incomingEdges);
-
-        // Add the new edge to both source and target
-        source.outgoingEdges.push(edgeToKeep);
-        target.incomingEdges.push(edgeToKeep);
-
-        // Clear node
-        transitNode.incomingEdges = [];
-        transitNode.outgoingEdges = [];
-    }
+    // Clear node
+    transitNode.incomingEdges = [];
+    transitNode.outgoingEdges = [];
 }

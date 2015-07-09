@@ -1,91 +1,97 @@
-/// <reference path="../../collections/numericSet.ts" />
-/// <reference path="../../util/arrayUtil.ts" />
-/// <reference path="../../flow.ts" />
+import * as ESTree from "../../estree";
 
-namespace Styx.Passes {
-    export function rewriteConstantConditionalEdges(graph: ControlFlowGraph) {
-        let visitedNodes = Collections.NumericSet.create();
-        let edgesToRemove: FlowEdge[] = [];
+import { NumericSet } from "../../collections/numericSet";
+import * as ArrayUtils from "../../util/arrayUtil";
 
-        visitNode(graph.entry, visitedNodes, edgesToRemove);
+import {
+    ControlFlowGraph,
+    EdgeType,
+    FlowEdge,
+    FlowNode
+} from "../../flow";
 
-        for (let edge of edgesToRemove) {
-            removeEdge(edge);
-        }
+export function rewriteConstantConditionalEdges(graph: ControlFlowGraph) {
+    let visitedNodes = NumericSet.create();
+    let edgesToRemove: FlowEdge[] = [];
+
+    visitNode(graph.entry, visitedNodes, edgesToRemove);
+
+    for (let edge of edgesToRemove) {
+        removeEdge(edge);
+    }
+}
+
+function visitNode(node: FlowNode, visitedNodes: NumericSet, edgesToRemove: FlowEdge[]) {
+    if (visitedNodes.contains(node.id)) {
+        return;
     }
 
-    function visitNode(node: FlowNode, visitedNodes: Collections.NumericSet, edgesToRemove: FlowEdge[]) {
-        if (visitedNodes.contains(node.id)) {
-            return;
-        }
+    visitedNodes.add(node.id);
 
-        visitedNodes.add(node.id);
+    for (let edge of node.outgoingEdges) {
+        inspectEdge(edge, edgesToRemove);
+        visitNode(edge.target, visitedNodes, edgesToRemove);
+    }
+}
 
-        for (let edge of node.outgoingEdges) {
-            inspectEdge(edge, edgesToRemove);
-            visitNode(edge.target, visitedNodes, edgesToRemove);
-        }
+function inspectEdge(edge: FlowEdge, edgesToRemove: FlowEdge[]) {
+    if (edge.type !== EdgeType.Conditional || edge.data == null || !isCompileTimeConstant(edge.data)) {
+        // We only deal with conditional edges that have a condition
+        // whose truthiness we can safely determine at compile-time
+        return;
     }
 
-    function inspectEdge(edge: FlowEdge, edgesToRemove: FlowEdge[]) {
-        if (edge.type !== EdgeType.Conditional || edge.data == null || !isCompileTimeConstant(edge.data)) {
-            // We only deal with conditional edges that have a condition
-            // whose truthiness we can safely determine at compile-time
-            return;
-        }
-
-        if (isAlwaysTruthy(edge.data)) {
-            // Conditional edges with a constant truthy test are always taken;
-            // we can therefore turn them into simple epsilon edges
-            turnEdgeIntoEpsilonEdge(edge);
-        } else {
-            // Conditional edges with a constant falsy test are never taken;
-            // we thus remove this edge after walking the entire graph
-            edgesToRemove.push(edge);
-        }
+    if (isAlwaysTruthy(edge.data)) {
+        // Conditional edges with a constant truthy test are always taken;
+        // we can therefore turn them into simple epsilon edges
+        turnEdgeIntoEpsilonEdge(edge);
+    } else {
+        // Conditional edges with a constant falsy test are never taken;
+        // we thus remove this edge after walking the entire graph
+        edgesToRemove.push(edge);
     }
+}
 
-    function isCompileTimeConstant(expression: ESTree.Expression): boolean {
-        switch (expression.type) {
-            case ESTree.NodeType.Literal:
-                return true;
+function isCompileTimeConstant(expression: ESTree.Expression): boolean {
+    switch (expression.type) {
+        case ESTree.NodeType.Literal:
+            return true;
 
-            case ESTree.NodeType.UnaryExpression:
-                let unaryExpression = <ESTree.UnaryExpression>expression;
-                return unaryExpression.operator === "!" && isCompileTimeConstant(unaryExpression.argument);
+        case ESTree.NodeType.UnaryExpression:
+            let unaryExpression = <ESTree.UnaryExpression>expression;
+            return unaryExpression.operator === "!" && isCompileTimeConstant(unaryExpression.argument);
 
-            default:
-                return false;
-        }
+        default:
+            return false;
     }
+}
 
-    function isAlwaysTruthy(expression: ESTree.Expression): boolean {
-        switch (expression.type) {
-            case ESTree.NodeType.Literal:
-                return !!(<ESTree.Literal>expression).value;
+function isAlwaysTruthy(expression: ESTree.Expression): boolean {
+    switch (expression.type) {
+        case ESTree.NodeType.Literal:
+            return !!(<ESTree.Literal>expression).value;
 
-            case ESTree.NodeType.UnaryExpression:
-                let unaryExpression = <ESTree.UnaryExpression>expression;
+        case ESTree.NodeType.UnaryExpression:
+            let unaryExpression = <ESTree.UnaryExpression>expression;
 
-                if (unaryExpression.operator !== "!") {
-                    throw Error("This branch shouldn't have been reached");
-                }
+            if (unaryExpression.operator !== "!") {
+                throw Error("This branch shouldn't have been reached");
+            }
 
-                return !isAlwaysTruthy(unaryExpression.argument);
+            return !isAlwaysTruthy(unaryExpression.argument);
 
-            default:
-                throw Error("This case shouldn't have been reached");
-        }
+        default:
+            throw Error("This case shouldn't have been reached");
     }
+}
 
-    function turnEdgeIntoEpsilonEdge(edge: FlowEdge) {
-        edge.type = EdgeType.Epsilon;
-        edge.label = "";
-        edge.data = null;
-    }
+function turnEdgeIntoEpsilonEdge(edge: FlowEdge) {
+    edge.type = EdgeType.Epsilon;
+    edge.label = "";
+    edge.data = null;
+}
 
-    function removeEdge(edge: FlowEdge) {
-        Util.Arrays.removeElementFromArray(edge, edge.source.outgoingEdges);
-        Util.Arrays.removeElementFromArray(edge, edge.target.incomingEdges);
-    }
+function removeEdge(edge: FlowEdge) {
+    ArrayUtils.removeElementFromArray(edge, edge.source.outgoingEdges);
+    ArrayUtils.removeElementFromArray(edge, edge.target.incomingEdges);
 }

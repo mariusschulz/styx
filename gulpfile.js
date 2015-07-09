@@ -1,13 +1,16 @@
 var gulp = require("gulp");
-var shell = require("gulp-shell");
+var browserify = require('gulp-browserify');
+var rename = require('gulp-rename');
 
-var scriptGlobs = ["src/**/*.ts"];
+var browserifyEntryFile = "./dist/transpiled/browser.js";
 
-gulp.task("typescript", function() {
-    return gulp.src(scriptGlobs)
-        .pipe(shell(["node ../TypeScript/built/local/tsc -p src"]));
+gulp.task("browserify", function() {
+    return gulp.src(browserifyEntryFile)
+        .pipe(browserify())
+        .pipe(rename("styx.js"))
+        .pipe(gulp.dest("./dist/browser"));
 });
 
-gulp.task("default", ["typescript"], function() {
-    return gulp.watch(scriptGlobs, ["typescript"]);
+gulp.task("default", ["browserify"], function() {
+    return gulp.watch(browserifyEntryFile, ["browserify"]);
 });

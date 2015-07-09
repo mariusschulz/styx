@@ -2,10 +2,11 @@
     "compilerOptions": {
         "preserveConstEnums": true,
         "noImplicitAny": true,
-        "out": "../dist/styx.js",
-        "target": "ES5"
+        "outDir": "../dist/transpiled/",
+        "target": "ES5",
+        "module": "commonjs"
     },
     "files": [
-        "styx.ts"
+        "browser.ts"
     ]
 }
