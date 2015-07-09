@@ -9,9 +9,13 @@ namespace Styx.Passes {
     }
 
     export function removeUnreachableNodes(graphEntry: FlowNode) {
+        // First, traverse the graph following only outgoing edges
+        // to find and collect all reachable nodes
         let reachableNodes: NodeLookup = {};
         collectReachableNodes(graphEntry, reachableNodes);
 
+        // Now, traverse the entire graph following edges in both directions
+        // to find and collect all unreachable nodes
         let unreachableNodes: NodeLookup = {};
         let visitedNodes = Collections.NumericSet.create();
 
@@ -19,6 +23,7 @@ namespace Styx.Passes {
             collectUnreachableNodes(reachableNodes[nodeId], reachableNodes, unreachableNodes, visitedNodes);
         }
 
+        // Finally, delete unreachable (normal) nodes and their edges
         for (let nodeId of Object.keys(unreachableNodes)) {
             let unreachableNode = unreachableNodes[nodeId];
 
