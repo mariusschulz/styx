@@ -1,4 +1,4 @@
-import { parseStatements } from "../parser";
+import { parseStatements } from "./statement";
 
 import * as ESTree from "../../estree";
 import {

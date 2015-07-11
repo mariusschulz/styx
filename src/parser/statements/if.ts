@@ -1,7 +1,7 @@
 import { negateTruthiness } from "../expressions/negator";
 import { stringify } from "../expressions/stringifier";
 
-import { parseStatement } from "../parser";
+import { parseStatement } from "./statement";
 
 import * as ESTree from "../../estree";
 import {
@@ -11,6 +11,10 @@ import {
 } from "../../flow";
 
 export { parseIfStatement };
+
+interface StatementTypeToParserMap {
+    [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
+}
 
 function parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
     return ifStatement.alternate === null

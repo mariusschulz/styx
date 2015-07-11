@@ -1,7 +1,7 @@
 import { negateTruthiness } from "../expressions/negator";
 import { stringify } from "../expressions/stringifier";
 
-import { parseBlockStatement } from "../parser";
+import { parseBlockStatement } from "../statements/block";
 
 import { Stack } from "../../collections/stack";
 

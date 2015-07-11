@@ -1,7 +1,7 @@
 import { negateTruthiness } from "../expressions/negator";
 import { stringify } from "../expressions/stringifier";
 
-import { parseStatements } from "../parser";
+import { parseStatements } from "./statement";
 
 import * as ESTree from "../../estree";
 import {

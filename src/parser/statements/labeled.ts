@@ -4,7 +4,7 @@ import { parseForInStatement } from "./forIn";
 import { parseSwitchStatement } from "./switch";
 import { parseWhileStatement } from "./while";
 
-import { parseStatement } from "../parser";
+import { parseStatement } from "./statement";
 
 import * as ESTree from "../../estree";
 import {

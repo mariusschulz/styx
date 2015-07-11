@@ -1,6 +1,6 @@
 import { stringify } from "../expressions/stringifier";
 
-import { parseStatement } from "../parser";
+import { parseStatement } from "./statement";
 
 import * as ESTree from "../../estree";
 import {
