@@ -34,6 +34,7 @@ import { parseReturnStatement } from "./statements/return";
 import { parseSwitchStatement } from "./statements/switch";
 import { parseThrowStatement } from "./statements/throw";
 import { parseTryStatement } from "./statements/try";
+import { parseVariableDeclaration } from "./statements/variableDeclaration";
 import { parseWhileStatement } from "./statements/while";
 import { parseWithStatement } from "./statements/with";
 
@@ -159,16 +160,6 @@ function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, cont
     }
 
     return parsingMethod(statement, currentNode, context);
-}
-
-function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): Completion {
-    for (let declarator of declaration.declarations) {
-        let initString = stringify(declarator.init);
-        let edgeLabel = `${declarator.id.name} = ${initString}`;
-        currentNode = context.createNode().appendTo(currentNode, edgeLabel);
-    }
-
-    return { normal: currentNode };
 }
 
 function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
