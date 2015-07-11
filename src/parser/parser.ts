@@ -37,32 +37,6 @@ function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
     return parsedProgram;
 }
 
-function createParsingContext(): ParsingContext {
-    let nodeIdGenerator = IdGenerator.create();
-    let functionIdGenerator = IdGenerator.create();
-    let variableNameIdGenerator = IdGenerator.create();
-
-    return {
-        functions: [],
-        currentFlowGraph: null,
-
-        enclosingStatements: Stack.create<EnclosingStatement>(),
-
-        createTemporaryLocalVariableName() {
-            return "$$temp" + variableNameIdGenerator.generateId();
-        },
-
-        createNode(type = NodeType.Normal) {
-            let id = nodeIdGenerator.generateId();
-            return new FlowNode(id, type);
-        },
-
-        createFunctionId() {
-            return functionIdGenerator.generateId();
-        }
-    };
-}
-
 function parseProgram(program: ESTree.Program, context: ParsingContext): FlowProgram {
     let entryNode = context.createNode(NodeType.Entry);
     let successExitNode = context.createNode(NodeType.SuccessExit);
@@ -86,5 +60,31 @@ function parseProgram(program: ESTree.Program, context: ParsingContext): FlowPro
     return {
         flowGraph: programFlowGraph,
         functions: context.functions
+    };
+}
+
+function createParsingContext(): ParsingContext {
+    let nodeIdGenerator = IdGenerator.create();
+    let functionIdGenerator = IdGenerator.create();
+    let variableNameIdGenerator = IdGenerator.create();
+
+    return {
+        functions: [],
+        currentFlowGraph: null,
+
+        enclosingStatements: Stack.create<EnclosingStatement>(),
+
+        createTemporaryLocalVariableName() {
+            return "$$temp" + variableNameIdGenerator.generateId();
+        },
+
+        createNode(type = NodeType.Normal) {
+            let id = nodeIdGenerator.generateId();
+            return new FlowNode(id, type);
+        },
+
+        createFunctionId() {
+            return functionIdGenerator.generateId();
+        }
     };
 }
