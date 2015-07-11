@@ -27,7 +27,7 @@ import {
 
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
 import { parseIfStatement } from "./statements/if";
-import { parseFunctionDeclaration } from "./statements/function";
+import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseSwitchStatement } from "./statements/switch";
 
 export { parse, parseBlockStatement, parseStatement, parseStatements };
