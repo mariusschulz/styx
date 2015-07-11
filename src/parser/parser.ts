@@ -1,4 +1,3 @@
-import { negateTruthiness } from "./expressions/negator";
 import { stringify } from "./expressions/stringifier";
 
 import * as Passes from "./passes/index";
@@ -12,12 +11,7 @@ import * as ESTree from "../estree";
 import {
     Completion,
     ControlFlowGraph,
-    EdgeType,
     EnclosingStatement,
-    EnclosingStatementType,
-    EnclosingTryStatement,
-    FlowEdge,
-    FlowFunction,
     FlowNode,
     FlowProgram,
     NodeType,
