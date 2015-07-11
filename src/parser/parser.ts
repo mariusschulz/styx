@@ -21,8 +21,13 @@ import {
     FlowNode,
     FlowProgram,
     NodeType,
+    ParsingContext,
     ParserOptions
-} from "./../flow";
+} from "../flow";
+
+import { parseIfStatement } from "./statements/if";
+
+export { parse, parseStatement };
 
 interface CaseBlock {
     caseClausesA: ESTree.SwitchCase[];
@@ -34,7 +39,7 @@ interface StatementTypeToParserMap {
     [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
 }
 
-export function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
+function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
     let context = createParsingContext();
 
     let rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(program);
