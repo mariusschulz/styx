@@ -236,7 +236,7 @@ function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNo
     let argument = returnStatement.argument ? stringify(returnStatement.argument) : "undefined";
     let returnLabel = `return ${argument}`;
 
-    let finalizerCompletion = runFinalizersBeforerReturn(currentNode, context);
+    let finalizerCompletion = runFinalizersBeforeReturn(currentNode, context);
 
     if (!finalizerCompletion.normal) {
         return finalizerCompletion;
@@ -585,7 +585,7 @@ function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, 
     return currentNode;
 }
 
-function runFinalizersBeforerReturn(currentNode: FlowNode, context: ParsingContext): Completion {
+function runFinalizersBeforeReturn(currentNode: FlowNode, context: ParsingContext): Completion {
     let enclosingTryStatements = <EnclosingTryStatement[]>context.enclosingStatements
         .enumerateElements()
         .filter(statement => statement.type === EnclosingStatementType.TryStatement);
