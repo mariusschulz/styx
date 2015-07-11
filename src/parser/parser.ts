@@ -30,6 +30,7 @@ import { parseDebuggerStatement } from "./statements/debugger";
 import { parseDoWhileStatement } from "./statements/doWhile";
 import { parseExpression, parseExpressionStatement } from "./statements/expression";
 import { parseForStatement } from "./statements/for";
+import { parseForInStatement } from "./statements/forIn";
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseReturnStatement } from "./statements/return";
@@ -232,39 +233,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    let stringifiedRight = stringify(forInStatement.right);
-
-    let variableDeclarator = forInStatement.left.declarations[0];
-    let variableName = variableDeclarator.id.name;
-
-    let conditionNode = context.createNode()
-        .appendTo(currentNode, stringifiedRight);
-
-    let startOfLoopBody = context.createNode()
-        .appendConditionallyTo(conditionNode, `${variableName} = <next>`, forInStatement.right);
-
-    let finalNode = context.createNode()
-        .appendConditionallyTo(conditionNode, "<no more>", null);
-
-    context.enclosingStatements.push({
-        type: EnclosingStatementType.OtherStatement,
-        breakTarget: finalNode,
-        continueTarget: conditionNode,
-        label: label
-    });
-
-    let loopBodyCompletion = parseStatement(forInStatement.body, startOfLoopBody, context);
-
-    context.enclosingStatements.pop();
-
-    if (loopBodyCompletion.normal) {
-        conditionNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
-    }
-
-    return { normal: finalNode };
 }
 
 function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
