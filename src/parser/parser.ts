@@ -1,7 +1,5 @@
 import { stringify } from "./expressions/stringifier";
 
-import * as Passes from "./passes/index";
-
 import * as AstPreprocessing from "./preprocessing/functionExpressionRewriter";
 
 import { Stack } from "../collections/stack";
@@ -18,6 +16,8 @@ import {
     ParsingContext,
     ParserOptions
 } from "../flow";
+
+import { runOptimizationPasses } from "./passes/index";
 
 import { parseBlockStatement } from "./statements/block";
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
@@ -160,20 +160,4 @@ function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, cont
     }
 
     return parsingMethod(statement, currentNode, context);
-}
-
-function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
-    for (let graph of graphs) {
-        if (options.passes.rewriteConstantConditionalEdges) {
-            Passes.rewriteConstantConditionalEdges(graph);
-        }
-
-        Passes.removeUnreachableNodes(graph);
-
-        if (options.passes.removeTransitNodes) {
-            Passes.removeTransitNodes(graph);
-        }
-
-        Passes.collectNodesAndEdges(graph);
-    }
 }
