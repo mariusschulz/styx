@@ -26,6 +26,7 @@ import {
 } from "../flow";
 
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
+import { parseDebuggerStatement } from "./statements/debugger";
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseReturnStatement } from "./statements/return";
@@ -385,10 +386,6 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     }
 
     return { normal: finalNode };
-}
-
-function parseDebuggerStatement(debuggerStatement: ESTree.DebuggerStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    return { normal: currentNode };
 }
 
 function parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode, context: ParsingContext): Completion {
