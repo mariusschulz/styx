@@ -27,6 +27,7 @@ import {
 
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
 import { parseDebuggerStatement } from "./statements/debugger";
+import { parseExpression, parseExpressionStatement } from "./statements/expression";
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseReturnStatement } from "./statements/return";
@@ -386,31 +387,6 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     }
 
     return { normal: finalNode };
-}
-
-function parseExpressionStatement(expressionStatement: ESTree.ExpressionStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    return {
-        normal: parseExpression(expressionStatement.expression, currentNode, context)
-    };
-}
-
-function parseExpression(expression: ESTree.Expression, currentNode: FlowNode, context: ParsingContext): FlowNode {
-    if (expression.type === ESTree.NodeType.SequenceExpression) {
-        return parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode, context);
-    }
-
-    let expressionLabel = stringify(expression);
-
-    return context.createNode()
-        .appendTo(currentNode, expressionLabel);
-}
-
-function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, context: ParsingContext): FlowNode {
-    for (let expression of sequenceExpression.expressions) {
-        currentNode = parseExpression(expression, currentNode, context);
-    }
-
-    return currentNode;
 }
 
 function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
