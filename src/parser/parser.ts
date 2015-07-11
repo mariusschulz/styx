@@ -27,6 +27,7 @@ import {
 
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
 import { parseDebuggerStatement } from "./statements/debugger";
+import { parseDoWhileStatement } from "./statements/doWhile";
 import { parseExpression, parseExpressionStatement } from "./statements/expression";
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
@@ -230,39 +231,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    // Truthy test (enter loop)
-    let truthyCondition = doWhileStatement.test;
-    let truthyConditionLabel = stringify(truthyCondition);
-
-    // Falsy test (exit loop)
-    let falsyCondition = negateTruthiness(truthyCondition);
-    let falsyConditionLabel = stringify(falsyCondition);
-
-    let testNode = context.createNode();
-    let finalNode = context.createNode();
-
-    context.enclosingStatements.push({
-        type: EnclosingStatementType.OtherStatement,
-        continueTarget: testNode,
-        breakTarget: finalNode,
-        label: label
-    });
-
-    let loopBodyCompletion = parseStatement(doWhileStatement.body, currentNode, context);
-
-    context.enclosingStatements.pop();
-
-    currentNode.appendConditionallyTo(testNode, truthyConditionLabel, truthyCondition);
-    finalNode.appendConditionallyTo(testNode, falsyConditionLabel, falsyCondition);
-
-    if (loopBodyCompletion.normal) {
-        testNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
-    }
-
-    return { normal: finalNode };
 }
 
 function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
