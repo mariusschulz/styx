@@ -1,11 +1,5 @@
 import * as ESTree from "./estree";
-
-export interface ParserOptions {
-    passes?: {
-        removeTransitNodes?: boolean,
-        rewriteConstantConditionalEdges?: boolean
-    }
-}
+import { Stack } from "./collections/stack";
 
 export interface FlowProgram {
     flowGraph: ControlFlowGraph;
@@ -83,4 +77,55 @@ export const enum EdgeType {
     Epsilon = 1,
     Conditional = 2,
     AbruptCompletion = 3
+}
+
+export interface ParsingContext {
+    functions: FlowFunction[];
+    currentFlowGraph: ControlFlowGraph;
+
+    enclosingStatements: Stack<EnclosingStatement>;
+
+    createTemporaryLocalVariableName(): string;
+    createNode(type?: NodeType): FlowNode;
+    createFunctionId(): number;
+}
+
+export interface ParserOptions {
+    passes?: {
+        removeTransitNodes?: boolean,
+        rewriteConstantConditionalEdges?: boolean
+    }
+}
+
+export interface Completion {
+    normal?: FlowNode;
+    break?: boolean;
+    continue?: boolean;
+    return?: boolean;
+    throw?: boolean;
+};
+
+export const enum EnclosingStatementType {
+    TryStatement,
+    OtherStatement
+}
+
+export interface EnclosingStatement {
+    type: EnclosingStatementType;
+    label: string;
+    continueTarget: FlowNode;
+    breakTarget: FlowNode;
+}
+
+export interface EnclosingTryStatement extends EnclosingStatement {
+    isCurrentlyInTryBlock: boolean;
+    isCurrentlyInFinalizer: boolean;
+    handler: ESTree.CatchClause;
+    handlerBodyEntry: FlowNode;
+    parseFinalizer: () => Finalizer;
+}
+
+export interface Finalizer {
+    bodyEntry: FlowNode;
+    bodyCompletion: Completion;
 }
