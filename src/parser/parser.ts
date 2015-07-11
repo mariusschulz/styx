@@ -29,6 +29,7 @@ import { parseBreakStatement, parseContinueStatement } from "./statements/breakC
 import { parseDebuggerStatement } from "./statements/debugger";
 import { parseDoWhileStatement } from "./statements/doWhile";
 import { parseExpression, parseExpressionStatement } from "./statements/expression";
+import { parseForStatement } from "./statements/for";
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseReturnStatement } from "./statements/return";
@@ -231,65 +232,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    // Parse initialization
-    let testDecisionNode = parseStatement(forStatement.init, currentNode, context).normal;
-
-    // Create nodes for loop cornerstones
-    let beginOfLoopBodyNode = context.createNode();
-    let updateNode = context.createNode();
-    let finalNode = context.createNode();
-
-    if (forStatement.test) {
-        // If the loop has a test expression,
-        // we need to add truthy and falsy edges
-        let truthyCondition = forStatement.test;
-        let falsyCondition = negateTruthiness(truthyCondition);
-
-        // Create edges labels
-        let truthyConditionLabel = stringify(truthyCondition);
-        let falsyConditionLabel = stringify(falsyCondition);
-
-        // Add truthy and falsy edges
-        beginOfLoopBodyNode.appendConditionallyTo(testDecisionNode, truthyConditionLabel, truthyCondition);
-        finalNode.appendConditionallyTo(testDecisionNode, falsyConditionLabel, falsyCondition);
-    } else {
-        // If the loop doesn't have a test expression,
-        // the loop body starts unconditionally after the initialization
-        beginOfLoopBodyNode.appendEpsilonEdgeTo(testDecisionNode);
-    }
-
-    context.enclosingStatements.push({
-        type: EnclosingStatementType.OtherStatement,
-        continueTarget: updateNode,
-        breakTarget: finalNode,
-        label: label
-    });
-
-    let loopBodyCompletion = parseStatement(forStatement.body, beginOfLoopBodyNode, context);
-
-    context.enclosingStatements.pop();
-
-    if (forStatement.update) {
-        // If the loop has an update expression,
-        // parse it and append it to the end of the loop body
-        let endOfUpdateNode = parseExpression(forStatement.update, updateNode, context);
-        testDecisionNode.appendEpsilonEdgeTo(endOfUpdateNode);
-    } else {
-        // If the loop doesn't have an update expression,
-        // treat the update node as a dummy and point it to the test node
-        testDecisionNode.appendEpsilonEdgeTo(updateNode);
-    }
-
-    if (loopBodyCompletion.normal) {
-        // If we reached the end of the loop body through normal control flow,
-        // continue regularly with the update
-        updateNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
-    }
-
-    return { normal: finalNode };
 }
 
 function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
