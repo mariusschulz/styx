@@ -19,6 +19,7 @@ import {
     ParserOptions
 } from "../flow";
 
+import { parseBlockStatement } from "./statements/block";
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
 import { parseDebuggerStatement } from "./statements/debugger";
 import { parseDoWhileStatement } from "./statements/doWhile";
@@ -163,10 +164,6 @@ function parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode:
     return {
         normal: context.createNode().appendTo(currentNode, "(empty)")
     };
-}
-
-function parseBlockStatement(blockStatement: ESTree.BlockStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    return parseStatements(blockStatement.body, currentNode, context);
 }
 
 function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): Completion {
