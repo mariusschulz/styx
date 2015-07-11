@@ -30,6 +30,7 @@ import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseSwitchStatement } from "./statements/switch";
 import { parseThrowStatement } from "./statements/throw";
+import { parseWithStatement } from "./statements/with";
 
 export { parse, parseBlockStatement, parseStatement, parseStatements };
 
@@ -224,13 +225,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    let stringifiedExpression = stringify(withStatement.object);
-    let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression);
-
-    return parseStatement(withStatement.body, expressionNode, context);
 }
 
 function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNode: FlowNode, context: ParsingContext): Completion {
