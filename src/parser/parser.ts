@@ -34,6 +34,7 @@ import { parseReturnStatement } from "./statements/return";
 import { parseSwitchStatement } from "./statements/switch";
 import { parseThrowStatement } from "./statements/throw";
 import { parseTryStatement } from "./statements/try";
+import { parseWhileStatement } from "./statements/while";
 import { parseWithStatement } from "./statements/with";
 
 export { parse, parseBlockStatement, parseStatement, parseStatements };
@@ -229,39 +230,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseWhileStatement(whileStatement: ESTree.WhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    // Truthy test (enter loop)
-    let truthyCondition = whileStatement.test;
-    let truthyConditionLabel = stringify(truthyCondition);
-
-    // Falsy test (exit loop)
-    let falsyCondition = negateTruthiness(truthyCondition);
-    let falsyConditionLabel = stringify(falsyCondition);
-
-    let loopBodyNode = context.createNode().appendConditionallyTo(currentNode, truthyConditionLabel, truthyCondition);
-    let finalNode = context.createNode();
-
-    context.enclosingStatements.push({
-        type: EnclosingStatementType.OtherStatement,
-        continueTarget: currentNode,
-        breakTarget: finalNode,
-        label: label
-    });
-
-    let loopBodyCompletion = parseStatement(whileStatement.body, loopBodyNode, context);
-
-    if (loopBodyCompletion.normal) {
-        currentNode.appendEpsilonEdgeTo(loopBodyCompletion.normal);
-    }
-
-    context.enclosingStatements.pop();
-
-    finalNode
-        .appendConditionallyTo(currentNode, falsyConditionLabel, falsyCondition);
-
-    return { normal: finalNode };
 }
 
 function parseDoWhileStatement(doWhileStatement: ESTree.DoWhileStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
