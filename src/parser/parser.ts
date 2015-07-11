@@ -19,6 +19,9 @@ import {
 
 import { runOptimizationPasses } from "./passes/index";
 
+import { parseFunctionDeclaration } from "./declarations/function";
+import { parseVariableDeclaration } from "./declarations/variable";
+
 import { parseBlockStatement } from "./statements/block";
 import { parseBreakStatement, parseContinueStatement } from "./statements/breakContinue";
 import { parseDebuggerStatement } from "./statements/debugger";
@@ -27,14 +30,12 @@ import { parseEmptyStatement } from "./statements/empty";
 import { parseExpression, parseExpressionStatement } from "./statements/expression";
 import { parseForStatement } from "./statements/for";
 import { parseForInStatement } from "./statements/forIn";
-import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseIfStatement } from "./statements/if";
 import { parseLabeledStatement } from "./statements/labeled";
 import { parseReturnStatement } from "./statements/return";
 import { parseSwitchStatement } from "./statements/switch";
 import { parseThrowStatement } from "./statements/throw";
 import { parseTryStatement } from "./statements/try";
-import { parseVariableDeclaration } from "./statements/variableDeclaration";
 import { parseWhileStatement } from "./statements/while";
 import { parseWithStatement } from "./statements/with";
 
