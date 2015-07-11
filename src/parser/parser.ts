@@ -10,8 +10,12 @@ import IdGenerator from "../util/idGenerator";
 
 import * as ESTree from "../estree";
 import {
+    Completion,
     ControlFlowGraph,
     EdgeType,
+    EnclosingStatement,
+    EnclosingStatementType,
+    EnclosingTryStatement,
     FlowEdge,
     FlowFunction,
     FlowNode,
@@ -20,28 +24,10 @@ import {
     ParserOptions
 } from "./../flow";
 
-import {
-    Completion,
-    EnclosingStatement,
-    EnclosingStatementType,
-    EnclosingTryStatement
-} from "./enclosingStatement";
-
 interface CaseBlock {
     caseClausesA: ESTree.SwitchCase[];
     defaultCase: ESTree.SwitchCase;
     caseClausesB: ESTree.SwitchCase[];
-}
-
-interface ParsingContext {
-    functions: FlowFunction[];
-    currentFlowGraph: ControlFlowGraph;
-
-    enclosingStatements: Stack<EnclosingStatement>;
-
-    createTemporaryLocalVariableName(): string;
-    createNode(type?: NodeType): FlowNode;
-    createFunctionId(): number;
 }
 
 interface StatementTypeToParserMap {
@@ -287,58 +273,6 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
-}
-
-function parseIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    return ifStatement.alternate === null
-        ? parseSimpleIfStatement(ifStatement, currentNode, context)
-        : parseIfElseStatement(ifStatement, currentNode, context);
-}
-
-function parseSimpleIfStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    let negatedTest = negateTruthiness(ifStatement.test);
-
-    let thenLabel = stringify(ifStatement.test);
-    let elseLabel = stringify(negatedTest);
-
-    let thenNode = context.createNode()
-        .appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
-
-    let thenBranchCompletion = parseStatement(ifStatement.consequent, thenNode, context);
-
-    let finalNode = context.createNode()
-        .appendConditionallyTo(currentNode, elseLabel, negatedTest);
-
-    if (thenBranchCompletion.normal) {
-        finalNode.appendEpsilonEdgeTo(thenBranchCompletion.normal);
-    }
-
-    return { normal: finalNode };
-}
-
-function parseIfElseStatement(ifStatement: ESTree.IfStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    // Then branch
-    let thenLabel = stringify(ifStatement.test);
-    let thenNode = context.createNode().appendConditionallyTo(currentNode, thenLabel, ifStatement.test);
-    let thenBranchCompletion = parseStatement(ifStatement.consequent, thenNode, context);
-
-    // Else branch
-    let negatedTest = negateTruthiness(ifStatement.test);
-    let elseLabel = stringify(negatedTest);
-    let elseNode = context.createNode().appendConditionallyTo(currentNode, elseLabel, negatedTest);
-    let elseBranchCompletion = parseStatement(ifStatement.alternate, elseNode, context);
-
-    let finalNode = context.createNode();
-
-    if (thenBranchCompletion.normal) {
-        finalNode.appendEpsilonEdgeTo(thenBranchCompletion.normal);
-    }
-
-    if (elseBranchCompletion.normal) {
-        finalNode.appendEpsilonEdgeTo(elseBranchCompletion.normal);
-    }
-
-    return { normal: finalNode };
 }
 
 function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode: FlowNode, context: ParsingContext): Completion {
