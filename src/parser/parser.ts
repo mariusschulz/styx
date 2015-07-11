@@ -25,7 +25,7 @@ import {
     EnclosingStatement,
     EnclosingStatementType,
     EnclosingTryStatement
-} from "enclosingStatement";
+} from "./enclosingStatement";
 
 interface CaseBlock {
     caseClausesA: ESTree.SwitchCase[];
