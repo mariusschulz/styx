@@ -29,6 +29,7 @@ import { parseBreakStatement, parseContinueStatement } from "./statements/breakC
 import { parseIfStatement } from "./statements/if";
 import { parseFunctionDeclaration } from "./statements/functionDeclaration";
 import { parseSwitchStatement } from "./statements/switch";
+import { parseThrowStatement } from "./statements/throw";
 
 export { parse, parseBlockStatement, parseStatement, parseStatements };
 
@@ -246,53 +247,6 @@ function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNo
         .appendTo(finalizerCompletion.normal, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
 
     return { return: true };
-}
-
-function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode: FlowNode, context: ParsingContext): Completion {
-    let throwLabel = "throw " + stringify(throwStatement.argument);
-    let enclosingStatements = context.enclosingStatements.enumerateElements();
-
-    let foundHandler = false;
-
-    for (let statement of enclosingStatements) {
-        if (statement.type !== EnclosingStatementType.TryStatement) {
-            continue;
-        }
-
-        let tryStatement = <EnclosingTryStatement>statement;
-
-        if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
-            let parameter = stringify(tryStatement.handler.param);
-            let argument = stringify(throwStatement.argument);
-
-            let assignmentNode = context.createNode()
-                .appendTo(currentNode, `${parameter} = ${argument}`);
-
-            tryStatement.handlerBodyEntry.appendEpsilonEdgeTo(assignmentNode);
-
-            foundHandler = true;
-            break;
-        } else if (tryStatement.parseFinalizer && !tryStatement.isCurrentlyInFinalizer) {
-            tryStatement.isCurrentlyInFinalizer = true;
-            let finalizer = tryStatement.parseFinalizer();
-            tryStatement.isCurrentlyInFinalizer = false;
-
-            finalizer.bodyEntry.appendEpsilonEdgeTo(currentNode);
-
-            if (finalizer.bodyCompletion.normal) {
-                currentNode = finalizer.bodyCompletion.normal;
-            } else {
-                return finalizer.bodyCompletion;
-            }
-        }
-    }
-
-    if (!foundHandler) {
-        context.currentFlowGraph.errorExit
-            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
-    }
-
-    return { throw: true };
 }
 
 function parseTryStatement(tryStatement: ESTree.TryStatement, currentNode: FlowNode, context: ParsingContext): Completion {
