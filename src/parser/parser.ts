@@ -1,5 +1,3 @@
-import { stringify } from "./expressions/stringifier";
-
 import * as AstPreprocessing from "./preprocessing/functionExpressionRewriter";
 
 import { Stack } from "../collections/stack";
