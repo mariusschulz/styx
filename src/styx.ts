@@ -20,7 +20,7 @@ function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
 }
 
 function isObject(value: any): boolean {
-    return typeof value === "object" && !!value;
+    return typeof value === "object" && value !== null;
 }
 
 function normalizeParserOptions(options: ParserOptions): ParserOptions {
