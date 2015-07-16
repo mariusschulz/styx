@@ -54,7 +54,7 @@ function rewriteFunctionExpressions(program: ESTree.Program): ESTree.Program {
         return {
             type: ESTree.NodeType.Identifier,
             name: funcName
-        }
+        };
     }
 }
 
