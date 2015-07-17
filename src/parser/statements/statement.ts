@@ -51,10 +51,6 @@ function parseStatements(statements: ESTree.Statement[], currentNode: FlowNode, 
 }
 
 function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext): Completion {
-    if (statement === null) {
-        return { normal: currentNode };
-    }
-
     let statementParsers: StatementTypeToParserMap = {
         [ESTree.NodeType.BlockStatement]: parseBlockStatement,
         [ESTree.NodeType.BreakStatement]: parseBreakStatement,

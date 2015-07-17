@@ -17,7 +17,9 @@ export { parseForStatement };
 
 function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
     // Parse initialization
-    let testDecisionNode = parseStatement(forStatement.init, currentNode, context).normal;
+    let testDecisionNode = forStatement.init
+        ? parseStatement(forStatement.init, currentNode, context).normal
+        : currentNode;
 
     // Create nodes for loop cornerstones
     let beginOfLoopBodyNode = context.createNode();
