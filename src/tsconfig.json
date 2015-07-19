@@ -3,7 +3,7 @@
         "preserveConstEnums": true,
         "noImplicitAny": true,
         "outDir": "../dist/transpiled/",
-        "target": "ES5",
+        "target": "es5",
         "module": "commonjs"
     },
     "files": [
