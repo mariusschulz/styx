@@ -26,25 +26,7 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
         case ESTree.NodeType.IfStatement:
         case ESTree.NodeType.TryStatement:
         case ESTree.NodeType.WithStatement:
-            let finalNode = context.createNode();
-
-            let enclosingStatement: EnclosingStatement = {
-                type: EnclosingStatementType.OtherStatement,
-                breakTarget: finalNode,
-                continueTarget: null,
-                label: label
-            };
-
-            context.enclosingStatements.push(enclosingStatement);
-            let bodyCompletion = parseStatement(body, currentNode, context);
-            context.enclosingStatements.pop();
-
-            if (bodyCompletion.normal) {
-                finalNode.appendEpsilonEdgeTo(bodyCompletion.normal);
-                return { normal: finalNode };
-            }
-
-            return bodyCompletion;
+            return parseLabeledEnclosingStatement(labeledStatement, currentNode, context, label);
 
         case ESTree.NodeType.SwitchStatement:
             return parseSwitchStatement(<ESTree.SwitchStatement>body, currentNode, context, label);
@@ -66,4 +48,26 @@ function parseLabeledStatement(labeledStatement: ESTree.LabeledStatement, curren
             // the label is irrelevant for control flow and we thus don't track it.
             return parseStatement(body, currentNode, context);
     }
+}
+
+function parseLabeledEnclosingStatement(labeledStatement: ESTree.LabeledStatement, currentNode: FlowNode, context: ParsingContext, label: string): Completion {
+    let finalNode = context.createNode();
+
+    let enclosingStatement: EnclosingStatement = {
+        type: EnclosingStatementType.OtherStatement,
+        breakTarget: finalNode,
+        continueTarget: null,
+        label: label
+    };
+
+    context.enclosingStatements.push(enclosingStatement);
+    let bodyCompletion = parseStatement(labeledStatement.body, currentNode, context);
+    context.enclosingStatements.pop();
+
+    if (bodyCompletion.normal) {
+        finalNode.appendEpsilonEdgeTo(bodyCompletion.normal);
+        return { normal: finalNode };
+    }
+
+    return bodyCompletion;
 }
