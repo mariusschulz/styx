@@ -2,17 +2,32 @@ export { exportDot };
 
 import {
     ControlFlowGraph,
-    EdgeType,
-    FlowProgram,
-    NodeType,
+    FlowEdge,
+    FlowProgram
 } from "../flow";
+
+const INDENT = "    ";
 
 function exportDot(flowProgram: FlowProgram, functionId = 0): string {
     const flowGraph = findFlowGraphForId(flowProgram, functionId);
 
-    let output = "";
+    let edgeLines = flowGraph.edges.map(formatEdge).map(indent);
 
-    return output;
+    let outputLines = [
+        "digraph control_flow_graph {",
+        ...edgeLines,
+        "}"
+    ];
+
+    return outputLines.join("\n");
+}
+
+function indent(line: string): string {
+    return INDENT + line;
+}
+
+function formatEdge(edge: FlowEdge): string {
+    return `${edge.source.id} -> ${edge.target.id} [ label = "${edge.label}" ]`;
 }
 
 function findFlowGraphForId(flowProgram: FlowProgram, functionId: number): ControlFlowGraph {
