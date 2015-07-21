@@ -3,6 +3,7 @@ import { FlowProgram, ParserOptions } from "./flow";
 import * as Parser from "./parser/parser";
 
 export { parse };
+export * from "./exporters/dot";
 export * from "./exporters/json";
 export * from "./flow";
 
