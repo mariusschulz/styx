@@ -3,31 +3,51 @@ export { exportDot };
 import {
     ControlFlowGraph,
     FlowEdge,
-    FlowProgram
+    FlowNode,
+    FlowProgram,
+    NodeType
 } from "../flow";
-
-const INDENT = "    ";
 
 function exportDot(flowProgram: FlowProgram, functionId = 0): string {
     const flowGraph = findFlowGraphForId(flowProgram, functionId);
+    
+    return computeDotLines(flowGraph).join("\n");
+}
 
-    let edgeLines = flowGraph.edges.map(formatEdge).map(indent);
+function computeDotLines(flowGraph: ControlFlowGraph): string[] {
+    let entryAndExitNodeList = flowGraph.nodes
+        .filter(isEntryOrExitNode)
+        .map(node => node.id)
+        .join(" ");
 
-    let outputLines = [
+    let edgeLines = flowGraph.edges.map(formatEdge);
+
+    return [
         "digraph control_flow_graph {",
-        ...edgeLines,
+        `    node [shape = doublecircle] ${entryAndExitNodeList}`,
+        "    node [shape = circle]",
+        "",
+        ...edgeLines.map(indent),
         "}"
     ];
+}
 
-    return outputLines.join("\n");
+function isEntryOrExitNode(node: FlowNode): boolean {
+    return node.type === NodeType.Entry
+        || node.type === NodeType.ErrorExit
+        || node.type === NodeType.SuccessExit;
 }
 
 function indent(line: string): string {
-    return INDENT + line;
+    return "    " + line;
 }
 
 function formatEdge(edge: FlowEdge): string {
-    return `${edge.source.id} -> ${edge.target.id} [ label = "${edge.label}" ]`;
+    const from = edge.source.id;
+    const to = edge.target.id;
+    const attributes = edge.label ? ` [label = "${edge.label}"]` : "";
+
+    return `${from} -> ${to}${attributes}`;
 }
 
 function findFlowGraphForId(flowProgram: FlowProgram, functionId: number): ControlFlowGraph {
