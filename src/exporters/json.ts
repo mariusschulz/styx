@@ -2,26 +2,8 @@ export { exportJson };
 
 import {
     ControlFlowGraph,
-    EdgeType,
-    FlowProgram,
-    NodeType,
+    FlowProgram
 } from "../flow";
-
-interface FlatFlowNode {
-    id: number;
-    type: NodeType;
-}
-
-interface FlatFlowEdge {
-    from: number;
-    to: number;
-    type: EdgeType;
-}
-
-interface FlatControlFlowGraph {
-    nodes: FlatFlowNode[];
-    edges: FlatFlowEdge[];
-}
 
 function exportJson(flowProgram: FlowProgram): string {
     const program = {
@@ -37,7 +19,7 @@ function exportJson(flowProgram: FlowProgram): string {
     return JSON.stringify({ program, functions }, null, 2);
 }
 
-function flattenFlowGraph(flowGraph: ControlFlowGraph): FlatControlFlowGraph {
+function flattenFlowGraph(flowGraph: ControlFlowGraph) {
     const nodes = flowGraph.nodes.map(node => ({
         id: node.id,
         type: node.type
