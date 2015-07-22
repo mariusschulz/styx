@@ -2,11 +2,14 @@ export { exportDot };
 
 import {
     ControlFlowGraph,
+    EdgeType,
     FlowEdge,
     FlowNode,
     FlowProgram,
     NodeType
 } from "../flow";
+
+import { partition } from "../util/ArrayUtil";
 
 function exportDot(flowProgram: FlowProgram, functionId = 0): string {
     const flowGraph = findFlowGraphForId(flowProgram, functionId);
@@ -20,14 +23,20 @@ function computeDotLines(flowGraph: ControlFlowGraph): string[] {
         .map(node => node.id)
         .join(" ");
 
-    let edgeLines = flowGraph.edges.map(formatEdge);
+    let [conditionalEdges, unconditionalEdges] = partition(flowGraph.edges,
+        edge => edge.type === EdgeType.Conditional);
 
     return [
         "digraph control_flow_graph {",
         `    node [shape = doublecircle] ${entryAndExitNodeList}`,
         "    node [shape = circle]",
         "",
-        ...edgeLines.map(indent),
+        "    // Unconditional edges",
+        ...unconditionalEdges.map(formatEdge).map(indent),
+        "",
+        "    // Conditional edges",
+        "    edge [color = orange, fontcolor = orange]",
+        ...conditionalEdges.map(formatEdge).map(indent),
         "}"
     ];
 }
@@ -44,7 +53,7 @@ function indent(line: string): string {
 function formatEdge(edge: FlowEdge): string {
     const from = edge.source.id;
     const to = edge.target.id;
-    const attributes = edge.label ? ` [label = "${edge.label}"]` : "";
+    const attributes = edge.label ? ` [label = " ${edge.label}"]` : "";
 
     return `${from} -> ${to}${attributes}`;
 }
