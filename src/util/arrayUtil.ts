@@ -5,3 +5,18 @@ export function removeElementFromArray<T>(element: T, array: T[]) {
         }
     }
 }
+
+export function partition<T>(elements: T[], predicate: (value: T) => boolean): [T[], T[]] {
+    let matches: T[] = [];
+    let mismatches: T[] = [];
+
+    for (let element of elements) {
+        if (predicate(element)) {
+            matches.push(element);
+        } else {
+            mismatches.push(element);
+        }
+    }
+
+    return [matches, mismatches];
+}
