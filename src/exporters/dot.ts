@@ -10,13 +10,13 @@ import {
 
 function exportDot(flowProgram: FlowProgram, functionId = 0): string {
     const flowGraph = findFlowGraphForId(flowProgram, functionId);
-    
+
     return computeDotLines(flowGraph).join("\n");
 }
 
 function computeDotLines(flowGraph: ControlFlowGraph): string[] {
     let entryAndExitNodeList = flowGraph.nodes
-        .filter(isEntryOrExitNode)
+        .filter(isExitNode)
         .map(node => node.id)
         .join(" ");
 
@@ -32,9 +32,8 @@ function computeDotLines(flowGraph: ControlFlowGraph): string[] {
     ];
 }
 
-function isEntryOrExitNode(node: FlowNode): boolean {
-    return node.type === NodeType.Entry
-        || node.type === NodeType.ErrorExit
+function isExitNode(node: FlowNode): boolean {
+    return node.type === NodeType.ErrorExit
         || node.type === NodeType.SuccessExit;
 }
 
