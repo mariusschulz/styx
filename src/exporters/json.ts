@@ -5,6 +5,9 @@ import {
     FlowProgram
 } from "../flow";
 
+const REPLACER: any = null;
+const INDENTATION_STRING = "  ";
+
 function exportJson(flowProgram: FlowProgram): string {
     const program = {
         flowGraph: flattenFlowGraph(flowProgram.flowGraph)
@@ -16,7 +19,7 @@ function exportJson(flowProgram: FlowProgram): string {
         flowGraph: flattenFlowGraph(fun.flowGraph)
     }));
 
-    return JSON.stringify({ program, functions }, null, 2);
+    return JSON.stringify({ program, functions }, REPLACER, INDENTATION_STRING);
 }
 
 function flattenFlowGraph(flowGraph: ControlFlowGraph) {
