@@ -3,8 +3,7 @@ import { FlowProgram, ParserOptions } from "./flow";
 import * as Parser from "./parser/parser";
 
 export { parse };
-export * from "./exporters/dot";
-export * from "./exporters/json";
+export { exportProgram } from "./export";
 export * from "./flow";
 
 function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
