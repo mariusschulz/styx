@@ -76,7 +76,7 @@ function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, cont
     let parsingMethod = statementParsers[statement.type];
 
     if (!parsingMethod) {
-        throw Error(`Encountered unsupported statement type '${statement.type}'`);
+        throw Error(`Encountered unsupported statement type "${statement.type}"`);
     }
 
     return parsingMethod(statement, currentNode, context);
