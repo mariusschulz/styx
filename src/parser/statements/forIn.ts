@@ -13,9 +13,20 @@ import {
 
 export { parseForInStatement };
 
+const specialIterator: ESTree.Identifier = {
+    type: ESTree.NodeType.Identifier,
+    name: "$$iterator"
+};
+
 function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    const objTempName = context.createTemporaryLocalVariableName("enum");
-    const enumerator: ESTree.Identifier = {
+    const iteratorInvocation: ESTree.CallExpression = {
+        type: ESTree.NodeType.CallExpression,
+        callee: specialIterator,
+        arguments: [forInStatement.right]
+    };
+
+    const objTempName = context.createTemporaryLocalVariableName("iter");
+    const iterator: ESTree.Identifier = {
         type: ESTree.NodeType.Identifier,
         name: objTempName
     };
@@ -23,8 +34,8 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     const objExprTempAssignment: ESTree.AssignmentExpression = {
         type: ESTree.NodeType.AssignmentExpression,
         operator: "=",
-        left: enumerator,
-        right: forInStatement.right
+        left: iterator,
+        right: iteratorInvocation
     }
 
     let conditionNode = context.createNode()
@@ -33,7 +44,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     let isDoneExpression: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
         computed: false,
-        object: enumerator,
+        object: iterator,
         property: <ESTree.Identifier>{
             type: ESTree.NodeType.Identifier,
             name: "done"
@@ -54,7 +65,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     let nextElementCallee: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
         computed: false,
-        object: enumerator,
+        object: iterator,
         property: <ESTree.Identifier>{
             type: ESTree.NodeType.Identifier,
             name: "next"
