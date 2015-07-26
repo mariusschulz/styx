@@ -36,13 +36,12 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
     });
 
     let { caseClausesA, defaultCase, caseClausesB } = partitionCases(switchStatement.cases);
-    let caseClauses = [...caseClausesA, ...caseClausesB];
 
     let stillSearchingNode = evaluatedDiscriminantNode;
     let endOfPreviousCaseBody: Completion = null;
     let firstNodeOfClauseListB: FlowNode = null;
 
-    for (let caseClause of caseClauses) {
+    for (let caseClause of [...caseClausesA, ...caseClausesB]) {
         let truthyCondition = {
             type: ESTree.NodeType.BinaryExpression,
             left: { type: ESTree.NodeType.Identifier, name: switchExpression },
