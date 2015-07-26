@@ -243,7 +243,7 @@ export interface NewExpression extends CallExpression {
 
 }
 
-export interface MemberExpression extends Expression, Identifier {
+export interface MemberExpression extends Expression {
     object: Expression;
     property: Expression;
     computed: boolean;
