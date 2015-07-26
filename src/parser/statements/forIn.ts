@@ -25,40 +25,40 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
         right: iteratorCall
     });
 
-    let conditionNode = context.createNode()
+    const conditionNode = context.createNode()
         .appendTo(currentNode, stringify(iteratorAssignment));
 
-    let isDoneExpression: ESTree.MemberExpression = {
+    const isDoneExpression: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
         computed: false,
         object: iteratorIdentifier,
         property: createIdentifier("done")
     };
 
-    let isNotDoneExpression = negateTruthiness(isDoneExpression);
+    const isNotDoneExpression = negateTruthiness(isDoneExpression);
 
-    let startOfLoopBody = context.createNode()
+    const startOfLoopBody = context.createNode()
         .appendConditionallyTo(conditionNode, stringify(isNotDoneExpression), isNotDoneExpression);
 
-    let finalNode = context.createNode()
+    const finalNode = context.createNode()
         .appendConditionallyTo(conditionNode, stringify(isDoneExpression), isDoneExpression);
 
-    let variableDeclarator = forInStatement.left.declarations[0];
-    let variableName = variableDeclarator.id.name;
+    const variableDeclarator = forInStatement.left.declarations[0];
+    const variableName = variableDeclarator.id.name;
 
-    let nextElementCallee: ESTree.MemberExpression = {
+    const nextElementCallee: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
         computed: false,
         object: iteratorIdentifier,
         property: createIdentifier("next")
     };
 
-    let propertyAssignment = createAssignmentExpression({
+    const propertyAssignment = createAssignmentExpression({
         left: createIdentifier(variableName),
         right: createCallExpression(nextElementCallee)
     });
 
-    let propertyAssignmentNode = context.createNode()
+    const propertyAssignmentNode = context.createNode()
         .appendTo(startOfLoopBody, stringify(propertyAssignment));
 
     context.enclosingStatements.push({
@@ -68,7 +68,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
         label: label
     });
 
-    let loopBodyCompletion = parseStatement(forInStatement.body, propertyAssignmentNode, context);
+    const loopBodyCompletion = parseStatement(forInStatement.body, propertyAssignmentNode, context);
 
     context.enclosingStatements.pop();
 
