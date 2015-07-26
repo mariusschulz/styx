@@ -4,6 +4,13 @@ import { stringify } from "../expressions/stringifier";
 import { parseStatement } from "./statement";
 
 import * as ESTree from "../../estree";
+
+import {
+    createAssignmentExpression,
+    createCallExpression,
+    createIdentifier
+} from "../../estreeFactory";
+
 import {
     Completion,
     EnclosingStatementType,
@@ -12,7 +19,6 @@ import {
 } from "../../flow";
 
 export { parseForInStatement };
-
 
 function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
     const iteratorFunctionIdentifier = createIdentifier("$$iterator");
@@ -77,28 +83,4 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     }
 
     return { normal: finalNode };
-}
-
-function createAssignmentExpression({ left, right }: { left: ESTree.Identifier, right: ESTree.Expression }): ESTree.AssignmentExpression {
-    return {
-        type: ESTree.NodeType.AssignmentExpression,
-        operator: "=",
-        left,
-        right
-    };
-}
-
-function createCallExpression(callee: ESTree.Expression, args: ESTree.Expression[] = []): ESTree.CallExpression {
-    return {
-        type: ESTree.NodeType.CallExpression,
-        callee,
-        arguments: args
-    };
-}
-
-function createIdentifier(name: string): ESTree.Identifier {
-    return {
-        type: ESTree.NodeType.Identifier,
-        name
-    };
 }
