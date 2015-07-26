@@ -13,13 +13,23 @@ import {
 export { parseForInStatement };
 
 function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    let stringifiedRight = stringify(forInStatement.right);
+    const objTempName = context.createTemporaryLocalVariableName("enum");
+
+    const objExprTempAssignment: ESTree.AssignmentExpression = {
+        type: ESTree.NodeType.AssignmentExpression,
+        operator: "=",
+        left: {
+            type: ESTree.NodeType.Identifier,
+            name: objTempName
+        },
+        right: forInStatement.right
+    }
 
     let variableDeclarator = forInStatement.left.declarations[0];
     let variableName = variableDeclarator.id.name;
 
     let conditionNode = context.createNode()
-        .appendTo(currentNode, stringifiedRight);
+        .appendTo(currentNode, stringify(objExprTempAssignment));
 
     let startOfLoopBody = context.createNode()
         .appendConditionallyTo(conditionNode, `${variableName} = <next>`, forInStatement.right);
