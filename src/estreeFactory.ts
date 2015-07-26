@@ -1,5 +1,6 @@
 import {
     AssignmentExpression,
+    BinaryExpression,
     CallExpression,
     Expression,
     Identifier,
@@ -10,6 +11,15 @@ export function createAssignmentExpression({ left, right }: { left: Identifier, 
     return {
         type: NodeType.AssignmentExpression,
         operator: "=",
+        left,
+        right
+    };
+}
+
+export function createIdentityComparisonExpression({ left, right }: { left: Expression, right: Expression }): BinaryExpression {
+    return {
+        type: NodeType.BinaryExpression,
+        operator: "===",
         left,
         right
     };

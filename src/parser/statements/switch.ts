@@ -7,7 +7,8 @@ import * as ESTree from "../../estree";
 
 import {
     createAssignmentExpression,
-    createIdentifier
+    createIdentifier,
+    createIdentityComparisonExpression
 } from "../../estreeFactory";
 
 import {
@@ -52,15 +53,13 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
     let firstNodeOfClauseListB: FlowNode = null;
 
     for (let caseClause of [...caseClausesA, ...caseClausesB]) {
-        let truthyCondition = {
-            type: ESTree.NodeType.BinaryExpression,
+        const matchingCaseCondition = createIdentityComparisonExpression({
             left: createIdentifier(switchExpressionIdentifier),
-            right: caseClause.test,
-            operator: "==="
-        };
+            right: caseClause.test
+        })
 
         let beginOfCaseBody = context.createNode()
-            .appendConditionallyTo(stillSearchingNode, stringify(truthyCondition), truthyCondition);
+            .appendConditionallyTo(stillSearchingNode, stringify(matchingCaseCondition), matchingCaseCondition);
 
         if (caseClause === caseClausesB[0]) {
             firstNodeOfClauseListB = beginOfCaseBody;
@@ -75,9 +74,9 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
 
         endOfPreviousCaseBody = parseStatements(caseClause.consequent, beginOfCaseBody, context);
 
-        let falsyCondition = negateTruthiness(truthyCondition);
+        let nonMatchingCaseCondition = negateTruthiness(matchingCaseCondition);
         stillSearchingNode = context.createNode()
-            .appendConditionallyTo(stillSearchingNode, stringify(falsyCondition), falsyCondition);
+            .appendConditionallyTo(stillSearchingNode, stringify(nonMatchingCaseCondition), nonMatchingCaseCondition);
     }
 
     if (endOfPreviousCaseBody && endOfPreviousCaseBody.normal) {
