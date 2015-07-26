@@ -1,25 +1,31 @@
-import * as ESTree from "./estree";
+import {
+    AssignmentExpression,
+    CallExpression,
+    Expression,
+    Identifier,
+    NodeType
+} from "./estree";
 
-export function createAssignmentExpression({ left, right }: { left: ESTree.Identifier, right: ESTree.Expression }): ESTree.AssignmentExpression {
+export function createAssignmentExpression({ left, right }: { left: Identifier, right: Expression }): AssignmentExpression {
     return {
-        type: ESTree.NodeType.AssignmentExpression,
+        type: NodeType.AssignmentExpression,
         operator: "=",
         left,
         right
     };
 }
 
-export function createCallExpression(callee: ESTree.Expression, args: ESTree.Expression[] = []): ESTree.CallExpression {
+export function createCallExpression(callee: Expression, args: Expression[] = []): CallExpression {
     return {
-        type: ESTree.NodeType.CallExpression,
+        type: NodeType.CallExpression,
         callee,
         arguments: args
     };
 }
 
-export function createIdentifier(name: string): ESTree.Identifier {
+export function createIdentifier(name: string): Identifier {
     return {
-        type: ESTree.NodeType.Identifier,
+        type: NodeType.Identifier,
         name
     };
 }
