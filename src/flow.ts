@@ -85,7 +85,7 @@ export interface ParsingContext {
 
     enclosingStatements: Stack<EnclosingStatement>;
 
-    createTemporaryLocalVariableName(): string;
+    createTemporaryLocalVariableName(name?: string): string;
     createNode(type?: NodeType): FlowNode;
     createFunctionId(): number;
 }
