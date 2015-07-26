@@ -4,6 +4,7 @@ import {
     CallExpression,
     Expression,
     Identifier,
+    Literal,
     NodeType
 } from "./estree";
 
@@ -13,6 +14,14 @@ export function createAssignmentExpression({ left, right }: { left: Identifier, 
         operator: "=",
         left,
         right
+    };
+}
+
+export function createBooleanLiteral(value: boolean): Literal {
+    return {
+        type: NodeType.Literal,
+        raw: value.toString(),
+        value: value
     };
 }
 

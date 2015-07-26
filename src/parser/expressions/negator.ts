@@ -1,5 +1,7 @@
 import * as ESTree from "../../estree";
 
+import { createBooleanLiteral } from "../../estreeFactory";
+
 export { negateTruthiness };
 
 const equalityComparisonOperators = ["==", "===", "!=", "!=="];
@@ -28,14 +30,6 @@ function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
     }
 
     return wrapInUnaryNegationExpression(expression);
-}
-
-function createBooleanLiteral(value: boolean): ESTree.Literal {
-    return {
-        type: ESTree.NodeType.Literal,
-        raw: value.toString(),
-        value: value
-    };
 }
 
 function invertEqualityComparisonOperator(binaryExpression: ESTree.BinaryExpression): ESTree.BinaryExpression {
