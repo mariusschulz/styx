@@ -4,6 +4,12 @@ import { stringify } from "../expressions/stringifier";
 import { parseStatements } from "./statement";
 
 import * as ESTree from "../../estree";
+
+import {
+    createAssignmentExpression,
+    createIdentifier
+} from "../../estreeFactory";
+
 import {
     Completion,
     EnclosingStatementType,
@@ -20,11 +26,15 @@ interface CaseBlock {
 }
 
 function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    const switchExpression = context.createTemporaryLocalVariableName();
+    const switchExpressionIdentifier = context.createTemporaryLocalVariableName("switch");
 
-    let stringifiedDiscriminant = stringify(switchStatement.discriminant);
-    let exprRef = `${switchExpression} = ${stringifiedDiscriminant}`;
-    let evaluatedDiscriminantNode = context.createNode().appendTo(currentNode, exprRef);
+    const switchExpressionAssignment = createAssignmentExpression({
+        left: createIdentifier(switchExpressionIdentifier),
+        right: switchStatement.discriminant
+    });
+
+    let evaluatedDiscriminantNode = context.createNode()
+        .appendTo(currentNode, stringify(switchExpressionAssignment));
 
     let finalNode = context.createNode();
 
@@ -44,7 +54,7 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
     for (let caseClause of [...caseClausesA, ...caseClausesB]) {
         let truthyCondition = {
             type: ESTree.NodeType.BinaryExpression,
-            left: { type: ESTree.NodeType.Identifier, name: switchExpression },
+            left: createIdentifier(switchExpressionIdentifier),
             right: caseClause.test,
             operator: "==="
         };
