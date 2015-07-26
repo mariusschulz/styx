@@ -72,11 +72,10 @@ function createParsingContext(): ParsingContext {
 
         enclosingStatements: Stack.create<EnclosingStatement>(),
 
-        createTemporaryLocalVariableName(name?) {
-            const prefix = name || "temp";
+        createTemporaryLocalVariableName(name) {
             const id = variableNameIdGenerator.generateId();
 
-            return `$$${prefix}${id}`;
+            return `$$${name}${id}`;
         },
 
         createNode(type = NodeType.Normal) {
