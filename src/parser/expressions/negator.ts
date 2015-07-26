@@ -1,6 +1,9 @@
 import * as ESTree from "../../estree";
 
-import { createBooleanLiteral } from "../../estreeFactory";
+import {
+    createBooleanLiteral,
+    createUnaryNegationExpression
+} from "../../estreeFactory";
 
 export { negateTruthiness };
 
@@ -29,7 +32,7 @@ function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
         return invertLogicalExpression(<ESTree.LogicalExpression>expression);
     }
 
-    return wrapInUnaryNegationExpression(expression);
+    return createUnaryNegationExpression(expression);
 }
 
 function invertEqualityComparisonOperator(binaryExpression: ESTree.BinaryExpression): ESTree.BinaryExpression {
@@ -56,14 +59,5 @@ function invertLogicalExpression(logicalExpression: ESTree.LogicalExpression): E
         // Perform simplification according to De Morgan's laws
         left: negateTruthiness(logicalExpression.left),
         right: negateTruthiness(logicalExpression.right)
-    };
-}
-
-function wrapInUnaryNegationExpression(expression: ESTree.Expression): ESTree.UnaryExpression {
-    return {
-        type: ESTree.NodeType.UnaryExpression,
-        operator: "!",
-        prefix: true,
-        argument: expression
     };
 }

@@ -5,7 +5,8 @@ import {
     Expression,
     Identifier,
     Literal,
-    NodeType
+    NodeType,
+    UnaryExpression
 } from "./estree";
 
 export function createAssignmentExpression({ left, right }: { left: Identifier, right: Expression }): AssignmentExpression {
@@ -46,5 +47,14 @@ export function createIdentifier(name: string): Identifier {
     return {
         type: NodeType.Identifier,
         name
+    };
+}
+
+export function createUnaryNegationExpression(innerExpression: Expression): UnaryExpression {
+    return {
+        type: NodeType.UnaryExpression,
+        operator: "!",
+        prefix: true,
+        argument: innerExpression
     };
 }
