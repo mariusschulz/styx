@@ -20,10 +20,8 @@ function parseExpression(expression: ESTree.Expression, currentNode: FlowNode, c
         return parseSequenceExpression(<ESTree.SequenceExpression>expression, currentNode, context);
     }
 
-    let expressionLabel = stringify(expression);
-
     return context.createNode()
-        .appendTo(currentNode, expressionLabel);
+        .appendTo(currentNode, stringify(expression));
 }
 
 function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, context: ParsingContext): FlowNode {
