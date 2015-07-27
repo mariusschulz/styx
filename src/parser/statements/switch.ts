@@ -35,7 +35,7 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
     });
 
     let evaluatedDiscriminantNode = context.createNode()
-        .appendTo(currentNode, stringify(switchExpressionAssignment));
+        .appendTo(currentNode, stringify(switchExpressionAssignment), switchExpressionAssignment);
 
     let finalNode = context.createNode();
 
