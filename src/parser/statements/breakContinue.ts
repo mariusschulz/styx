@@ -38,7 +38,8 @@ function parseContinueStatement(continueStatement: ESTree.ContinueStatement, cur
         return finalizerCompletion;
     }
 
-    enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", null, EdgeType.AbruptCompletion);
+    enclosingStatement.continueTarget
+        .appendTo(finalizerCompletion.normal, "continue", continueStatement, EdgeType.AbruptCompletion);
 
     return { continue: true };
 }
