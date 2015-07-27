@@ -65,7 +65,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     });
 
     const propertyAssignmentNode = context.createNode()
-        .appendTo(startOfLoopBody, stringify(propertyAssignment));
+        .appendTo(startOfLoopBody, stringify(propertyAssignment), propertyAssignment);
 
     context.enclosingStatements.push({
         type: EnclosingStatementType.OtherStatement,
