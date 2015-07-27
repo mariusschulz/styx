@@ -65,14 +65,14 @@ export class FlowNode {
     }
 }
 
-export const enum NodeType {
+export enum NodeType {
     Normal = 0,
     Entry = 1,
     SuccessExit = 2,
     ErrorExit = 3
 }
 
-export const enum EdgeType {
+export enum EdgeType {
     Normal = 0,
     Epsilon = 1,
     Conditional = 2,
