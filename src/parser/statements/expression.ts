@@ -21,7 +21,7 @@ function parseExpression(expression: ESTree.Expression, currentNode: FlowNode, c
     }
 
     return context.createNode()
-        .appendTo(currentNode, stringify(expression));
+        .appendTo(currentNode, stringify(expression), expression);
 }
 
 function parseSequenceExpression(sequenceExpression: ESTree.SequenceExpression, currentNode: FlowNode, context: ParsingContext): FlowNode {

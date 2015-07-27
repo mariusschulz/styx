@@ -19,7 +19,8 @@ function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode:
         return finalizerCompletion;
     }
 
-    enclosingStatement.breakTarget.appendTo(finalizerCompletion.normal, "break", null, EdgeType.AbruptCompletion);
+    enclosingStatement.breakTarget
+        .appendTo(finalizerCompletion.normal, "break", breakStatement, EdgeType.AbruptCompletion);
 
     return { break: true };
 }
