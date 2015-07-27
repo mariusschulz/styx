@@ -142,14 +142,18 @@ function stringifyNewExpression(newExpression: ESTree.NewExpression): string {
 }
 
 function stringifyObjectExpression(objectExpression: ESTree.ObjectExpression): string {
-    let properties = objectExpression.properties.map(property => {
+    if (objectExpression.properties.length === 0) {
+        return "{}";
+    }
+
+    const properties = objectExpression.properties.map(property => {
         let key = stringify(property.key);
         let value = stringify(property.value);
 
         return `${key}: ${value}`;
-    }).join(", ");
+    }).join(",\n    ");
 
-    return `{ ${properties} }`;
+    return `{\n    ${properties}\n}`;
 }
 
 function stringifySequenceExpression(sequenceExpression: ESTree.SequenceExpression): string {
