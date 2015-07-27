@@ -1,6 +1,9 @@
 import { stringify } from "../expressions/stringifier";
 
 import * as ESTree from "../../estree";
+
+import { createAssignmentExpression } from "../../estreeFactory";
+
 import {
     Completion,
     EdgeType,
@@ -26,11 +29,13 @@ function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode:
         let tryStatement = <EnclosingTryStatement>statement;
 
         if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
-            let parameter = stringify(tryStatement.handler.param);
-            let argument = stringify(throwStatement.argument);
+            const handlerVariableAssignment = createAssignmentExpression({
+                left: tryStatement.handler.param,
+                right: throwStatement.argument
+            });
 
             let assignmentNode = context.createNode()
-                .appendTo(currentNode, `${parameter} = ${argument}`);
+                .appendTo(currentNode, stringify(handlerVariableAssignment), handlerVariableAssignment);
 
             tryStatement.handlerBodyEntry.appendEpsilonEdgeTo(assignmentNode);
 
