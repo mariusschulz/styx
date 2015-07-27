@@ -95,7 +95,8 @@ function explicitlyAssignParameterValues(functionDeclaration: ESTree.Function, c
             right: indexedParamAccess
         });
 
-        currentNode = context.createNode().appendTo(currentNode, stringify(paramAssignment));
+        currentNode = context.createNode()
+            .appendTo(currentNode, stringify(paramAssignment), paramAssignment);
     });
 
     return currentNode;
