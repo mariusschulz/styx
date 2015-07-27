@@ -46,9 +46,13 @@ function rewriteFunctionExpressions(program: ESTree.Program): ESTree.Program {
         let nameSuffix = functionExpression.id ? "_" + functionExpression.id.name : "";
         let funcName = `$$func${funcId}${nameSuffix}`;
 
+        const stringifiedFunctionExpressionBody = JSON.stringify(functionExpression.body, visitNode);
+        const rewrittenFunctionExpression = clone(functionExpression);
+        rewrittenFunctionExpression.body = JSON.parse(stringifiedFunctionExpressionBody);
+
         functionExpressionsToRewrite.push({
             name: funcName,
-            functionExpression: functionExpression
+            functionExpression: rewrittenFunctionExpression
         });
 
         return {
