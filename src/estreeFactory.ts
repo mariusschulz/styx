@@ -18,10 +18,10 @@ export function createAssignmentExpression({ left, right }: { left: Identifier, 
     };
 }
 
-export function createBooleanLiteral(value: boolean): Literal {
+export function createLiteral(value: boolean | number): Literal {
     return {
         type: NodeType.Literal,
-        raw: value.toString(),
+        raw: String(value),
         value: value
     };
 }

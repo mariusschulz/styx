@@ -1,7 +1,7 @@
 import * as ESTree from "../../estree";
 
 import {
-    createBooleanLiteral,
+    createLiteral,
     createUnaryNegationExpression
 } from "../../estreeFactory";
 
@@ -14,7 +14,7 @@ function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
         let literal = <ESTree.Literal>expression;
 
         if (typeof literal.value === "boolean") {
-            return createBooleanLiteral(!literal.value);
+            return createLiteral(!literal.value);
         }
     } else if (expression.type === ESTree.NodeType.UnaryExpression) {
         let unaryExpression = <ESTree.UnaryExpression>expression;
