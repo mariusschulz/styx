@@ -34,7 +34,8 @@ function flattenFlowGraph(flowGraph: ControlFlowGraph) {
         from: edge.source.id,
         to: edge.target.id,
         type: stringifyEdgeType(edge.type),
-        label: edge.label
+        label: edge.label,
+        data: edge.data
     }));
 
     return { nodes, edges };
