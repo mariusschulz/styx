@@ -127,12 +127,16 @@ function stringifyLogicalExpression(logicalExpression: ESTree.LogicalExpression)
 }
 
 function stringifyMemberExpression(memberExpression: ESTree.MemberExpression): string {
-    let object = stringify(memberExpression.object);
-    let property = stringify(memberExpression.property);
+    const object = stringify(memberExpression.object);
+    const property = stringify(memberExpression.property);
+
+    const left = needsParenthesizing(memberExpression.object)
+        ? parenthesize(object)
+        : object;
 
     return memberExpression.computed
-        ? `${object}[${property}]`
-        : `${object}.${property}`;
+        ? `${left}[${property}]`
+        : `${left}.${property}`;
 }
 
 function stringifyNewExpression(newExpression: ESTree.NewExpression): string {
