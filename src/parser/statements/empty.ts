@@ -9,6 +9,6 @@ export { parseEmptyStatement };
 
 function parseEmptyStatement(emptyStatement: ESTree.EmptyStatement, currentNode: FlowNode, context: ParsingContext): Completion {
     return {
-        normal: context.createNode().appendTo(currentNode, "(empty)")
+        normal: context.createNode().appendTo(currentNode, "(empty)", emptyStatement)
     };
 }

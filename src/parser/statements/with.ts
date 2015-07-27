@@ -13,7 +13,7 @@ export { parseWithStatement };
 
 function parseWithStatement(withStatement: ESTree.WithStatement, currentNode: FlowNode, context: ParsingContext): Completion {
     let stringifiedExpression = stringify(withStatement.object);
-    let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression);
+    let expressionNode = context.createNode().appendTo(currentNode, stringifiedExpression, withStatement);
 
     return parseStatement(withStatement.body, expressionNode, context);
 }

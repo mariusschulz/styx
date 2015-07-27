@@ -33,7 +33,9 @@ function flattenFlowGraph(flowGraph: ControlFlowGraph) {
     const edges = flowGraph.edges.map(edge => ({
         from: edge.source.id,
         to: edge.target.id,
-        type: stringifyEdgeType(edge.type)
+        type: stringifyEdgeType(edge.type),
+        label: edge.label,
+        data: edge.data
     }));
 
     return { nodes, edges };

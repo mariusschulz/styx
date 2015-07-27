@@ -41,7 +41,7 @@ export class FlowNode {
         this.outgoingEdges = [];
     }
 
-    appendTo(node: FlowNode, label: string, edgeType = EdgeType.Normal, edgeData: ESTree.Expression = null): FlowNode {
+    appendTo(node: FlowNode, label: string, edgeData: ESTree.Expression | ESTree.Statement, edgeType = EdgeType.Normal): FlowNode {
         let edge: FlowEdge = {
             source: node,
             target: this,
@@ -57,11 +57,11 @@ export class FlowNode {
     }
 
     appendConditionallyTo(node: FlowNode, label: string, condition: ESTree.Expression): FlowNode {
-        return this.appendTo(node, label, EdgeType.Conditional, condition);
+        return this.appendTo(node, label, condition, EdgeType.Conditional);
     }
 
     appendEpsilonEdgeTo(node: FlowNode): FlowNode {
-        return this.appendTo(node, "", EdgeType.Epsilon);
+        return this.appendTo(node, "", null, EdgeType.Epsilon);
     }
 }
 

@@ -23,7 +23,7 @@ function parseReturnStatement(returnStatement: ESTree.ReturnStatement, currentNo
     }
 
     context.currentFlowGraph.successExit
-        .appendTo(finalizerCompletion.normal, returnLabel, EdgeType.AbruptCompletion, returnStatement.argument);
+        .appendTo(finalizerCompletion.normal, returnLabel, returnStatement, EdgeType.AbruptCompletion);
 
     return { return: true };
 }

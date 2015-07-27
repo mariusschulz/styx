@@ -32,7 +32,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     });
 
     const conditionNode = context.createNode()
-        .appendTo(currentNode, stringify(iteratorAssignment));
+        .appendTo(currentNode, stringify(iteratorAssignment), iteratorAssignment);
 
     const isDoneExpression: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
@@ -65,7 +65,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     });
 
     const propertyAssignmentNode = context.createNode()
-        .appendTo(startOfLoopBody, stringify(propertyAssignment));
+        .appendTo(startOfLoopBody, stringify(propertyAssignment), propertyAssignment);
 
     context.enclosingStatements.push({
         type: EnclosingStatementType.OtherStatement,
