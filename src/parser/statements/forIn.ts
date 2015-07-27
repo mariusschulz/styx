@@ -32,7 +32,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     });
 
     const conditionNode = context.createNode()
-        .appendTo(currentNode, stringify(iteratorAssignment));
+        .appendTo(currentNode, stringify(iteratorAssignment), iteratorAssignment);
 
     const isDoneExpression: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
