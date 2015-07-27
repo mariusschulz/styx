@@ -2,7 +2,8 @@ export { exportJson };
 
 import {
     ControlFlowGraph,
-    FlowProgram
+    FlowProgram,
+    NodeType
 } from "../flow";
 
 const REPLACER: any = null;
@@ -25,7 +26,7 @@ function exportJson(flowProgram: FlowProgram): string {
 function flattenFlowGraph(flowGraph: ControlFlowGraph) {
     const nodes = flowGraph.nodes.map(node => ({
         id: node.id,
-        type: node.type
+        type: stringifyNodeType(node.type)
     }));
 
     const edges = flowGraph.edges.map(edge => ({
@@ -35,4 +36,14 @@ function flattenFlowGraph(flowGraph: ControlFlowGraph) {
     }));
 
     return { nodes, edges };
+}
+
+function stringifyNodeType(nodeType: NodeType): string {
+    switch (nodeType) {
+        case NodeType.Entry: return "entry";
+        case NodeType.ErrorExit: return "error_exit";
+        case NodeType.Normal: return "normal";
+        case NodeType.SuccessExit: return "success_exit";
+        default: throw Error(`Unknown node type "${nodeType}"`);
+    }
 }
