@@ -2,6 +2,7 @@ export { exportJson };
 
 import {
     ControlFlowGraph,
+    EdgeType,
     FlowProgram,
     NodeType
 } from "../flow";
@@ -32,7 +33,7 @@ function flattenFlowGraph(flowGraph: ControlFlowGraph) {
     const edges = flowGraph.edges.map(edge => ({
         from: edge.source.id,
         to: edge.target.id,
-        type: edge.type
+        type: stringifyEdgeType(edge.type)
     }));
 
     return { nodes, edges };
@@ -45,5 +46,15 @@ function stringifyNodeType(nodeType: NodeType): string {
         case NodeType.Normal: return "normal";
         case NodeType.SuccessExit: return "success_exit";
         default: throw Error(`Unknown node type "${nodeType}"`);
+    }
+}
+
+function stringifyEdgeType(edgeType: EdgeType): string {
+    switch (edgeType) {
+        case EdgeType.AbruptCompletion: return "abrupt_completion";
+        case EdgeType.Conditional: return "conditional";
+        case EdgeType.Epsilon: return "epsilon";
+        case EdgeType.Normal: return "normal";
+        default: throw Error(`Unknown edge type "${edgeType}"`);
     }
 }
