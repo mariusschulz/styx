@@ -41,7 +41,7 @@ export class FlowNode {
         this.outgoingEdges = [];
     }
 
-    appendTo(node: FlowNode, label: string, edgeData: ESTree.Expression = null, edgeType = EdgeType.Normal): FlowNode {
+    appendTo(node: FlowNode, label: string, edgeData: ESTree.Expression | ESTree.Statement, edgeType = EdgeType.Normal): FlowNode {
         let edge: FlowEdge = {
             source: node,
             target: this,
