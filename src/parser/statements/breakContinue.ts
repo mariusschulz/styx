@@ -19,7 +19,7 @@ function parseBreakStatement(breakStatement: ESTree.BreakStatement, currentNode:
         return finalizerCompletion;
     }
 
-    enclosingStatement.breakTarget.appendTo(finalizerCompletion.normal, "break", EdgeType.AbruptCompletion);
+    enclosingStatement.breakTarget.appendTo(finalizerCompletion.normal, "break", null, EdgeType.AbruptCompletion);
 
     return { break: true };
 }
@@ -37,7 +37,7 @@ function parseContinueStatement(continueStatement: ESTree.ContinueStatement, cur
         return finalizerCompletion;
     }
 
-    enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", EdgeType.AbruptCompletion);
+    enclosingStatement.continueTarget.appendTo(finalizerCompletion.normal, "continue", null, EdgeType.AbruptCompletion);
 
     return { continue: true };
 }

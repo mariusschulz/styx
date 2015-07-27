@@ -71,7 +71,7 @@ function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentN
         };
 
         func.flowGraph.successExit
-            .appendTo(completion.normal, "return undefined", EdgeType.AbruptCompletion, returnStatement);
+            .appendTo(completion.normal, "return undefined", returnStatement, EdgeType.AbruptCompletion);
     }
 
     context.functions.push(func);
@@ -94,7 +94,7 @@ function explicitlyAssignParameterValues(functionDeclaration: ESTree.Function, c
             left: param,
             right: indexedParamAccess
         });
-        
+
         currentNode = context.createNode().appendTo(currentNode, stringify(paramAssignment));
     });
 

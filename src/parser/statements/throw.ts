@@ -53,7 +53,7 @@ function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode:
 
     if (!foundHandler) {
         context.currentFlowGraph.errorExit
-            .appendTo(currentNode, throwLabel, EdgeType.AbruptCompletion, throwStatement.argument);
+            .appendTo(currentNode, throwLabel, throwStatement.argument, EdgeType.AbruptCompletion);
     }
 
     return { throw: true };
