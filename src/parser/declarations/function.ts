@@ -6,6 +6,13 @@ import { parseBlockStatement } from "../statements/block";
 import { Stack } from "../../collections/stack";
 
 import * as ESTree from "../../estree";
+
+import {
+    createAssignmentExpression,
+    createIdentifier,
+    createLiteral
+} from "../../estreeFactory";
+
 import {
     Completion,
     EdgeType,
@@ -46,7 +53,9 @@ function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentN
         createFunctionId: context.createFunctionId
     };
 
-    let completion = parseBlockStatement(functionDeclaration.body, entryNode, functionContext);
+    let endOfParamAssignments = explicitlyAssignParameterValues(functionDeclaration, entryNode, context);
+
+    let completion = parseBlockStatement(functionDeclaration.body, endOfParamAssignments, functionContext);
 
     if (completion.normal) {
         // If we reached this point, the function didn't end with an explicit return statement.
@@ -68,4 +77,26 @@ function parseFunctionDeclaration(functionDeclaration: ESTree.Function, currentN
     context.functions.push(func);
 
     return { normal: currentNode };
+}
+
+function explicitlyAssignParameterValues(functionDeclaration: ESTree.Function, currentNode: FlowNode, context: ParsingContext): FlowNode {
+    let specialParamsArray = createIdentifier("$$params");
+
+    functionDeclaration.params.forEach((param, index) => {
+        let indexedParamAccess: ESTree.MemberExpression = {
+            type: ESTree.NodeType.MemberExpression,
+            computed: true,
+            object: specialParamsArray,
+            property: createLiteral(index)
+        };
+
+        let paramAssignment = createAssignmentExpression({
+            left: param,
+            right: indexedParamAccess
+        });
+        
+        currentNode = context.createNode().appendTo(currentNode, stringify(paramAssignment));
+    });
+
+    return currentNode;
 }
