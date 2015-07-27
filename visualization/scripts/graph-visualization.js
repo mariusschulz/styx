@@ -22,7 +22,7 @@
 
             layout: {
                 hierarchical: {
-                    levelSeparation: 85,
+                    levelSeparation: 100,
                     direction: "UD",
                     sortMethod: "directed"
                 }
