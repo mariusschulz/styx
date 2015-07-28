@@ -1,8 +1,9 @@
-import { parseExpression } from "./expression";
+import { parseVariableDeclaration } from "../declarations/variable";
 
 import { negateTruthiness } from "../expressions/negator";
 import { stringify } from "../expressions/stringifier";
 
+import { parseExpression } from "./expression";
 import { parseStatement } from "./statement";
 
 import * as ESTree from "../../estree";
@@ -16,10 +17,7 @@ import {
 export { parseForStatement };
 
 function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
-    // Parse initialization
-    let testDecisionNode = forStatement.init
-        ? parseStatement(forStatement.init, currentNode, context).normal
-        : currentNode;
+    let testDecisionNode = parseInit(forStatement.init, currentNode, context).normal;
 
     // Create nodes for loop cornerstones
     let beginOfLoopBodyNode = context.createNode();
@@ -74,4 +72,18 @@ function parseForStatement(forStatement: ESTree.ForStatement, currentNode: FlowN
     }
 
     return { normal: finalNode };
+}
+
+function parseInit(init: ESTree.VariableDeclaration | ESTree.Expression, currentNode: FlowNode, context: ParsingContext): Completion {
+    if (init === null) {
+        return { normal: currentNode };
+    }
+
+    if (init.type === ESTree.NodeType.VariableDeclaration) {
+        return parseVariableDeclaration(<ESTree.VariableDeclaration>init, currentNode, context);
+    }
+
+    return {
+        normal: parseExpression(<ESTree.Expression>init, currentNode, context)
+    };
 }
