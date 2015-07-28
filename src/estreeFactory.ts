@@ -18,23 +18,6 @@ export function createAssignmentExpression({ left, right }: { left: Identifier, 
     };
 }
 
-export function createLiteral(value: boolean | number): Literal {
-    return {
-        type: NodeType.Literal,
-        raw: String(value),
-        value: value
-    };
-}
-
-export function createIdentityComparisonExpression({ left, right }: { left: Expression, right: Expression }): BinaryExpression {
-    return {
-        type: NodeType.BinaryExpression,
-        operator: "===",
-        left,
-        right
-    };
-}
-
 export function createCallExpression(callee: Expression, args: Expression[] = []): CallExpression {
     return {
         type: NodeType.CallExpression,
@@ -47,6 +30,23 @@ export function createIdentifier(name: string): Identifier {
     return {
         type: NodeType.Identifier,
         name
+    };
+}
+
+export function createIdentityComparisonExpression({ left, right }: { left: Expression, right: Expression }): BinaryExpression {
+    return {
+        type: NodeType.BinaryExpression,
+        operator: "===",
+        left,
+        right
+    };
+}
+
+export function createLiteral(value: boolean | number): Literal {
+    return {
+        type: NodeType.Literal,
+        raw: String(value),
+        value: value
     };
 }
 
