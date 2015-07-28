@@ -58,6 +58,14 @@
         return functionId;
     });
 
+    viewModel.nameOfActualFunction = ko.computed(function() {
+        var actualFunctionId = viewModel.actualFunctionId();
+
+        return actualFunctionId === 0
+            ? "main program"
+            : _.findWhere(viewModel.functions(), { id: actualFunctionId }).name;
+    });
+
     viewModel.isTabActive = function(tabId) {
         return viewModel.actualFunctionId() === tabId;
     };
