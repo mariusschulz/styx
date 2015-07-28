@@ -13,14 +13,20 @@ export { parseVariableDeclaration };
 
 function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): Completion {
     for (let declarator of declaration.declarations) {
-        const declaratorInitialization = createAssignmentExpression({
-            left: declarator.id,
-            right: declarator.init
-        });
+        const declarationExpression = declarator.init
+            ? createAssignmentExpressionFrom(declarator)
+            : declarator.id;
 
         currentNode = context.createNode()
-            .appendTo(currentNode, stringify(declaratorInitialization), declaratorInitialization);
+            .appendTo(currentNode, stringify(declarationExpression), declarator);
     }
 
     return { normal: currentNode };
+}
+
+function createAssignmentExpressionFrom(declarator: ESTree.VariableDeclarator): ESTree.Expression {
+    return createAssignmentExpression({
+        left: declarator.id,
+        right: declarator.init
+    });
 }
