@@ -28,6 +28,10 @@
                 }
             },
 
+            nodes: {
+                shape: "circle"
+            },
+
             edges: {
                 smooth: {
                     type: "curvedCW",
