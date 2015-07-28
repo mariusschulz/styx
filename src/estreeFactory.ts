@@ -9,7 +9,7 @@ import {
     UnaryExpression
 } from "./estree";
 
-export function createAssignmentExpression({ left, right }: { left: Identifier, right: Expression }): AssignmentExpression {
+export function createAssignmentExpression({ left, right }: { left: Identifier | Expression, right: Expression }): AssignmentExpression {
     return {
         type: NodeType.AssignmentExpression,
         operator: "=",

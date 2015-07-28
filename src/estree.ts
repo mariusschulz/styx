@@ -140,7 +140,7 @@ export interface ForStatement extends Statement {
 }
 
 export interface ForInStatement extends Statement {
-    left: VariableDeclaration;
+    left: VariableDeclaration | Expression;
     right: Expression;
     body: Statement;
 }

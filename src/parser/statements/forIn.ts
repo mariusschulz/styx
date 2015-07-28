@@ -49,9 +49,6 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     const finalNode = context.createNode()
         .appendConditionallyTo(conditionNode, stringify(isDoneExpression), isDoneExpression);
 
-    const variableDeclarator = forInStatement.left.declarations[0];
-    const variableName = variableDeclarator.id.name;
-
     const nextElementCallee: ESTree.MemberExpression = {
         type: ESTree.NodeType.MemberExpression,
         computed: false,
@@ -60,7 +57,7 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     };
 
     const propertyAssignment = createAssignmentExpression({
-        left: createIdentifier(variableName),
+        left: getLeftHandSideOfAssignment(forInStatement),
         right: createCallExpression(nextElementCallee)
     });
 
@@ -83,4 +80,15 @@ function parseForInStatement(forInStatement: ESTree.ForInStatement, currentNode:
     }
 
     return { normal: finalNode };
+}
+
+function getLeftHandSideOfAssignment(forInStatement: ESTree.ForInStatement): ESTree.Expression {
+    if (forInStatement.left.type === ESTree.NodeType.VariableDeclaration) {
+        const variableDeclarator = (<ESTree.VariableDeclaration>forInStatement.left).declarations[0];
+        const variableName = variableDeclarator.id.name;
+
+        return createIdentifier(variableName);
+    }
+
+    return forInStatement.left;
 }
