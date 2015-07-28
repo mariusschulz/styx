@@ -18,6 +18,11 @@ body {
     height: 530px;
 }
 
+#function-list .panel-body {
+    max-height: 560px;
+    overflow: auto;
+}
+
 .code-input {
     font-family: Consolas, Menlo, Monaco, monospace;
     font-size: 16px;
