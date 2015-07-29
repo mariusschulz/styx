@@ -13,7 +13,7 @@ export { parseVariableDeclaration };
 
 function parseVariableDeclaration(declaration: ESTree.VariableDeclaration, currentNode: FlowNode, context: ParsingContext): Completion {
     for (let declarator of declaration.declarations) {
-        const declarationExpression = declarator.init
+        let declarationExpression = declarator.init
             ? createAssignmentExpressionFrom(declarator)
             : declarator.id;
 

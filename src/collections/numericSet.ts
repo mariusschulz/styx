@@ -5,7 +5,7 @@ export interface NumericSet {
 
 type LookupObject = { [key: number]: boolean; }
 
-export const NumericSet = {
+export let NumericSet = {
     create: createSet
 };
 

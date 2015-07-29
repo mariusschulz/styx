@@ -29,7 +29,7 @@ function parseThrowStatement(throwStatement: ESTree.ThrowStatement, currentNode:
         let tryStatement = <EnclosingTryStatement>statement;
 
         if (tryStatement.handler && tryStatement.isCurrentlyInTryBlock) {
-            const handlerVariableAssignment = createAssignmentExpression({
+            let handlerVariableAssignment = createAssignmentExpression({
                 left: tryStatement.handler.param,
                 right: throwStatement.argument
             });

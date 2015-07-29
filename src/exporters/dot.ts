@@ -12,7 +12,7 @@ import {
 import { partition } from "../util/ArrayUtil";
 
 function exportDot(flowProgram: FlowProgram, functionId = 0): string {
-    const flowGraph = findFlowGraphForId(flowProgram, functionId);
+    let flowGraph = findFlowGraphForId(flowProgram, functionId);
 
     return computeDotLines(flowGraph).join("\n");
 }

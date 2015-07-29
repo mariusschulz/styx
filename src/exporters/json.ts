@@ -11,11 +11,11 @@ const REPLACER: any = null;
 const INDENTATION_STRING = "  ";
 
 function exportJson(flowProgram: FlowProgram): string {
-    const program = {
+    let program = {
         flowGraph: flattenFlowGraph(flowProgram.flowGraph)
     };
 
-    const functions = flowProgram.functions.map(fun => ({
+    let functions = flowProgram.functions.map(fun => ({
         id: fun.id,
         name: fun.name,
         flowGraph: flattenFlowGraph(fun.flowGraph)
@@ -25,12 +25,12 @@ function exportJson(flowProgram: FlowProgram): string {
 }
 
 function flattenFlowGraph(flowGraph: ControlFlowGraph) {
-    const nodes = flowGraph.nodes.map(node => ({
+    let nodes = flowGraph.nodes.map(node => ({
         id: node.id,
         type: NodeType[node.type]
     }));
 
-    const edges = flowGraph.edges.map(edge => ({
+    let edges = flowGraph.edges.map(edge => ({
         from: edge.source.id,
         to: edge.target.id,
         type: EdgeType[edge.type],

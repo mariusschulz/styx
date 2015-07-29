@@ -2,7 +2,7 @@ interface IdGenerator {
     generateId: () => number;
 }
 
-const idGeneratorFactory = {
+let idGeneratorFactory = {
     create(): IdGenerator {
         let id = 0;
 

@@ -29,7 +29,7 @@ interface CaseBlock {
 function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNode: FlowNode, context: ParsingContext, label?: string): Completion {
     const switchExpressionIdentifier = context.createTemporaryLocalVariableName("switch");
 
-    const switchExpressionAssignment = createAssignmentExpression({
+    let switchExpressionAssignment = createAssignmentExpression({
         left: createIdentifier(switchExpressionIdentifier),
         right: switchStatement.discriminant
     });
@@ -53,7 +53,7 @@ function parseSwitchStatement(switchStatement: ESTree.SwitchStatement, currentNo
     let firstNodeOfClauseListB: FlowNode = null;
 
     for (let caseClause of [...caseClausesA, ...caseClausesB]) {
-        const matchingCaseCondition = createIdentityComparisonExpression({
+        let matchingCaseCondition = createIdentityComparisonExpression({
             left: createIdentifier(switchExpressionIdentifier),
             right: caseClause.test
         })

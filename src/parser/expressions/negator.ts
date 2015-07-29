@@ -7,7 +7,7 @@ import {
 
 export { negateTruthiness };
 
-const equalityComparisonOperators = ["==", "===", "!=", "!=="];
+let equalityComparisonOperators = ["==", "===", "!=", "!=="];
 
 function negateTruthiness(expression: ESTree.Expression): ESTree.Expression {
     if (expression.type === ESTree.NodeType.Literal) {

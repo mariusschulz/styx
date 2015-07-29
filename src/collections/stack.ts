@@ -11,7 +11,7 @@ export interface Stack<T> {
     find: (predicate: Predicate<T>) => T;
 }
 
-export const Stack = {
+export let Stack = {
     create: createStack
 };
 

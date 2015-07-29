@@ -11,7 +11,7 @@ interface LookupObject<T> {
     [key: string]: T;
 }
 
-export const NumericMap = {
+export let NumericMap = {
     create: createMap
 };
 
