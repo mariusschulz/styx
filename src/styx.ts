@@ -6,18 +6,18 @@ export { parse };
 export { exportProgram } from "./export";
 export * from "./flow";
 
-function parse(node: ESTree.Program, options?: ParserOptions): FlowProgram {
-    if (!isObject(node) || !node.type) {
-        throw Error("'node' must be an object with a 'type' property");
+function parse(program: ESTree.Program, options?: ParserOptions): FlowProgram {
+    if (!isObject(program) || !program.type) {
+        throw Error("'program' must be an object with a 'type' property");
     }
 
-    if (node.type !== ESTree.NodeType.Program) {
-        throw Error(`The node type '${node.type}' is not supported`);
+    if (program.type !== ESTree.NodeType.Program) {
+        throw Error(`The node type '${program.type}' is not supported`);
     }
 
     var options = normalizeParserOptions(options || {});
 
-    return Parser.parse(node, options);
+    return Parser.parse(program, options);
 }
 
 function isObject(value: any): boolean {
