@@ -1,4 +1,4 @@
-export { exportDot };
+export { exportAsDot };
 
 import {
     ControlFlowGraph,
@@ -11,7 +11,7 @@ import {
 
 import { partition } from "../util/ArrayUtil";
 
-function exportDot(flowGraph: ControlFlowGraph): string {
+function exportAsDot(flowGraph: ControlFlowGraph): string {
     return computeDotLines(flowGraph).join("\n");
 }
 

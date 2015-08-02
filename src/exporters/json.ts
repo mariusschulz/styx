@@ -1,4 +1,4 @@
-export { exportJson };
+export { exportAsJson };
 
 import {
     ControlFlowGraph,
@@ -10,7 +10,7 @@ import {
 const REPLACER: any = null;
 const INDENTATION_STRING = "  ";
 
-function exportJson(flowProgram: FlowProgram): string {
+function exportAsJson(flowProgram: FlowProgram): string {
     let program = {
         flowGraph: flattenFlowGraph(flowProgram.flowGraph)
     };
