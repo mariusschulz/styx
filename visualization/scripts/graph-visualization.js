@@ -51,13 +51,10 @@
     }
 
     function generateNodesAndEdges(cfg) {
-        var nodeSet = { };
-        collectNodes(cfg.entry, nodeSet);
-
         var nodes = [];
         var edges = [];
 
-        _.each(nodeSet, function(node) {
+        _.each(cfg.nodes, function(node) {
             addNodeAndEdges(node, nodes, edges);
         });
 
@@ -124,19 +121,6 @@
                 return "#FF2D55";
             default:
                 return "#2B7CE9";
-        }
-    }
-
-    function collectNodes(node, nodeSet) {
-        if (nodeSet[node.id]) {
-            return;
-        }
-
-        nodeSet[node.id] = node;
-
-        for (var i = 0; i < node.outgoingEdges.length; i++) {
-            var targetNode = node.outgoingEdges[i].target;
-            collectNodes(targetNode, nodeSet);
         }
     }
 }());
