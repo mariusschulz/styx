@@ -11,9 +11,7 @@ import {
 
 import { partition } from "../util/ArrayUtil";
 
-function exportDot(flowProgram: FlowProgram, functionId = 0): string {
-    let flowGraph = findFlowGraphForId(flowProgram, functionId);
-
+function exportDot(flowGraph: ControlFlowGraph): string {
     return computeDotLines(flowGraph).join("\n");
 }
 
@@ -56,18 +54,4 @@ function formatEdge(edge: FlowEdge): string {
     const attributes = edge.label ? ` [label = " ${edge.label}"]` : "";
 
     return `${from} -> ${to}${attributes}`;
-}
-
-function findFlowGraphForId(flowProgram: FlowProgram, functionId: number): ControlFlowGraph {
-    if (!functionId) {
-        return flowProgram.flowGraph;
-    }
-
-    for (let fun of flowProgram.functions) {
-        if (fun.id === functionId) {
-            return fun.flowGraph;
-        }
-    }
-
-    throw Error(`Couldn't find function with id ${functionId}`);
 }
