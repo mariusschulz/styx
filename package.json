@@ -4,7 +4,8 @@
   "description": "Creates the control flow graph for an AST following the ESTree specification.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "browserify": "gulp browserify"
   },
   "keywords": [
     "control",
