@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "browserify": "gulp browserify"
+    "browserify": "gulp browserify",
+    "browserify-watch": "gulp browserify-watch"
   },
   "keywords": [
     "control",

@@ -11,6 +11,8 @@ gulp.task("browserify", function() {
         .pipe(gulp.dest("./dist/browser"));
 });
 
-gulp.task("default", ["browserify"], function() {
+gulp.task("browserify-watch", function() {
     return gulp.watch(browserifyEntryFile, ["browserify"]);
 });
+
+gulp.task("default", ["browserify-watch"]);
