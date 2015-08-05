@@ -1,6 +1,6 @@
 var gulp = require("gulp");
-var browserify = require('gulp-browserify');
-var rename = require('gulp-rename');
+var browserify = require("gulp-browserify");
+var rename = require("gulp-rename");
 
 var browserifyEntryFile = "./dist/transpiled/browser.js";
 
