@@ -24,17 +24,26 @@ function computeDotLines(flowGraph: ControlFlowGraph): string[] {
     let [conditionalEdges, unconditionalEdges] = partition(flowGraph.edges,
         edge => edge.type === EdgeType.Conditional);
 
+    let innerLines = [
+        `node [shape = doublecircle] ${entryAndExitNodeList}`,
+        "node [shape = circle]",
+        "",
+        "// Unconditional edges",
+        ...unconditionalEdges.map(formatEdge)
+    ];
+
+    if (conditionalEdges.length > 0) {
+        innerLines.push(
+            "",
+            "// Conditional edges",
+            "edge [color = orange, fontcolor = orange]",
+            ...conditionalEdges.map(formatEdge)
+        );
+    }
+
     return [
         "digraph control_flow_graph {",
-        `    node [shape = doublecircle] ${entryAndExitNodeList}`,
-        "    node [shape = circle]",
-        "",
-        "    // Unconditional edges",
-        ...unconditionalEdges.map(formatEdge).map(indent),
-        "",
-        "    // Conditional edges",
-        "    edge [color = orange, fontcolor = orange]",
-        ...conditionalEdges.map(formatEdge).map(indent),
+        ...innerLines.map(indent),
         "}"
     ];
 }
