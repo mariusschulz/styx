@@ -51,7 +51,12 @@ function indent(line: string): string {
 function formatEdge(edge: FlowEdge): string {
     const from = edge.source.id;
     const to = edge.target.id;
-    const attributes = edge.label ? ` [label = " ${edge.label}"]` : "";
+    const escapedLabel = escapeDoubleQuotes(edge.label);
+    const attributes = edge.label ? ` [label = " ${escapedLabel}"]` : "";
 
     return `${from} -> ${to}${attributes}`;
+}
+
+function escapeDoubleQuotes(value: string): string {
+    return value.replace(/"/g, "\\\"");
 }
