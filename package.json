@@ -1,17 +1,23 @@
 {
   "name": "styx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Creates the control flow graph for an AST following the ESTree specification.",
   "main": "index.js",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/mariusschulz/styx.git"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "browserify": "gulp browserify",
     "browserify-watch": "gulp browserify-watch"
   },
   "keywords": [
+    "styx",
     "control",
     "flow",
     "graph",
+    "ast",
     "estree"
   ],
   "author": {
