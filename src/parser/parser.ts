@@ -27,8 +27,7 @@ function parse(program: ESTree.Program, options: ParserOptions): FlowProgram {
     let rewrittenProgram = AstPreprocessing.rewriteFunctionExpressions(program);
     let parsedProgram = parseProgram(rewrittenProgram, context);
 
-    // Run optimization passes
-    let functionFlowGraphs = context.functions.map(func => func.flowGraph);
+    let functionFlowGraphs = parsedProgram.functions.map(func => func.flowGraph);
     let flowGraphs = [parsedProgram.flowGraph, ...functionFlowGraphs];
     runOptimizationPasses(flowGraphs, options);
 
