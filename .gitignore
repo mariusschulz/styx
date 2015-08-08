@@ -1,5 +1,6 @@
 # Generated output
 dist/
+lib/
 
 # JavaScript files transpiled from TypeScript
 src/*.js

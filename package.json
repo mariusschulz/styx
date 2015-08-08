@@ -2,13 +2,16 @@
   "name": "styx",
   "version": "0.0.3",
   "description": "Creates the control flow graph for an AST following the ESTree specification.",
-  "main": "./index.js",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/mariusschulz/styx.git"
+  "main": "./lib/styx.js",
+  "files": ["lib/"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mariusschulz/styx.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "npm run compile",
+    "compile": "tsc -p src",
     "browserify": "gulp browserify",
     "browserify-watch": "gulp browserify-watch"
   },
@@ -29,6 +32,7 @@
   "devDependencies": {
     "gulp": "^3.8.11",
     "gulp-browserify": "^0.5.1",
-    "gulp-rename": "^1.2.2"
+    "gulp-rename": "^1.2.2",
+    "typescript": "^1.5.3"
   }
 }

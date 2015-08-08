@@ -2,7 +2,7 @@
     "compilerOptions": {
         "preserveConstEnums": true,
         "noImplicitAny": true,
-        "outDir": "../dist/transpiled/",
+        "outDir": "../lib/",
         "target": "es5",
         "module": "commonjs"
     },
