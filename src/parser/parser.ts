@@ -1,7 +1,9 @@
-import * as AstPreprocessing from "./preprocessing/functionExpressionRewriter";
-
 import { Stack } from "../collections/stack";
 import IdGenerator from "../util/idGenerator";
+
+import { runOptimizationPasses } from "./passes/index";
+import * as AstPreprocessing from "./preprocessing/functionExpressionRewriter";
+import { parseStatements } from "./statements/statement";
 
 import * as ESTree from "../estree";
 import {
@@ -14,10 +16,6 @@ import {
     ParsingContext,
     ParserOptions
 } from "../flow";
-
-import { runOptimizationPasses } from "./passes/index";
-
-import { parseStatements } from "./statements/statement";
 
 export { parse };
 
