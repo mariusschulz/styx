@@ -1,8 +1,8 @@
 {
   "name": "styx",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Creates the control flow graph for an AST following the ESTree specification.",
-  "main": "index.js",
+  "main": "./index.js",
   "repository" : {
     "type" : "git",
     "url" : "https://github.com/mariusschulz/styx.git"
