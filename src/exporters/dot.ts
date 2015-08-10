@@ -11,11 +11,11 @@ import {
 
 import { partition } from "../util/ArrayUtil";
 
-function exportAsDot(flowGraph: ControlFlowGraph): string {
-    return computeDotLines(flowGraph).join("\n");
+function exportAsDot(flowGraph: ControlFlowGraph, graphName: string): string {
+    return computeDotLines(flowGraph, graphName).join("\n");
 }
 
-function computeDotLines(flowGraph: ControlFlowGraph): string[] {
+function computeDotLines(flowGraph: ControlFlowGraph, graphName: string): string[] {
     let entryAndExitNodeList = flowGraph.nodes
         .filter(isExitNode)
         .map(node => node.id)
@@ -42,6 +42,7 @@ function computeDotLines(flowGraph: ControlFlowGraph): string[] {
     }
 
     return [
+        `// ${graphName}`,
         "digraph control_flow_graph {",
         ...innerLines.map(indent),
         "}"

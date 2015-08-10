@@ -2,7 +2,7 @@ var gulp = require("gulp");
 var browserify = require("gulp-browserify");
 var rename = require("gulp-rename");
 
-var browserifyEntryFile = "./dist/transpiled/browser.js";
+var browserifyEntryFile = "./lib/browser.js";
 
 gulp.task("browserify", function() {
     return gulp.src(browserifyEntryFile)

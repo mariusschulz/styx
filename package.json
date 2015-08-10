@@ -1,6 +1,6 @@
 {
   "name": "styx",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Creates the control flow graph for an AST following the ESTree specification.",
   "main": "./lib/styx.js",
   "files": ["lib/"],
