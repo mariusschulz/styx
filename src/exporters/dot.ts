@@ -5,7 +5,6 @@ import {
     EdgeType,
     FlowEdge,
     FlowNode,
-    FlowProgram,
     NodeType
 } from "../flow";
 
