@@ -1,27 +1,12 @@
 import * as ESTree from "./estree";
+import { FlowProgram, ParserOptions } from "./flow";
 import * as Parser from "./parser/parser";
 
-import {
-    EdgeType,
-    FlowNode,
-    FlowProgram,
-    NodeType,
-    ParserOptions
-} from "./flow";
-
-import { exportAsDot } from "./exporters/dot";
-import { exportAsJson } from "./exporters/json";
-import { exportAsObject } from "./exporters/object";
-
-export default {
-    parse,
-    exportAsDot,
-    exportAsJson,
-    exportAsObject,
-    EdgeType,
-    FlowNode,
-    NodeType
-};
+export { parse };
+export { exportAsDot } from "./exporters/dot";
+export { exportAsJson } from "./exporters/json";
+export { exportAsObject } from "./exporters/object";
+export * from "./flow";
 
 function parse(program: ESTree.Program, options?: ParserOptions): FlowProgram {
     if (!isObject(program) || !program.type) {
