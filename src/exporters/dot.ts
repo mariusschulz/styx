@@ -40,12 +40,17 @@ function computeDotLines(flowGraph: ControlFlowGraph, graphName: string): string
         );
     }
 
-    return [
-        `// ${graphName}`,
+    let graphLines = [
         "digraph control_flow_graph {",
         ...innerLines.map(indent),
         "}"
     ];
+
+    if (graphName) {
+        graphLines.unshift(`// ${graphName}`);
+    }
+
+    return graphLines;
 }
 
 function isExitNode(node: FlowNode): boolean {
