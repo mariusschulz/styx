@@ -17,9 +17,9 @@ function parse(program: ESTree.Program, options?: ParserOptions): FlowProgram {
         throw Error(`The node type '${program.type}' is not supported`);
     }
 
-    var options = normalizeParserOptions(options || {});
+    var normalizedOptions = normalizeParserOptions(options);
 
-    return Parser.parse(program, options);
+    return Parser.parse(program, normalizedOptions);
 }
 
 function isObject(value: any): boolean {
@@ -27,12 +27,23 @@ function isObject(value: any): boolean {
 }
 
 function normalizeParserOptions(options: ParserOptions): ParserOptions {
-    let passes = options.passes;
+    let removeTransitNodes: boolean;
+    let rewriteConstantConditionalEdges: boolean;
+
+    if (typeof options === "undefined") {
+        removeTransitNodes = true;
+        rewriteConstantConditionalEdges = true;
+    } else {
+        let passes = options.passes;
+
+        removeTransitNodes = passes === true || passes && passes.removeTransitNodes;
+        rewriteConstantConditionalEdges = passes === true || passes && passes.rewriteConstantConditionalEdges;
+    }
 
     return {
         passes: {
-            removeTransitNodes: passes === true || passes && passes.removeTransitNodes,
-            rewriteConstantConditionalEdges: passes === true || passes && passes.rewriteConstantConditionalEdges
+            removeTransitNodes,
+            rewriteConstantConditionalEdges
         }
     };
 }
