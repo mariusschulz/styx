@@ -35,7 +35,7 @@ function computeDotLines(flowGraph: ControlFlowGraph, graphName: string): string
         innerLines.push(
             "",
             "// Conditional edges",
-            "edge [color = orange, fontcolor = orange]",
+            "edge [color = red, fontcolor = red]",
             ...conditionalEdges.map(formatEdge)
         );
     }
