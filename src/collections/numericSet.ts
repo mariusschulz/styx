@@ -3,14 +3,16 @@ export interface NumericSet {
     contains: (value: number) => boolean;
 }
 
-type LookupObject = { [key: number]: boolean; }
+type LookupObject = {
+    [key: number]: boolean;
+}
 
 export let NumericSet = {
     create: createSet
 };
 
 function createSet(): NumericSet {
-    let lookup: LookupObject = {};
+    let lookup: LookupObject = Object.create(null);
 
     return {
         add(value: number) {
@@ -18,7 +20,7 @@ function createSet(): NumericSet {
         },
 
         contains(value: number) {
-            return lookup.hasOwnProperty(value.toString());
+            return value in lookup;
         }
     };
 }
