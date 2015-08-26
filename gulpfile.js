@@ -15,4 +15,4 @@ gulp.task("browserify-watch", function() {
     return gulp.watch(browserifyEntryFile, ["browserify"]);
 });
 
-gulp.task("default", ["browserify-watch"]);
+gulp.task("default", ["browserify", "browserify-watch"]);
