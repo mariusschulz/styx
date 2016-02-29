@@ -1,9 +1,9 @@
 export class NodeType {
     static ArrayExpression= "ArrayExpression";
     static AssignmentExpression = "AssignmentExpression";
-    static BinaryExpression = "BinaryExpression"
+    static BinaryExpression = "BinaryExpression";
     static BlockStatement = "BlockStatement";
-    static BreakStatement = "BreakStatement"
+    static BreakStatement = "BreakStatement";
     static CallExpression = "CallExpression";
     static ConditionalExpression = "ConditionalExpression";
     static ContinueStatement = "ContinueStatement";
