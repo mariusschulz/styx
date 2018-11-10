@@ -2,6 +2,7 @@
     "compilerOptions": {
         "preserveConstEnums": true,
         "noImplicitAny": true,
+        "forceConsistentCasingInFileNames": true,
         "outDir": "../lib/",
         "target": "es5",
         "module": "commonjs"

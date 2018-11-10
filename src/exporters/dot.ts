@@ -8,7 +8,7 @@ import {
     NodeType
 } from "../flow";
 
-import { partition } from "../util/ArrayUtil";
+import { partition } from "../util/arrayUtil";
 
 function exportAsDot(flowGraph: ControlFlowGraph, graphName: string): string {
     return computeDotLines(flowGraph, graphName).join("\n");
