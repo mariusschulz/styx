@@ -1,13 +1,11 @@
 {
-    "compilerOptions": {
-        "preserveConstEnums": true,
-        "noImplicitAny": true,
-        "forceConsistentCasingInFileNames": true,
-        "outDir": "../lib/",
-        "target": "es5",
-        "module": "commonjs"
-    },
-    "files": [
-        "browser.ts"
-    ]
+  "compilerOptions": {
+    "preserveConstEnums": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "../lib/",
+    "target": "es5",
+    "module": "commonjs"
+  },
+  "files": ["browser.ts"]
 }

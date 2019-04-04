@@ -7,18 +7,21 @@ import { ControlFlowGraph, ParserOptions } from "../../flow";
 
 export { runOptimizationPasses };
 
-function runOptimizationPasses(graphs: ControlFlowGraph[], options: ParserOptions) {
-    for (let graph of graphs) {
-        if (options.passes.rewriteConstantConditionalEdges) {
-            rewriteConstantConditionalEdges(graph);
-        }
-
-        removeUnreachableNodes(graph);
-
-        if (options.passes.removeTransitNodes) {
-            removeTransitNodes(graph);
-        }
-
-        collectNodesAndEdges(graph);
+function runOptimizationPasses(
+  graphs: ControlFlowGraph[],
+  options: ParserOptions
+) {
+  for (let graph of graphs) {
+    if (options.passes.rewriteConstantConditionalEdges) {
+      rewriteConstantConditionalEdges(graph);
     }
+
+    removeUnreachableNodes(graph);
+
+    if (options.passes.removeTransitNodes) {
+      removeTransitNodes(graph);
+    }
+
+    collectNodesAndEdges(graph);
+  }
 }

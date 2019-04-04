@@ -22,62 +22,70 @@ import { parseWhileStatement } from "./while";
 import { parseWithStatement } from "./with";
 
 import * as ESTree from "../../estree";
-import {
-    Completion,
-    FlowNode,
-    ParsingContext
-} from "../../flow";
+import { Completion, FlowNode, ParsingContext } from "../../flow";
 
 export { parseStatement, parseStatements };
 
 interface StatementTypeToParserMap {
-    [type: string]: (statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext) => Completion;
+  [type: string]: (
+    statement: ESTree.Statement,
+    currentNode: FlowNode,
+    context: ParsingContext
+  ) => Completion;
 }
 
-function parseStatements(statements: ESTree.Statement[], currentNode: FlowNode, context: ParsingContext): Completion {
-    for (let statement of statements) {
-        let completion = parseStatement(statement, currentNode, context);
+function parseStatements(
+  statements: ESTree.Statement[],
+  currentNode: FlowNode,
+  context: ParsingContext
+): Completion {
+  for (let statement of statements) {
+    let completion = parseStatement(statement, currentNode, context);
 
-        if (!completion.normal) {
-            // If we encounter an abrupt completion, normal control flow is interrupted
-            // and the following statements aren't executed
-            return completion;
-        }
-
-        currentNode = completion.normal;
+    if (!completion.normal) {
+      // If we encounter an abrupt completion, normal control flow is interrupted
+      // and the following statements aren't executed
+      return completion;
     }
 
-    return { normal: currentNode };
+    currentNode = completion.normal;
+  }
+
+  return { normal: currentNode };
 }
 
-function parseStatement(statement: ESTree.Statement, currentNode: FlowNode, context: ParsingContext): Completion {
-    let statementParsers: StatementTypeToParserMap = {
-        [ESTree.NodeType.BlockStatement]: parseBlockStatement,
-        [ESTree.NodeType.BreakStatement]: parseBreakStatement,
-        [ESTree.NodeType.ContinueStatement]: parseContinueStatement,
-        [ESTree.NodeType.DebuggerStatement]: parseDebuggerStatement,
-        [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
-        [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
-        [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement,
-        [ESTree.NodeType.ForInStatement]: parseForInStatement,
-        [ESTree.NodeType.ForStatement]: parseForStatement,
-        [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
-        [ESTree.NodeType.IfStatement]: parseIfStatement,
-        [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
-        [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
-        [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
-        [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
-        [ESTree.NodeType.TryStatement]: parseTryStatement,
-        [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
-        [ESTree.NodeType.WhileStatement]: parseWhileStatement,
-        [ESTree.NodeType.WithStatement]: parseWithStatement
-    };
+function parseStatement(
+  statement: ESTree.Statement,
+  currentNode: FlowNode,
+  context: ParsingContext
+): Completion {
+  let statementParsers: StatementTypeToParserMap = {
+    [ESTree.NodeType.BlockStatement]: parseBlockStatement,
+    [ESTree.NodeType.BreakStatement]: parseBreakStatement,
+    [ESTree.NodeType.ContinueStatement]: parseContinueStatement,
+    [ESTree.NodeType.DebuggerStatement]: parseDebuggerStatement,
+    [ESTree.NodeType.DoWhileStatement]: parseDoWhileStatement,
+    [ESTree.NodeType.EmptyStatement]: parseEmptyStatement,
+    [ESTree.NodeType.ExpressionStatement]: parseExpressionStatement,
+    [ESTree.NodeType.ForInStatement]: parseForInStatement,
+    [ESTree.NodeType.ForStatement]: parseForStatement,
+    [ESTree.NodeType.FunctionDeclaration]: parseFunctionDeclaration,
+    [ESTree.NodeType.IfStatement]: parseIfStatement,
+    [ESTree.NodeType.LabeledStatement]: parseLabeledStatement,
+    [ESTree.NodeType.ReturnStatement]: parseReturnStatement,
+    [ESTree.NodeType.SwitchStatement]: parseSwitchStatement,
+    [ESTree.NodeType.ThrowStatement]: parseThrowStatement,
+    [ESTree.NodeType.TryStatement]: parseTryStatement,
+    [ESTree.NodeType.VariableDeclaration]: parseVariableDeclaration,
+    [ESTree.NodeType.WhileStatement]: parseWhileStatement,
+    [ESTree.NodeType.WithStatement]: parseWithStatement
+  };
 
-    let parsingMethod = statementParsers[statement.type];
+  let parsingMethod = statementParsers[statement.type];
 
-    if (!parsingMethod) {
-        throw Error(`Encountered unsupported statement type "${statement.type}"`);
-    }
+  if (!parsingMethod) {
+    throw Error(`Encountered unsupported statement type "${statement.type}"`);
+  }
 
-    return parsingMethod(statement, currentNode, context);
+  return parsingMethod(statement, currentNode, context);
 }

@@ -1,15 +1,15 @@
 interface IdGenerator {
-    generateId: () => number;
+  generateId: () => number;
 }
 
 let idGeneratorFactory = {
-    create(): IdGenerator {
-        let id = 0;
+  create(): IdGenerator {
+    let id = 0;
 
-        return {
-            generateId: () => ++id
-        };
-    }
+    return {
+      generateId: () => ++id
+    };
+  }
 };
 
 export default idGeneratorFactory;
