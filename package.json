@@ -32,9 +32,9 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "gulp": "^3.8.11",
+    "gulp": "^4.0.0",
     "gulp-browserify": "^0.5.1",
     "gulp-rename": "^1.2.2",
-    "typescript": "^1.5.3"
+    "typescript": "^3.4.1"
   }
 }

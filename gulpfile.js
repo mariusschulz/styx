@@ -1,19 +1,21 @@
-var gulp = require("gulp");
-var browserify = require("gulp-browserify");
-var rename = require("gulp-rename");
+const gulp = require("gulp");
+const gulpBrowserify = require("gulp-browserify");
+const gulpRename = require("gulp-rename");
 
-var browserifyEntryFile = "./lib/browser.js";
+const browserifyEntryFile = "./lib/browser.js";
 
-gulp.task("browserify", function() {
+function browserify() {
   return gulp
     .src(browserifyEntryFile)
-    .pipe(browserify())
-    .pipe(rename("styx.js"))
+    .pipe(gulpBrowserify())
+    .pipe(gulpRename("styx.js"))
     .pipe(gulp.dest("./dist/browser"));
-});
+}
 
-gulp.task("browserify-watch", function() {
-  return gulp.watch(browserifyEntryFile, ["browserify"]);
-});
+function browserifyWatch() {
+  return gulp.watch(browserifyEntryFile, browserify);
+}
 
-gulp.task("default", ["browserify", "browserify-watch"]);
+gulp.task("browserify", browserify);
+gulp.task("browserify-watch", browserifyWatch);
+gulp.task("default", gulp.series(browserify, browserifyWatch));
