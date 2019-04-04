@@ -13,6 +13,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublish": "npm run compile",
+    "build": "webpack --mode production",
     "compile": "tsc -p src",
     "browserify": "gulp browserify",
     "browserify-watch": "gulp browserify-watch"
@@ -32,9 +33,9 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "gulp": "^4.0.0",
-    "gulp-browserify": "^0.5.1",
-    "gulp-rename": "^1.2.2",
-    "typescript": "^3.4.1"
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.4.1",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
   }
 }
