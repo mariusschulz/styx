@@ -7,7 +7,6 @@ import { parseStatements } from "./statements/statement";
 
 import * as ESTree from "../estree";
 import {
-  Completion,
   ControlFlowGraph,
   EnclosingStatement,
   FlowNode,

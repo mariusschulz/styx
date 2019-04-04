@@ -2,7 +2,7 @@ import { NumericMap } from "../../collections/numericMap";
 import { NumericSet } from "../../collections/numericSet";
 import * as ArrayUtils from "../../util/arrayUtil";
 
-import { ControlFlowGraph, FlowEdge, FlowNode, NodeType } from "../../flow";
+import { ControlFlowGraph, FlowNode, NodeType } from "../../flow";
 
 export { removeUnreachableNodes };
 

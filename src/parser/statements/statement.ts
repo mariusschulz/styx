@@ -1,6 +1,3 @@
-import { negateTruthiness } from "../expressions/negator";
-import { stringify } from "../expressions/stringifier";
-
 import { parseFunctionDeclaration } from "../declarations/function";
 import { parseVariableDeclaration } from "../declarations/variable";
 
