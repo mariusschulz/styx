@@ -4,8 +4,10 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "../lib/",
-    "target": "es5",
-    "module": "commonjs"
+    "target": "ES2015",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true
   },
   "files": ["browser.ts"]
 }
